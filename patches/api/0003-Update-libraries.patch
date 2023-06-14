@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 22:38:05 +0200
+Subject: [PATCH] Update libraries
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index cfdc1361618bade1831f11015f6b5d22f7af32c5..a10a4d1093c5624c0a73967531e0017e701d9fdc 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -4,19 +4,24 @@ java {
+ }
+ 
+ dependencies {
++    // Native (Minecraft) libraries start
++    compileOnlyApi("com.google.guava:guava:17.0") // Loaded by CerberusLoader
++    compileOnlyApi("com.google.code.gson:gson:2.2.4") // Loaded by CerberusLoader
++    compileOnlyApi("org.yaml:snakeyaml:1.15") // Loaded by CerberusLoader
++    api("com.googlecode.json-simple:json-simple:1.1.1")
+     api("commons-lang:commons-lang:2.6")
+     api("org.avaje:ebean:2.8.1")
+-    api("com.googlecode.json-simple:json-simple:1.1.1")
+-    api("org.yaml:snakeyaml:1.15")
+     api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
+     compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
++    // Native libraries end
+ 
+-    // bundled with Minecraft, should be kept in sync
+-    api("com.google.guava:guava:17.0")
+-    api("com.google.code.gson:gson:2.2.4")
++    // Unicorn libraries start
++    api("org.apache.commons:commons-lang3:3.12.0") // Unicorn - updated commons-lang3 to 3.12.0 // Unicorn - Add commons-lang3 to API
++    api("org.jetbrains:annotations:24.0.1") // Unicorn - add jetbrains annotations - future is now 😎
++    // Unicorn libraries end
+ 
+     // testing
+-    testImplementation("junit:junit:4.12")
++    testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+     testImplementation("net.sf.trove4j:trove4j:3.0.3") // required by tests
+ }
+@@ -33,7 +38,7 @@ tasks {
+ 
+     jar {
+         from(generateApiVersioningFile.map { it.outputs.files.singleFile }) {
+-            into("META-INF/maven/${project.group}/${project.name.toLowerCase()}")
++            into("META-INF/maven/${project.group}/${project.name.lowercase()}")
+         }
+ 
+         manifest {

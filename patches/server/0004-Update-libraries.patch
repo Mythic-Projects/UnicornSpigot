@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 23:09:02 +0200
+Subject: [PATCH] Update libraries
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 2ae153cf0e3025672fbcc843f843549e8fbadafc..e9c40bd5898037d3e03ecdf063f729a674fbe071 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -3,25 +3,23 @@ val minecraftVersion = "1_8_R3"
+ dependencies {
+     implementation(project(":unicornspigot-api"))
+ 
+-    // Minecraft libraries:
+-    implementation("com.mojang:netty:1.7.7")
+-    implementation("com.mojang:authlib:1.5.21")
+-    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
+-    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
+-    implementation("org.apache.commons:commons-lang3:3.3.2")
++
++    // Native (Minecraft) libraries start
++    compileOnly("io.netty:netty-all:4.0.23.Final") // Loaded by CerberusLoader
++    implementation("net.sf.trove4j:trove4j:3.0.3")
++    // Unicorn start - updated log4j to 2.19.0
++    implementation("org.apache.logging.log4j:log4j-api:2.19.0")
++    implementation("org.apache.logging.log4j:log4j-core:2.19.0")
++    // Unicorn end - updated log4j to 2.19.0
+     implementation("commons-io:commons-io:2.4")
+     implementation("commons-codec:commons-codec:1.9")
+-    implementation("com.google.guava:guava:17.0")
+-    implementation("com.google.code.gson:gson:2.2.4")
+-    implementation("net.sf.trove4j:trove4j:3.0.3")
+-    implementation("io.netty:netty-all:4.0.23.Final")
+-    implementation("net.sf.jopt-simple:jopt-simple:3.2")
+-    implementation("jline:jline:2.12.1")
+-
++    implementation("net.sf.jopt-simple:jopt-simple:5.0") // Unicorn - updated jopt-simple to 5.0
++    implementation("com.mojang:authlib:1.5.21")
+     implementation("org.xerial:sqlite-jdbc:3.7.2")
+-    implementation("mysql:mysql-connector-java:5.1.14")
++    compileOnly("mysql:mysql-connector-java:5.1.14") // Loaded by CerberusLoader
++    // Native libraries end
+ 
+-    testImplementation("junit:junit:4.11")
++    testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+ }
+ 
