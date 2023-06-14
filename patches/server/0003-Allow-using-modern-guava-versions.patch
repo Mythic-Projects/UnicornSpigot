@@ -1,0 +1,346 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 22:59:35 +0200
+Subject: [PATCH] Allow using modern guava versions
+
+
+diff --git a/src/main/java/net/minecraft/server/BaseBlockPosition.java b/src/main/java/net/minecraft/server/BaseBlockPosition.java
+index a685e081258deb8c2b19cf5236fbbb43e0bad64d..1e95ae178a299ddbc292dcfec353b92e94cfd713 100644
+--- a/src/main/java/net/minecraft/server/BaseBlockPosition.java
++++ b/src/main/java/net/minecraft/server/BaseBlockPosition.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ 
+ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockState.java b/src/main/java/net/minecraft/server/BlockState.java
+index 3cada5afc0542db3758e24dbadd9b24c11aa76f1..3b4d9c44e0c95d3828b5de4bbf98684c62e88d6e 100644
+--- a/src/main/java/net/minecraft/server/BlockState.java
++++ b/src/main/java/net/minecraft/server/BlockState.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ 
+ public abstract class BlockState<T extends Comparable<T>> implements IBlockState<T> {
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockStateList.java b/src/main/java/net/minecraft/server/BlockStateList.java
+index 6559cc50224064b6f69f389ef62978627292f369..3617a7b942fa5e0dd2d95a70bc081732367cfbaf 100644
+--- a/src/main/java/net/minecraft/server/BlockStateList.java
++++ b/src/main/java/net/minecraft/server/BlockStateList.java
+@@ -2,7 +2,7 @@ package net.minecraft.server;
+ 
+ import com.google.common.base.Function;
+ import com.google.common.base.Joiner;
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import com.google.common.collect.HashBasedTable;
+ import com.google.common.collect.ImmutableList;
+ import com.google.common.collect.ImmutableMap;
+diff --git a/src/main/java/net/minecraft/server/BlockTripwireHook.java b/src/main/java/net/minecraft/server/BlockTripwireHook.java
+index 0ad4a20f3cb0de792c7e80fba6d16a0df7e97b01..d50655a9776565b8d400c6efc850ff82e2cef29c 100644
+--- a/src/main/java/net/minecraft/server/BlockTripwireHook.java
++++ b/src/main/java/net/minecraft/server/BlockTripwireHook.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import com.google.common.base.Predicate;
+ import java.util.Iterator;
+ import java.util.Random;
+diff --git a/src/main/java/net/minecraft/server/EntitySlice.java b/src/main/java/net/minecraft/server/EntitySlice.java
+index ae6c52f2cc72aa63458ce352389616baa097d8ff..1dff31e2e7c2d24871dcbf9c81a85db9cd729fb0 100644
+--- a/src/main/java/net/minecraft/server/EntitySlice.java
++++ b/src/main/java/net/minecraft/server/EntitySlice.java
+@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+ import java.util.AbstractSet;
++import java.util.Collections;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+@@ -114,7 +115,7 @@ public class EntitySlice<T> extends AbstractSet<T> {
+                 List list = (List) EntitySlice.this.b.get(EntitySlice.this.b(oclass));
+ 
+                 if (list == null) {
+-                    return Iterators.emptyIterator();
++                    return Collections.emptyIterator(); // Unicorn
+                 } else {
+                     Iterator iterator = list.iterator();
+ 
+@@ -125,7 +126,7 @@ public class EntitySlice<T> extends AbstractSet<T> {
+     }
+ 
+     public Iterator<T> iterator() {
+-        return this.e.isEmpty() ? Iterators.<T>emptyIterator() : Iterators.unmodifiableIterator(this.e.iterator());
++        return this.e.isEmpty() ? Collections.emptyIterator() : Iterators.unmodifiableIterator(this.e.iterator()); // Unicorn
+     }
+ 
+     public int size() {
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutPlayerInfo.java b/src/main/java/net/minecraft/server/PacketPlayOutPlayerInfo.java
+index fc5ad2911fda8a8270a3d3ceddd70c5f2fbbd79b..20cee594a93f313b39a77cdac5f69812c902714f 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutPlayerInfo.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutPlayerInfo.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import com.google.common.collect.Lists;
+ import com.mojang.authlib.GameProfile;
+ import com.mojang.authlib.properties.Property;
+diff --git a/src/main/java/net/minecraft/server/ShapeDetector.java b/src/main/java/net/minecraft/server/ShapeDetector.java
+index 765f8eb9d5dc9c0d5f229dd326c1ed2d3f4d77af..7e483e700a14626091d631ea736d16441ed60ed3 100644
+--- a/src/main/java/net/minecraft/server/ShapeDetector.java
++++ b/src/main/java/net/minecraft/server/ShapeDetector.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import com.google.common.base.Predicate;
+ import com.google.common.cache.CacheBuilder;
+ import com.google.common.cache.CacheLoader;
+diff --git a/src/main/java/net/minecraft/server/StructureBoundingBox.java b/src/main/java/net/minecraft/server/StructureBoundingBox.java
+index d6c2aac9f299df7d616c883e6c55c403ee19da7c..f4322004c8525b56bce408bcc3bef51fab878703 100644
+--- a/src/main/java/net/minecraft/server/StructureBoundingBox.java
++++ b/src/main/java/net/minecraft/server/StructureBoundingBox.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ 
+ public class StructureBoundingBox {
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldGenCaves.java b/src/main/java/net/minecraft/server/WorldGenCaves.java
+index 2cdd023782bd1783916cb5bd7a1a3dd80ae5ac4f..de7f95d74ff8db9e3760b1808e79cb4b25673eb9 100644
+--- a/src/main/java/net/minecraft/server/WorldGenCaves.java
++++ b/src/main/java/net/minecraft/server/WorldGenCaves.java
+@@ -1,6 +1,6 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import java.util.Random;
+ 
+ public class WorldGenCaves extends WorldGenBase {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 85fad5b3a9b840e357b8bb159a91129a1e404e0c..c3d9e8a9a75739a26e3d4478900cb09835fcb0b9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -143,7 +143,7 @@ public final class CraftServer implements Server {
+     private YamlConfiguration configuration;
+     private YamlConfiguration commandsConfiguration;
+     private final Yaml yaml = new Yaml(new SafeConstructor());
+-    private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().softValues().makeMap();
++    private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap(); // Unicorn - softValues -> weakValues
+     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
+     private final PlayerMetadataStore playerMetadata = new PlayerMetadataStore();
+     private final WorldMetadataStore worldMetadata = new WorldMetadataStore();
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBlockState.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBlockState.java
+index d60686d624b145a2648e07b0ed741e2276070b01..8e6d49e0aaf47c648ec48998c5e705651f7aa01d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBlockState.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBlockState.java
+@@ -1,6 +1,6 @@
+ package org.bukkit.craftbukkit.inventory;
+ 
+-import com.google.common.base.Objects;
++import org.mythicprojects.unicornspigot.util.Objects; // Unicorn
+ import com.google.common.collect.ImmutableMap;
+ import java.util.Map;
+ import net.minecraft.server.BlockJukeBox;
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/util/Objects.java b/src/main/java/org/mythicprojects/unicornspigot/util/Objects.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b5f5d408bbec34a5fc589a25aef1f7b42b19dd8a
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/util/Objects.java
+@@ -0,0 +1,182 @@
++package org.mythicprojects.unicornspigot.util;
++
++import java.util.Arrays;
++import javax.annotation.CheckReturnValue;
++import org.jetbrains.annotations.Nullable;
++
++import static com.google.common.base.Preconditions.checkNotNull;
++
++/**
++ * Based on Guava's Objects class.
++ */
++public final class Objects {
++
++    private Objects() {
++    }
++
++    @CheckReturnValue
++    public static boolean equal(@Nullable Object a, @Nullable Object b) {
++        return java.util.Objects.equals(a, b);
++    }
++
++    public static int hashCode(@Nullable Object... objects) {
++        return Arrays.hashCode(objects);
++    }
++
++    public static <T> T firstNonNull(@Nullable T first, @Nullable T second) {
++        return first != null ? first : checkNotNull(second);
++    }
++
++    public static ToStringHelper toStringHelper(Object self) {
++        return new ToStringHelper(simpleName(self.getClass()));
++    }
++
++    public static ToStringHelper toStringHelper(Class<?> clazz) {
++        return new ToStringHelper(simpleName(clazz));
++    }
++
++    public static ToStringHelper toStringHelper(String className) {
++        return new ToStringHelper(className);
++    }
++
++    private static String simpleName(Class<?> clazz) {
++        String name = clazz.getName();
++
++        // the nth anonymous class has a class name ending in "Outer$n"
++        // and local inner classes have names ending in "Outer.$1Inner"
++        name = name.replaceAll("\\$[0-9]+", "\\$");
++
++        // we want the name of the inner class all by its lonesome
++        int start = name.lastIndexOf('$');
++
++        // if this isn't an inner class, just find the start of the
++        // top level class name.
++        if (start == -1) {
++            start = name.lastIndexOf('.');
++        }
++        return name.substring(start + 1);
++    }
++
++    public static final class ToStringHelper {
++        private final String className;
++        private final ToStringHelper.ValueHolder holderHead = new ToStringHelper.ValueHolder();
++        private ToStringHelper.ValueHolder holderTail = this.holderHead;
++        private boolean omitNullValues = false;
++
++        /**
++         * Use {@link Objects#toStringHelper(Object)} to create an instance.
++         */
++        private ToStringHelper(String className) {
++            this.className = checkNotNull(className);
++        }
++
++        public ToStringHelper omitNullValues() {
++            this.omitNullValues = true;
++            return this;
++        }
++
++        public ToStringHelper add(String name, @javax.annotation.Nullable Object value) {
++            return this.addHolder(name, value);
++        }
++
++        public ToStringHelper add(String name, boolean value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper add(String name, char value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper add(String name, double value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper add(String name, float value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper add(String name, int value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper add(String name, long value) {
++            return this.addHolder(name, String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(@javax.annotation.Nullable Object value) {
++            return this.addHolder(value);
++        }
++
++        public ToStringHelper addValue(boolean value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(char value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(double value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(float value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(int value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        public ToStringHelper addValue(long value) {
++            return this.addHolder(String.valueOf(value));
++        }
++
++        @Override
++        public String toString() {
++            // create a copy to keep it consistent in case value changes
++            boolean omitNullValuesSnapshot = this.omitNullValues;
++            String nextSeparator = "";
++            StringBuilder builder = new StringBuilder(32).append(this.className)
++                    .append('{');
++            for (ToStringHelper.ValueHolder valueHolder = this.holderHead.next; valueHolder != null;
++                 valueHolder = valueHolder.next) {
++                if (!omitNullValuesSnapshot || valueHolder.value != null) {
++                    builder.append(nextSeparator);
++                    nextSeparator = ", ";
++
++                    if (valueHolder.name != null) {
++                        builder.append(valueHolder.name).append('=');
++                    }
++                    builder.append(valueHolder.value);
++                }
++            }
++            return builder.append('}').toString();
++        }
++
++        private ToStringHelper.ValueHolder addHolder() {
++            ToStringHelper.ValueHolder valueHolder = new ToStringHelper.ValueHolder();
++            this.holderTail = this.holderTail.next = valueHolder;
++            return valueHolder;
++        }
++
++        private ToStringHelper addHolder(@javax.annotation.Nullable Object value) {
++            ToStringHelper.ValueHolder valueHolder = this.addHolder();
++            valueHolder.value = value;
++            return this;
++        }
++
++        private ToStringHelper addHolder(String name, @javax.annotation.Nullable Object value) {
++            ToStringHelper.ValueHolder valueHolder = this.addHolder();
++            valueHolder.value = value;
++            valueHolder.name = checkNotNull(name);
++            return this;
++        }
++
++        private static final class ValueHolder {
++            String name;
++            Object value;
++            ToStringHelper.ValueHolder next;
++        }
++    }
++
++}
