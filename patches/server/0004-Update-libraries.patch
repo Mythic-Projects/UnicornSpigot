@@ -5,10 +5,10 @@ Subject: [PATCH] Update libraries
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 2ae153cf0e3025672fbcc843f843549e8fbadafc..e9c40bd5898037d3e03ecdf063f729a674fbe071 100644
+index 2ae153cf0e3025672fbcc843f843549e8fbadafc..7d305313b29a5e0cb468e267809805f6986ee247 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -3,25 +3,23 @@ val minecraftVersion = "1_8_R3"
+@@ -3,25 +3,22 @@ val minecraftVersion = "1_8_R3"
  dependencies {
      implementation(project(":unicornspigot-api"))
  
@@ -18,7 +18,6 @@ index 2ae153cf0e3025672fbcc843f843549e8fbadafc..e9c40bd5898037d3e03ecdf063f729a6
 -    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
 -    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
 -    implementation("org.apache.commons:commons-lang3:3.3.2")
-+
 +    // Native (Minecraft) libraries start
 +    compileOnly("io.netty:netty-all:4.0.23.Final") // Loaded by CerberusLoader
 +    implementation("net.sf.trove4j:trove4j:3.0.3")
