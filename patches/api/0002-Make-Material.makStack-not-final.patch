@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 21:54:07 +0200
+Subject: [PATCH] Make Material.makStack not final
+
+
+diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
+index 0fb260555ce50f5348293a17f85512a4fb08918d..a480428667945c1837ae17c4c6145bb57265fec0 100644
+--- a/src/main/java/org/bukkit/Material.java
++++ b/src/main/java/org/bukkit/Material.java
+@@ -461,7 +461,7 @@ public enum Material {
+     private final Constructor<? extends MaterialData> ctor;
+     private static Material[] byId = new Material[383];
+     private final static Map<String, Material> BY_NAME = Maps.newHashMap();
+-    private final int maxStack;
++    private int maxStack; // Unicorn - don't make this final to allow changing it with reflection
+     private final short durability;
+ 
+     private Material(final int id) {
