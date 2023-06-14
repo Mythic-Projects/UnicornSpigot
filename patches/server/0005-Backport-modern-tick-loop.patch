@@ -1,0 +1,530 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 23:42:53 +0200
+Subject: [PATCH] Backport modern tick loop
+
+
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..00090861cb1e0cedf2a2255e3e7a50e892e97c00 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -39,8 +39,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+     private boolean s;
+ 
+     // CraftBukkit start - Signature changed
+-    public DedicatedServer(joptsimple.OptionSet options) {
+-        super(options, Proxy.NO_PROXY, DedicatedServer.a);
++    // Unicorn start - Modern tick loop
++    public DedicatedServer(joptsimple.OptionSet options, Thread serverThread) {
++        super(options, Proxy.NO_PROXY, DedicatedServer.a, serverThread);
++    // Unicorn end
+         // CraftBukkit end
+         Thread thread = new Thread("Server Infinisleeper") {
+             {
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c21013855b 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
+ import co.aikar.timings.SpigotTimings; // Spigot
+ // CraftBukkit end
+ 
+-public abstract class MinecraftServer implements Runnable, ICommandListener, IAsyncTaskHandler, IMojangStatistics {
++public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.tickloop.ReentrantIAsyncHandler<org.mythicprojects.unicornspigot.tickloop.TasksPerTick> implements ICommandListener, IAsyncTaskHandler, IMojangStatistics { // Unicorn - modern tick loop
+ 
+     public static final Logger LOGGER = LogManager.getLogger();
+     public static final File a = new File("usercache.json");
+@@ -117,7 +117,36 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public int autosavePeriod;
+     // CraftBukkit end
+ 
+-    public MinecraftServer(OptionSet options, Proxy proxy, File file1) {
++    // Unicorn start - Modern tick loop
++    private long nextTickTime;
++    private long delayedTasksMaxNextTickTime;
++    private boolean mayHaveDelayedTasks;
++    private boolean forceTicks;
++    private volatile boolean isReady;
++    private long lastOverloadWarning;
++    public long serverStartTime;
++    public volatile Thread shutdownThread;
++    private long lastTick = 0;
++    private long catchupTime = 0;
++    public static <S extends MinecraftServer> S spin(java.util.function.Function<Thread, S> serverFactory) {
++        java.util.concurrent.atomic.AtomicReference<S> reference = new java.util.concurrent.atomic.AtomicReference<>();
++        Thread thread = new Thread(() -> reference.get().run(), "Server thread");
++
++        thread.setUncaughtExceptionHandler((thread1, throwable) -> MinecraftServer.LOGGER.error(throwable));
++        S server = serverFactory.apply(thread);
++
++        reference.set(server);
++        thread.setPriority(Thread.NORM_PRIORITY + 2);
++        thread.start();
++        return server;
++    }
++
++    public MinecraftServer(OptionSet options, Proxy proxy, File file1, Thread thread) {
++        super("Server");
++        this.nextTickTime = getMillis();
++        this.primaryThread = thread;
++        this.serverThread = thread;
++    // Unicorn end
+         io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
+         this.e = proxy;
+         MinecraftServer.l = this;
+@@ -154,7 +183,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         }
+         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
+ 
+-        this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main
++        //this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main // Unicorn - we assign above
+     }
+ 
+     public abstract PropertyManager getPropertyManager();
+@@ -557,12 +586,21 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         }
+     }
+     // PaperSpigot End
+- 
++
++    // Unicorn start - Modern tick loop
++    public static long getMillis() {
++        return getNanos() / 1000000L;
++    }
++    public static long getNanos() {
++        return System.nanoTime();
++    }
+     public void run() {
+         try {
++            this.serverStartTime = getNanos();
++    // Unicorn end
+             if (this.init()) {
+                 this.ab = az();
+-                long i = 0L;
++                //long i = 0L; // Unicorn - not used
+ 
+                 this.r.setMOTD(new ChatComponentText(this.motd));
+                 this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
+@@ -572,31 +610,22 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 // PaperSpigot start - Further improve tick loop
+                 Arrays.fill( recentTps, 20 );
+                 //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
+-                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
++                // Unicorn start - Modern tick loop
++                long start = System.nanoTime(), curTime, tickSection = start;
++                lastTick = start - TICK_TIME;
++                // Unicorn end
+                 // PaperSpigot end
+                 while (this.isRunning) {
+-                    curTime = System.nanoTime();
+-                    // PaperSpigot start - Further improve tick loop
+-                    wait = TICK_TIME - (curTime - lastTick);
+-                    if (wait > 0) {
+-                        if (catchupTime < 2E6) {
+-                            wait += Math.abs(catchupTime);
+-                        }
+-                        if (wait < catchupTime) {
+-                            catchupTime -= wait;
+-                            wait = 0;
+-                        } else if (catchupTime > 2E6) {
+-                            wait -= catchupTime;
+-                            catchupTime -= catchupTime;
+-                        }
+-                    }
+-                    if (wait > 0) {
+-                        Thread.sleep(wait / 1000000);
+-                        wait = TICK_TIME - (curTime - lastTick);
++                    // Unicorn start - Modern tick loop
++                    long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - this.nextTickTime; // Paper
++                    if (i > 5000L && this.nextTickTime - this.lastOverloadWarning >= 30000L && ticks > 500) { // CraftBukkit
++                        long j = i / 50L;
++                        if (this.server.getWarnOnOverload()) // CraftBukkit
++                            MinecraftServer.LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
++                        this.nextTickTime += j * 50L;
++                        this.lastOverloadWarning = this.nextTickTime;
+                     }
+ 
+-                    catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
+-
+                     if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
+                     {
+                         final long diff = curTime - tickSection;
+@@ -613,8 +642,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     }
+                     lastTick = curTime;
+ 
+-                    this.A();
+-                    this.Q = true;
++                    this.nextTickTime += 50L;
++                    this.A(this::haveTime);
++                    this.mayHaveDelayedTasks = true;
++                    this.delayedTasksMaxNextTickTime = Math.max(getMillis() + 50L, this.nextTickTime);
++                    this.waitUntilNextTick();
++                    this.methodProfiler.b();
++                    this.isReady = true;
++                    // Unicorn end
+                 }
+                 // Spigot end
+             } else {
+@@ -666,6 +701,63 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+     }
+ 
++    // Unicorn start - Modern tick loop
++    private boolean haveTime() {
++        if (isOversleep) return canOversleep();
++        return this.forceTicks || this.runningTask() || getMillis() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTime : this.nextTickTime);
++    }
++
++    boolean isOversleep = false;
++    private boolean canOversleep() {
++        return this.mayHaveDelayedTasks && getMillis() < this.delayedTasksMaxNextTickTime;
++    }
++
++    private boolean canSleepForTickNoOversleep() {
++        return this.forceTicks || this.runningTask() || getMillis() < this.nextTickTime;
++    }
++
++    private void executeModerately() {
++        this.runAllRunnable();
++        java.util.concurrent.locks.LockSupport.parkNanos("executing tasks", 1000L);
++    }
++
++    protected void waitUntilNextTick() {
++        this.controlTerminate(() -> !this.canSleepForTickNoOversleep());
++    }
++
++    @Override
++    protected org.mythicprojects.unicornspigot.tickloop.TasksPerTick packUpRunnable(Runnable runnable) {
++        // anything that does try to post to main during watchdog crash, run on watchdog
++        if (this.hasStopped && Thread.currentThread().equals(shutdownThread)) {
++            runnable.run();
++            runnable = () -> {};
++        }
++        return new org.mythicprojects.unicornspigot.tickloop.TasksPerTick(this.ticks, runnable);
++    }
++
++    @Override
++    protected boolean shouldRun(org.mythicprojects.unicornspigot.tickloop.TasksPerTick task) {
++        return task.getTick() + 3 < this.ticks || this.haveTime();
++    }
++
++    @Override
++    public boolean drawRunnable() {
++        boolean flag = this.pollTaskInternal();
++
++        this.mayHaveDelayedTasks = flag;
++        return flag;
++    }
++
++    private boolean pollTaskInternal() {
++        return super.drawRunnable();
++    }
++
++    @Override
++    public Thread getMainThread() {
++        return serverThread;
++    }
++    // Unicorn end
++
+     private void a(ServerPing serverping) {
+         File file = this.d("server-icon.png");
+ 
+@@ -698,9 +790,15 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+     protected void z() {}
+ 
+-    protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
++    // Unicorn start - Modern tick loop
++    protected void A(java.util.function.BooleanSupplier shouldKeepTicking) throws ExceptionWorldConflict { // CraftBukkit - added throws
+         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
+         long i = System.nanoTime();
++        isOversleep = true;
++        this.controlTerminate(() -> !this.canOversleep());
++        isOversleep = false;
++        this.server.getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks+1));
++    // Unicorn end
+ 
+         ++this.ticks;
+         if (this.T) {
+@@ -744,6 +842,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
+         }
+ 
++        // Unicorn start - Modern tick loop
++        long endTime = System.nanoTime();
++        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
++        this.server.getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining));
++        // Unicorn end
+         this.methodProfiler.a("tallying");
+         this.h[this.ticks % 100] = System.nanoTime() - i;
+         this.methodProfiler.b();
+@@ -981,6 +1084,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             });
+             */
+ 
++            /* // Unicorn start - comment out
+             DedicatedServer dedicatedserver = new DedicatedServer(options);
+ 
+             if (options.has("port")) {
+@@ -1000,6 +1104,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+             dedicatedserver.primaryThread.start();
+             // CraftBukkit end
++             */ // Unicorn end
+         } catch (Exception exception) {
+             MinecraftServer.LOGGER.fatal("Failed to start the minecraft server", exception);
+         }
+@@ -1483,7 +1588,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     }
+ 
+     public static long az() {
+-        return System.currentTimeMillis();
++        return getMillis(); // Unicorn
+     }
+ 
+     public int getIdleTimeout() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index c936219196ea403a9d247ad6c8c0ffee79411da2..887a7948d4cd4c77128e47a14708c256d4bfe80d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -198,7 +198,30 @@ public class Main {
+                 }
+                 // Spigot End
+                 System.out.println("Loading libraries, please wait...");
+-                MinecraftServer.main(options);
++                // Unicorn start - Modern tick loop
++                net.minecraft.server.DispenserRegistry.c();
++                OptionSet finalOptions = options;
++
++                net.minecraft.server.DedicatedServer server = MinecraftServer.spin(thread -> {
++                    net.minecraft.server.DedicatedServer dedicatedserver = new net.minecraft.server.DedicatedServer(finalOptions, thread);
++
++                    if (finalOptions.has("port")) {
++                        int port = (Integer) finalOptions.valueOf("port");
++                        if (port > 0) {
++                            dedicatedserver.setPort(port);
++                        }
++                    }
++
++                    if (finalOptions.has("universe")) {
++                        dedicatedserver.universe = (File) finalOptions.valueOf("universe");
++                    }
++
++                    if (finalOptions.has("world")) {
++                        dedicatedserver.setWorld((String) finalOptions.valueOf("world"));
++                    }
++                    return dedicatedserver;
++                });
++                // Unicorn end - Modern tick loop
+             } catch (Throwable t) {
+                 t.printStackTrace();
+             }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/tickloop/IAsyncHandler.java b/src/main/java/org/mythicprojects/unicornspigot/tickloop/IAsyncHandler.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..497176333f85628bb2b787c3830ffb1891caece1
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/tickloop/IAsyncHandler.java
+@@ -0,0 +1,141 @@
++package org.mythicprojects.unicornspigot.tickloop;
++
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.util.Queue;
++import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.ConcurrentLinkedQueue;
++import java.util.concurrent.Executor;
++import java.util.concurrent.locks.LockSupport;
++import java.util.function.BooleanSupplier;
++import java.util.function.Supplier;
++
++public abstract class IAsyncHandler<R extends Runnable> implements Executor {
++    private static final Logger LOGGER = LogManager.getLogger();
++    private final String name;
++    private final Queue<R> pendingRunnables = new ConcurrentLinkedQueue<>();
++    private int terminateCount;
++
++    protected IAsyncHandler(String name) {
++        this.name = name;
++    }
++
++    protected abstract R packUpRunnable(Runnable runnable);
++
++    protected abstract boolean shouldRun(R task);
++
++    public boolean isMainThread() {
++        return Thread.currentThread() == this.getMainThread();
++    }
++
++    protected abstract Thread getMainThread();
++
++    protected boolean executables() {
++        return !this.isMainThread();
++    }
++
++    public int getPendingRunnables() {
++        return this.pendingRunnables.size();
++    }
++
++    public String getName() {
++        return this.name;
++    }
++
++    public <V> CompletableFuture<V> submit(Supplier<V> task) {
++        return this.executables() ? CompletableFuture.supplyAsync(task, this)
++            : CompletableFuture.completedFuture(task.get());
++    }
++
++    private CompletableFuture<Void> submitAsync(Runnable runnable) {
++        return CompletableFuture.supplyAsync(() -> {
++            runnable.run();
++            return null;
++        }, this);
++    }
++
++    public CompletableFuture<Void> submit(Runnable task) {
++        if (this.executables()) {
++            return this.submitAsync(task);
++        } else {
++            task.run();
++            return CompletableFuture.completedFuture(null);
++        }
++    }
++
++    public void performBlocking(Runnable runnable) {
++        if (!this.isMainThread()) {
++            this.submitAsync(runnable).join();
++        } else {
++            runnable.run();
++        }
++
++    }
++
++    public void call(R runnable) {
++        this.pendingRunnables.add(runnable);
++        LockSupport.unpark(this.getMainThread());
++    }
++
++    @Override
++    public void execute(Runnable runnable) {
++        if (this.executables()) {
++            this.call(this.packUpRunnable(runnable));
++        } else {
++            runnable.run();
++        }
++
++    }
++
++    protected void clearAllRunnable() {
++        this.pendingRunnables.clear();
++    }
++
++    public void runAllRunnable() {
++        while (this.drawRunnable()) {
++        }
++    }
++
++    public boolean drawRunnable() {
++        R runnable = this.pendingRunnables.peek();
++        if (runnable == null) {
++            return false;
++        } else if (this.terminateCount == 0 && !this.shouldRun(runnable)) {
++            return false;
++        } else {
++            this.doRunnable(this.pendingRunnables.remove());
++            return true;
++        }
++    }
++
++    public void controlTerminate(BooleanSupplier stopCondition) {
++        ++this.terminateCount;
++
++        try {
++            while (!stopCondition.getAsBoolean()) {
++                if (!this.drawRunnable()) {
++                    this.waitForRuns();
++                }
++            }
++        } finally {
++            --this.terminateCount;
++        }
++
++    }
++
++    protected void waitForRuns() {
++        Thread.yield();
++        LockSupport.parkNanos("waiting for tasks", 100000L);
++    }
++
++    protected void doRunnable(R task) {
++        try {
++            task.run();
++        } catch (Exception e) {
++            if (e.getCause() instanceof ThreadDeath) throw e;
++            LOGGER.fatal("Error executing task on {}", this.getName(), e);
++        }
++
++    }
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/tickloop/ReentrantIAsyncHandler.java b/src/main/java/org/mythicprojects/unicornspigot/tickloop/ReentrantIAsyncHandler.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..33abe200bb5b679e8e0297532d9397566b737b55
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/tickloop/ReentrantIAsyncHandler.java
+@@ -0,0 +1,29 @@
++package org.mythicprojects.unicornspigot.tickloop;
++
++public abstract class ReentrantIAsyncHandler<R extends Runnable> extends IAsyncHandler<R> {
++
++    private int count;
++
++    public ReentrantIAsyncHandler(String name) {
++        super(name);
++    }
++
++    @Override
++    protected boolean executables() {
++        return this.runningTask() || super.executables();
++    }
++
++    protected boolean runningTask() {
++        return this.count != 0;
++    }
++
++    @Override
++    protected void doRunnable(R task) {
++        ++this.count;
++        try {
++            super.doRunnable(task);
++        } finally {
++            --this.count;
++        }
++    }
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/tickloop/TasksPerTick.java b/src/main/java/org/mythicprojects/unicornspigot/tickloop/TasksPerTick.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7ad392693012c5072930c2f2f6a4060b331de82a
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/tickloop/TasksPerTick.java
+@@ -0,0 +1,20 @@
++package org.mythicprojects.unicornspigot.tickloop;
++
++public class TasksPerTick implements Runnable {
++    private final int tick;
++    private final Runnable task;
++
++    public TasksPerTick(int creationTicks, Runnable task) {
++        this.tick = creationTicks;
++        this.task = task;
++    }
++
++    public int getTick() {
++        return tick;
++    }
++
++    @Override
++    public void run() {
++        task.run();
++    }
++}
