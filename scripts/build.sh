@@ -11,13 +11,11 @@ $gitcmd submodule update --init
 cd "$basedir"
 
 if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
-    ./scripts/remap.sh "$basedir"
-    ./scripts/decompile.sh "$basedir"
-    ./scripts/init.sh "$basedir"
+    ./base/Paper/paper setup
 fi
 ./scripts/applyPatches.sh "$basedir" "$2"
 
 if [ "$2" == "--jar" ]; then
-    ./gradlew build && ./scripts/paperclip.sh "$basedir"
+    ./gradlew build
 fi
 ) || exit 1

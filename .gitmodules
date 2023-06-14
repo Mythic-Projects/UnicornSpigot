@@ -1,4 +1,3 @@
 [submodule "base/Paper"]
 	path = base/Paper
-	url = https://github.com/PaperMC/Paper.git
-	branch = ver/1.8.8
+	url = https://github.com/Mythic-Projects/PaperSpigot.git

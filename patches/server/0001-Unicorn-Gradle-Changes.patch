@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 14 Jun 2023 21:32:31 +0200
+Subject: [PATCH] Unicorn Gradle Changes
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 5c41f14db7adf9ae243e8e24779b5bc6dcdb875d..2ae153cf0e3025672fbcc843f843549e8fbadafc 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -1,11 +1,7 @@
+ val minecraftVersion = "1_8_R3"
+ 
+-repositories {
+-    maven(url = "https://libraries.minecraft.net")
+-}
+-
+ dependencies {
+-    implementation(project(":paperspigot-api"))
++    implementation(project(":unicornspigot-api"))
+ 
+     // Minecraft libraries:
+     implementation("com.mojang:netty:1.7.7")

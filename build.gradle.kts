@@ -27,7 +27,6 @@ allprojects {
         maven(url = "https://repo.titanvale.net/releases")
         maven(url = "https://repo.titanvale.net/snapshots")
     }
-
 }
 
 subprojects {
@@ -49,4 +48,14 @@ subprojects {
             events(TestLogEvent.STANDARD_OUT)
         }
     }
+}
+
+ext["gitHash"] = project.getCurrentGitHash()
+
+fun Project.getCurrentGitHash(): String {
+    val result = exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+    }
+
+    return result.toString().trim()
 }
