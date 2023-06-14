@@ -1,0 +1,622 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 15 Jun 2023 00:23:16 +0200
+Subject: [PATCH] Remove Spigot Timings
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 1dde1dc953d550ba58ef2d0c6c73cca43404a8c0..695ffe57846041088d7bca577e47b788389057f4 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -1065,7 +1065,6 @@ public class Chunk {
+     }
+ 
+     public void loadNearby(IChunkProvider ichunkprovider, IChunkProvider ichunkprovider1, int i, int j) {
+-        world.timings.syncChunkLoadPostTimer.startTiming(); // Spigot
+         boolean flag = ichunkprovider.isChunkLoaded(i, j - 1);
+         boolean flag1 = ichunkprovider.isChunkLoaded(i + 1, j);
+         boolean flag2 = ichunkprovider.isChunkLoaded(i, j + 1);
+@@ -1111,8 +1110,6 @@ public class Chunk {
+                 ichunkprovider.a(ichunkprovider1, chunk, i - 1, j - 1);
+             }
+         }
+-
+-        world.timings.syncChunkLoadPostTimer.stopTiming(); // Spigot
+     }
+ 
+     public BlockPosition h(BlockPosition blockposition) {
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index c4dab42bdf868f73f0c3875e8adfb852b2b02e18..2d1372cb844100382eacdce383e4d18d92821542 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -152,7 +152,6 @@ public class ChunkProviderServer implements IChunkProvider {
+         // CraftBukkit end
+ 
+         if (chunk == null) {
+-            world.timings.syncChunkLoadTimer.startTiming(); // Spigot
+             chunk = this.loadChunk(i, j);
+             if (chunk == null) {
+                 if (this.chunkProvider == null) {
+@@ -204,7 +203,6 @@ public class ChunkProviderServer implements IChunkProvider {
+             }
+             // CraftBukkit end
+             chunk.loadNearby(this, this, i, j);
+-            world.timings.syncChunkLoadTimer.stopTiming(); // Spigot
+         }
+ 
+         return chunk;
+@@ -242,9 +240,7 @@ public class ChunkProviderServer implements IChunkProvider {
+                 if (chunk != null) {
+                     chunk.setLastSaved(this.world.getTime());
+                     if (this.chunkProvider != null) {
+-                        world.timings.syncChunkLoadStructuresTimer.startTiming(); // Spigot
+                         this.chunkProvider.recreateStructures(chunk, i, j);
+-                        world.timings.syncChunkLoadStructuresTimer.stopTiming(); // Spigot
+                     }
+                 }
+ 
+diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
+index 6b244904d60ebbd2bf4a93a320c9b161e879451e..2a93fee0880834efd1689ff14dd64caa7b753544 100644
+--- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
+@@ -43,9 +43,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+ 
+     // CraftBukkit start - Add async variant, provide compatibility
+     public Chunk a(World world, int i, int j) throws IOException {
+-        world.timings.syncChunkLoadDataTimer.startTiming(); // Spigot
+         Object[] data = loadChunk(world, i, j);
+-        world.timings.syncChunkLoadDataTimer.stopTiming(); // Spigot
+         if (data != null) {
+             Chunk chunk = (Chunk) data[0];
+             NBTTagCompound nbttagcompound = (NBTTagCompound) data[1];
+@@ -395,7 +393,6 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+ 
+     public void loadEntities(Chunk chunk, NBTTagCompound nbttagcompound, World world) {
+         // CraftBukkit end
+-        world.timings.syncChunkLoadEntitiesTimer.startTiming(); // Spigot
+         NBTTagList nbttaglist1 = nbttagcompound.getList("Entities", 10);
+ 
+         if (nbttaglist1 != null) {
+@@ -421,8 +418,6 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+                 }
+             }
+         }
+-        world.timings.syncChunkLoadEntitiesTimer.stopTiming(); // Spigot
+-        world.timings.syncChunkLoadTileEntitiesTimer.startTiming(); // Spigot
+         NBTTagList nbttaglist2 = nbttagcompound.getList("TileEntities", 10);
+ 
+         if (nbttaglist2 != null) {
+@@ -435,8 +430,6 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+                 }
+             }
+         }
+-        world.timings.syncChunkLoadTileEntitiesTimer.stopTiming(); // Spigot
+-        world.timings.syncChunkLoadTileTicksTimer.startTiming(); // Spigot
+ 
+         if (nbttagcompound.hasKeyOfType("TileTicks", 9)) {
+             NBTTagList nbttaglist3 = nbttagcompound.getList("TileTicks", 10);
+@@ -456,7 +449,6 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+                 }
+             }
+         }
+-        world.timings.syncChunkLoadTileTicksTimer.stopTiming(); // Spigot
+ 
+         // return chunk; // CraftBukkit
+     }
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 00090861cb1e0cedf2a2255e3e7a50e892e97c00..e87be5e8dfe668bd70e0e85c814bf0986b241ad5 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -404,7 +404,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+     }
+ 
+     public void aO() {
+-        SpigotTimings.serverCommandTimer.startTiming(); // Spigot
+         while (!this.l.isEmpty()) {
+             ServerCommand servercommand = (ServerCommand) this.l.remove(0);
+ 
+@@ -418,8 +417,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             server.dispatchServerCommand(console, servercommand);
+             // CraftBukkit end
+         }
+-
+-        SpigotTimings.serverCommandTimer.stopTiming(); // Spigot
+     }
+ 
+     public boolean ae() {
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e8051c3f7 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -791,7 +791,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+ 
+     // Unicorn start - Modern tick loop
+     protected void A(java.util.function.BooleanSupplier shouldKeepTicking) throws ExceptionWorldConflict { // CraftBukkit - added throws
+-        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
+         long i = System.nanoTime();
+         isOversleep = true;
+         this.controlTerminate(() -> !this.canOversleep());
+@@ -821,7 +820,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+         }
+ 
+         if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
+-            SpigotTimings.worldSaveTimer.startTiming(); // Spigot
+             this.v.savePlayers();
+             // Spigot Start
+             // We replace this with saving each individual world as this.saveChunks(...) is broken,
+@@ -834,7 +832,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+             server.playerCommandState = false;
+             // this.saveChunks(true);
+             // Spigot End
+-            SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
+         }
+ 
+         // Unicorn start - Modern tick loop
+@@ -852,11 +849,9 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+         }
+ 
+         org.spigotmc.WatchdogThread.tick(); // Spigot
+-        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
+     }
+ 
+     public void B() {
+-        SpigotTimings.minecraftSchedulerTimer.startTiming(); // Spigot
+         Queue queue = this.j;
+ 
+         // Spigot start
+@@ -866,25 +861,16 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+             SystemUtils.a(entry, MinecraftServer.LOGGER);
+          }
+         // Spigot end
+-        SpigotTimings.minecraftSchedulerTimer.stopTiming(); // Spigot
+ 
+-        SpigotTimings.bukkitSchedulerTimer.startTiming(); // Spigot
+         // CraftBukkit start
+         this.server.getScheduler().mainThreadHeartbeat(this.ticks);
+-        SpigotTimings.bukkitSchedulerTimer.stopTiming(); // Spigot
+-
+         // Run tasks that are waiting on processing
+-        SpigotTimings.processQueueTimer.startTiming(); // Spigot
+         while (!processQueue.isEmpty()) {
+             processQueue.remove().run();
+         }
+-        SpigotTimings.processQueueTimer.stopTiming(); // Spigot
+ 
+-        SpigotTimings.chunkIOTickTimer.startTiming(); // Spigot
+         org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
+-        SpigotTimings.chunkIOTickTimer.stopTiming(); // Spigot`
+ 
+-        SpigotTimings.timeUpdateTimer.startTiming(); // Spigot
+         // Send time updates to everyone, it will get the right time from the world the player is in.
+         if (this.ticks % 20 == 0) {
+             for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
+@@ -892,7 +878,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+                 entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
+             }
+         }
+-        SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
+ 
+         int i;
+ 
+@@ -911,9 +896,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+                 CrashReport crashreport;
+ 
+                 try {
+-                    worldserver.timings.doTick.startTiming(); // Spigot
+                     worldserver.doTick();
+-                    worldserver.timings.doTick.stopTiming(); // Spigot
+                 } catch (Throwable throwable) {
+                     // Spigot Start
+                     try {
+@@ -927,9 +910,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+                 }
+ 
+                 try {
+-                    worldserver.timings.tickEntities.startTiming(); // Spigot
+                     worldserver.tickEntities();
+-                    worldserver.timings.tickEntities.stopTiming(); // Spigot
+                 } catch (Throwable throwable1) {
+                     // Spigot Start
+                     try {
+@@ -942,27 +923,19 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+                     throw new ReportedException(crashreport);
+                 }
+ 
+-                worldserver.timings.tracker.startTiming(); // Spigot
+                 worldserver.getTracker().updatePlayers();
+-                worldserver.timings.tracker.stopTiming(); // Spigot
+                 worldserver.explosionDensityCache.clear(); // PaperSpigot - Optimize explosions
+             // } // CraftBukkit
+ 
+             // this.i[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
+         }
+ 
+-        SpigotTimings.connectionTimer.startTiming(); // Spigot
+         this.aq().c();
+-        SpigotTimings.connectionTimer.stopTiming(); // Spigot
+-        SpigotTimings.playerListTimer.startTiming(); // Spigot
+         this.v.tick();
+-        SpigotTimings.playerListTimer.stopTiming(); // Spigot
+ 
+-        SpigotTimings.tickablesTimer.startTiming(); // Spigot
+         for (i = 0; i < this.p.size(); ++i) {
+             ((IUpdatePlayerListBox) this.p.get(i)).c();
+         }
+-        SpigotTimings.tickablesTimer.stopTiming(); // Spigot
+     }
+ 
+     public boolean getAllowNether() {
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index f185036d140d0bdbea63d2e905aabb30443f70bd..4635357cbeb19d1c39d54cdd5680f3a82de1350c 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1168,7 +1168,6 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     // CraftBukkit end
+ 
+    private void handleCommand(String s) {
+-        SpigotTimings.playerCommandTimer.startTiming(); // Spigot
+        // CraftBukkit start - whole method
+         if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
+         this.c.info(this.player.getName() + " issued server command: " + s);
+@@ -1179,22 +1178,18 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         this.server.getPluginManager().callEvent(event);
+ 
+         if (event.isCancelled()) {
+-            SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+             return;
+         }
+ 
+         try {
+             if (this.server.dispatchCommand(event.getPlayer(), event.getMessage().substring(1))) {
+-                SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+                 return;
+             }
+         } catch (org.bukkit.command.CommandException ex) {
+             player.sendMessage(org.bukkit.ChatColor.RED + "An internal error occurred while attempting to perform this command");
+             java.util.logging.Logger.getLogger(PlayerConnection.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+-            SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+             return;
+         }
+-        SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+         // this.minecraftServer.getCommandHandler().a(this.player, s);
+         // CraftBukkit end
+     }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d7c196691 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1392,7 +1392,6 @@ public abstract class World implements IBlockAccess {
+             }
+         }
+ 
+-        timings.entityRemoval.startTiming(); // Spigot
+         this.entityList.removeAll(this.g);
+ 
+         int j;
+@@ -1413,10 +1412,8 @@ public abstract class World implements IBlockAccess {
+         // Paper end
+ 
+         this.g.clear();
+-        timings.entityRemoval.stopTiming(); // Spigot
+ 
+         org.spigotmc.ActivationRange.activateEntities(this); // Spigot
+-        timings.entityTick.startTiming(); // Spigot
+         guardEntityList = true; // Spigot
+         // CraftBukkit start - Use field for loop variable
+         co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
+@@ -1439,12 +1436,9 @@ public abstract class World implements IBlockAccess {
+ 
+             if (!entity.dead) {
+                 try {
+-                    entity.tickTimer.startTiming(); // Spigot
+                     this.g(entity);
+-                    entity.tickTimer.stopTiming(); // Spigot
+                 } catch (Throwable throwable1) {
+                     // PaperSpigot start - Prevent tile entity and entity crashes
+-                    entity.tickTimer.stopTiming();
+                     String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
+                     System.err.println(msg);
+                     throwable1.printStackTrace();
+@@ -1470,8 +1464,6 @@ public abstract class World implements IBlockAccess {
+         }
+         guardEntityList = false; // Spigot
+ 
+-        timings.entityTick.stopTiming(); // Spigot
+-        timings.tileEntityTick.startTiming(); // Spigot
+         this.M = true;
+         // CraftBukkit start - From below, clean up tile entities before ticking them
+         if (!this.c.isEmpty()) {
+@@ -1500,11 +1492,9 @@ public abstract class World implements IBlockAccess {
+ 
+                 if (this.isLoaded(blockposition) && this.N.a(blockposition)) {
+                     try {
+-                        tileentity.tickTimer.startTiming(); // Spigot
+                         ((IUpdatePlayerListBox) tileentity).c();
+                     } catch (Throwable throwable2) {
+                         // PaperSpigot start - Prevent tile entity and entity crashes
+-                        tileentity.tickTimer.stopTiming();
+                         String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
+                         System.err.println(msg);
+                         throwable2.printStackTrace();
+@@ -1516,7 +1506,7 @@ public abstract class World implements IBlockAccess {
+                     }
+                     // Spigot start
+                     finally {
+-                        tileentity.tickTimer.stopTiming();
++
+                     }
+                     // Spigot end
+                 }
+@@ -1532,8 +1522,6 @@ public abstract class World implements IBlockAccess {
+             }
+         }
+ 
+-        timings.tileEntityTick.stopTiming(); // Spigot
+-        timings.tileEntityPending.startTiming(); // Spigot
+         this.M = false;
+         /* CraftBukkit start - Moved up
+         if (!this.c.isEmpty()) {
+@@ -1565,7 +1553,6 @@ public abstract class World implements IBlockAccess {
+             this.b.clear();
+         }
+ 
+-        timings.tileEntityPending.stopTiming(); // Spigot
+         co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityList.size(); // Spigot
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0d514f115 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -223,13 +223,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
+         long time = this.worldData.getTime();
+         if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
+-            timings.mobSpawn.startTiming(); // Spigot
+             this.R.a(this, this.allowMonsters && (this.ticksPerMonsterSpawns != 0 && time % this.ticksPerMonsterSpawns == 0L), this.allowAnimals && (this.ticksPerAnimalSpawns != 0 && time % this.ticksPerAnimalSpawns == 0L), this.worldData.getTime() % 400L == 0L);
+-            timings.mobSpawn.stopTiming(); // Spigot
+             // CraftBukkit end
+         }
+         // CraftBukkit end
+-        timings.doChunkUnload.startTiming(); // Spigot
+         this.chunkProvider.unloadChunks();
+         int j = this.a(1.0F);
+ 
+@@ -242,29 +239,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+             this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
+         }
+ 
+-        timings.doChunkUnload.stopTiming(); // Spigot
+-        timings.scheduledBlocks.startTiming(); // Spigot
+         this.a(false);
+-        timings.scheduledBlocks.stopTiming(); // Spigot
+-        timings.chunkTicks.startTiming(); // Spigot
+         this.h();
+-        timings.chunkTicks.stopTiming(); // Spigot
+         spigotConfig.antiXrayInstance.flushUpdates(this); // PaperSpigot
+-        timings.doChunkMap.startTiming(); // Spigot
+         this.manager.flush();
+-        timings.doChunkMap.stopTiming(); // Spigot
+-        timings.doVillages.startTiming(); // Spigot
+         this.villages.tick();
+         this.siegeManager.a();
+-        timings.doVillages.stopTiming(); // Spigot
+-        timings.doPortalForcer.startTiming(); // Spigot
+         this.Q.a(this.getTime());
+-        timings.doPortalForcer.stopTiming(); // Spigot
+-        timings.doSounds.startTiming(); // Spigot
+         this.ak();
+ 
+         this.getWorld().processChunkGC(); // CraftBukkit
+-        timings.doChunkGC.stopTiming(); // Spigot
+     }
+ 
+     public BiomeBase.BiomeMeta a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
+@@ -459,7 +443,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                     }
+                 }
+ 
+-                timings.chunkTicksBlocks.startTiming(); // Spigot
+                 i1 = this.getGameRules().c("randomTickSpeed");
+                 if (i1 > 0) {
+                     ChunkSection[] achunksection = chunk.getSections();
+@@ -488,7 +471,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                         }
+                     }
+                 }
+-                timings.chunkTicksBlocks.stopTiming(); // Spigot
+             }
+ 
+         }
+@@ -618,7 +600,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 }
+                 // PaperSpigot end
+ 
+-                timings.scheduledBlocksCleanup.startTiming(); // Spigot
+                 NextTickListEntry nextticklistentry;
+ 
+                 for (int j = 0; j < i; ++j) {
+@@ -631,7 +612,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                     this.M.remove(nextticklistentry);
+                     this.V.add(nextticklistentry);
+                 }
+-                timings.scheduledBlocksCleanup.stopTiming(); // Spigot
+ 
+                 // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
+                 if (paperSpigotConfig.tickNextTickListCapIgnoresRedstone) {
+@@ -650,7 +630,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 }
+                 // PaperSpigot end
+ 
+-                timings.scheduledBlocksTicking.startTiming(); // Spigot
+                 Iterator iterator = this.V.iterator();
+ 
+                 while (iterator.hasNext()) {
+@@ -661,7 +640,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                     if (this.areChunksLoadedBetween(nextticklistentry.a.a(-b0, -b0, -b0), nextticklistentry.a.a(b0, b0, b0))) {
+                         IBlockData iblockdata = this.getType(nextticklistentry.a);
+                         co.aikar.timings.Timing timing = iblockdata.getBlock().getTiming(); // Spigot
+-                        timing.startTiming(); // Spigot
+ 
+                         if (iblockdata.getBlock().getMaterial() != Material.AIR && Block.a(iblockdata.getBlock(), nextticklistentry.a())) {
+                             try {
+@@ -674,12 +652,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                                 throw new ReportedException(crashreport);
+                             }
+                         }
+-                        timing.stopTiming(); // Spigot
+                     } else {
+                         this.a(nextticklistentry.a, nextticklistentry.a(), 0);
+                     }
+                 }
+-                timings.scheduledBlocksTicking.stopTiming(); // Spigot
+ 
+                 this.V.clear();
+                 return !this.M.isEmpty();
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 7640070937b361aeda4d200710deddfbbbc4fb42..34427798737679318961ea25919170a5266ac994 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -281,11 +281,9 @@ public class CraftWorld implements World {
+         net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z));
+ 
+         if (chunk == null) {
+-            world.timings.syncChunkLoadTimer.startTiming(); // Spigot
+             chunk = world.chunkProviderServer.loadChunk(x, z);
+ 
+             chunkLoadPostProcess(chunk, x, z);
+-            world.timings.syncChunkLoadTimer.stopTiming(); // Spigot
+         }
+         return chunk != null;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOProvider.java b/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOProvider.java
+index 1178ad7f7b7eda10917a3f92b400c788543d0312..c31f17f71eb55987b7d31814249634338f260cc5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOProvider.java
++++ b/src/main/java/org/bukkit/craftbukkit/chunkio/ChunkIOProvider.java
+@@ -49,9 +49,7 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
+         chunk.addEntities();
+ 
+         if (queuedChunk.provider.chunkProvider != null) {
+-            queuedChunk.provider.world.timings.syncChunkLoadStructuresTimer.startTiming(); // Spigot
+             queuedChunk.provider.chunkProvider.recreateStructures(chunk, queuedChunk.x, queuedChunk.z);
+-            queuedChunk.provider.world.timings.syncChunkLoadStructuresTimer.stopTiming(); // Spigot
+         }
+ 
+         Server server = queuedChunk.provider.world.getServer();
+diff --git a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
+index 4b1e352361e8f92f34901b23ff4326f0ec5cbd14..a9ba6ca73bbc17426956b0b633e4dcdc1066161b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
++++ b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
+@@ -55,9 +55,7 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
+     }
+ 
+     public void run() {
+-        if (timings != null && isSync()) timings.startTiming(); // Spigot
+         task.run();
+-        if (timings != null && isSync()) timings.stopTiming(); // Spigot
+     }
+ 
+     long getPeriod() {
+diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
+index d3767d2a8963e72253fd05b4d177acd7415158bb..67d36b47f9348bb758fb5375bcad97cdc92b7ed4 100644
+--- a/src/main/java/org/spigotmc/ActivationRange.java
++++ b/src/main/java/org/spigotmc/ActivationRange.java
+@@ -101,7 +101,6 @@ public class ActivationRange
+      */
+     public static void activateEntities(World world)
+     {
+-        SpigotTimings.entityActivationCheckTimer.startTiming();
+         final int miscActivationRange = world.spigotConfig.miscActivationRange;
+         final int animalActivationRange = world.spigotConfig.animalActivationRange;
+         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
+@@ -135,7 +134,6 @@ public class ActivationRange
+                 }
+             }
+         }
+-        SpigotTimings.entityActivationCheckTimer.stopTiming();
+     }
+ 
+     /**
+@@ -250,10 +248,8 @@ public class ActivationRange
+      */
+     public static boolean checkIfActive(Entity entity)
+     {
+-        SpigotTimings.checkIfActiveTimer.startTiming();
+         // Never safe to skip fireworks or entities not yet added to chunk
+         if ( !entity.isAddedToChunk() || entity instanceof EntityFireworks || entity.loadChunks ) { // PaperSpigot
+-            SpigotTimings.checkIfActiveTimer.stopTiming();
+             return true;
+         }
+ 
+@@ -285,7 +281,6 @@ public class ActivationRange
+         {
+             isActive = false;
+         }
+-        SpigotTimings.checkIfActiveTimer.stopTiming();
+         return isActive;
+     }
+ }
+diff --git a/src/main/java/org/spigotmc/AntiXray.java b/src/main/java/org/spigotmc/AntiXray.java
+index c2ad90c820b92cea823f7b3d92787854d3c5ca71..4d800f13ae4d00e8f0d6f4ebb64477720455f8b1 100644
+--- a/src/main/java/org/spigotmc/AntiXray.java
++++ b/src/main/java/org/spigotmc/AntiXray.java
+@@ -84,9 +84,7 @@ public class AntiXray
+                 return;
+             }
+             // PaperSpigot end
+-            SpigotTimings.antiXrayUpdateTimer.startTiming();
+             updateNearbyBlocks( world, position, 2, false ); // 2 is the radius, we shouldn't change it as that would make it exponentially slower
+-            SpigotTimings.antiXrayUpdateTimer.stopTiming();
+         }
+     }
+ 
+@@ -98,9 +96,7 @@ public class AntiXray
+     {
+         if ( world.spigotConfig.antiXray )
+         {
+-            SpigotTimings.antiXrayObfuscateTimer.startTiming();
+             obfuscate( chunkX, chunkY, bitmask, buffer, world );
+-            SpigotTimings.antiXrayObfuscateTimer.stopTiming();
+         }
+     }
+ 
+diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
+index b9d185d99f6432e8636eb573a28f19eccf16258a..18254f5066f20c3c58ff4debe52c693117261876 100644
+--- a/src/main/java/org/spigotmc/SpigotConfig.java
++++ b/src/main/java/org/spigotmc/SpigotConfig.java
+@@ -28,8 +28,6 @@ import org.bukkit.command.Command;
+ import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.configuration.InvalidConfigurationException;
+ import org.bukkit.configuration.file.YamlConfiguration;
+-import co.aikar.timings.Timings;
+-import co.aikar.timings.TimingsManager;
+ 
+ public class SpigotConfig
+ {
+@@ -236,26 +234,6 @@ public class SpigotConfig
+         bungee = getBoolean( "settings.bungeecord", false );
+     }
+ 
+-    private static void timings()
+-    {
+-        boolean timings = getBoolean( "timings.enabled", true );
+-        boolean verboseTimings = getBoolean( "timings.verbose", true );
+-        TimingsManager.privacy = getBoolean( "timings.server-name-privacy", false );
+-        TimingsManager.hiddenConfigs = getList( "timings.hidden-config-entries", Lists.newArrayList("database", "settings.bungeecord-addresses"));
+-        int timingHistoryInterval = getInt( "timings.history-interval", 300 );
+-        int timingHistoryLength = getInt( "timings.history-length", 3600 );
+-
+-
+-        Timings.setVerboseTimingsEnabled( verboseTimings );
+-        Timings.setTimingsEnabled( timings );
+-        Timings.setHistoryInterval( timingHistoryInterval * 20 );
+-        Timings.setHistoryLength( timingHistoryLength * 20 );
+-
+-        Bukkit.getLogger().log( Level.INFO, "Spigot Timings: " + timings +
+-            " - Verbose: " + verboseTimings +
+-            " - Interval: " + timeSummary(Timings.getHistoryInterval() / 20) +
+-            " - Length: " +  timeSummary(Timings.getHistoryLength() / 20));
+-    }
+     protected static String timeSummary(int seconds) {
+         String time = "";
+         if (seconds > 60*60) {
