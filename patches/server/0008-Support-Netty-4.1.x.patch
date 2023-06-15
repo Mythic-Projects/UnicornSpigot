@@ -1,0 +1,167 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 15 Jun 2023 23:27:06 +0200
+Subject: [PATCH] Support Netty 4.1.x
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index bb2407b3f43d12f60067449c4fdca38d8a4905f3..ce34f378f9f336d1f2f47820927833cac7efb6e8 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -19,6 +19,12 @@ dependencies {
+     compileOnly("mysql:mysql-connector-java:5.1.14") // Loaded by CerberusLoader
+     // Native libraries end
+ 
++    // UnicornSpigot libraries start
++    val byteBuddyVersion = "1.12.12"
++    implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
++    implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
++    // UnicornSpigot libraries end
++
+     testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+ }
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index e87be5e8dfe668bd70e0e85c814bf0986b241ad5..84b7384e17130900d3e0ac64b09c60d956a4c1df 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -115,6 +115,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+         // CraftBukkit end
+ 
++        org.mythicprojects.unicornspigot.patcher.DynamicPatcher.patch(); // Unicorn
++
+         thread.setDaemon(true);
+         thread.start();
+         DedicatedServer.LOGGER.info("Starting minecraft server version 1.8.8");
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index e2eb305468ff76026dc9b24d59394cfc94501273..8927cc93ed70f344214f4dea0466bb93d5370d7b 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -221,7 +221,11 @@ public class PacketDataSerializer extends ByteBuf {
+         } else if (j < 0) {
+             throw new DecoderException("The received encoded string buffer length is less than zero! Weird string!");
+         } else {
+-            String s = new String(this.readBytes(j).array(), Charsets.UTF_8);
++            // Unicorn start - Switch from readBytes().array() to readBytes(byte[]) as we could be dealing with a DirectByteBuf
++            byte[] b = new byte[j];
++            this.readBytes(b);
++            String s = new String(b, Charsets.UTF_8);
++            // Unicorn end
+ 
+             if (s.length() > i) {
+                 throw new DecoderException("The received string length is longer than maximum allowed (" + j + " > " + i + ")");
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java b/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8d5580278b83b4a8447adfd4d64735eb3f43430b
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java
+@@ -0,0 +1,19 @@
++package org.mythicprojects.unicornspigot.patcher;
++
++import net.bytebuddy.agent.ByteBuddyAgent;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++public final class DynamicPatcher {
++
++    static final Logger LOGGER = LogManager.getLogger("[DynamicPatcher]");
++
++    private DynamicPatcher() {
++    }
++
++    public static void patch() {
++        ByteBuddyAgent.install();
++        PacketDataSerializerPatch.patchNetty();
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java b/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a5f84916da64c701cbf6832b428504d9f5aab2af
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java
+@@ -0,0 +1,83 @@
++package org.mythicprojects.unicornspigot.patcher;
++
++import io.netty.buffer.ByteBuf;
++import io.netty.util.Version;
++import net.bytebuddy.ByteBuddy;
++import net.bytebuddy.description.type.TypeDescription;
++import net.bytebuddy.dynamic.ClassFileLocator;
++import net.bytebuddy.dynamic.DynamicType;
++import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
++import net.bytebuddy.implementation.MethodDelegation;
++import net.bytebuddy.matcher.ElementMatchers;
++import net.bytebuddy.pool.TypePool;
++import org.bukkit.craftbukkit.Main;
++import java.lang.reflect.Method;
++import java.util.Arrays;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
++
++final class PacketDataSerializerPatch {
++
++    private PacketDataSerializerPatch() {
++    }
++
++    static void patchNetty() {
++        if (!requirePatching()) {
++            return;
++        }
++
++        Set<Method> methodsToImplement = new HashSet<>(Arrays.asList(ByteBuf.class.getDeclaredMethods()));
++        if (methodsToImplement.isEmpty()) {
++            return;
++        }
++        DynamicPatcher.LOGGER.info("Patching PacketDataSerializer (Detected Netty 4.1.X or newer)");
++
++        ClassLoader classLoader = Main.class.getClassLoader();
++        TypeDescription packetDataSerializer = TypePool.Default.of(classLoader)
++                .describe("net.minecraft.server.PacketDataSerializer")
++                .resolve();
++        DynamicType.Builder<Object> typeBuilder = new ByteBuddy()
++                .rebase(packetDataSerializer, ClassFileLocator.ForClassLoader.of(classLoader));
++
++        for (Method method : methodsToImplement) {
++            typeBuilder = typeBuilder
++                    .method(ElementMatchers.is(method))
++                    .intercept(MethodDelegation.toField("a"));
++        }
++
++        typeBuilder
++                .make()
++                .load(classLoader, ClassReloadingStrategy.fromInstalledAgent());
++    }
++
++    private static boolean requirePatching() {
++        Map<String, Version> versions = Version.identify(Main.class.getClassLoader());
++        Version version = versions.get("netty-common");
++        if (version == null) {
++            version = versions.get("netty-all");
++        }
++
++        if (version == null) {
++            return false;
++        }
++
++        Integer[] parts = Arrays.stream(version.artifactVersion().split("\\."))
++                .map(string -> {
++                    try {
++                        return Integer.parseInt(string);
++                    } catch (NumberFormatException e) {
++                        return -1;
++                    }
++                })
++                .toArray(Integer[]::new);
++
++        if (parts.length < 3) {
++            return false;
++        }
++
++        int major = parts[0];
++        int minor = parts[1];
++        return major > 4 || major == 4 && minor >= 1;
++    }
++}
