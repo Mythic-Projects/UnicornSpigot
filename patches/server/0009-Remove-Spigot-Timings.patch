@@ -104,10 +104,10 @@ index 6b244904d60ebbd2bf4a93a320c9b161e879451e..2a93fee0880834efd1689ff14dd64caa
          // return chunk; // CraftBukkit
      }
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 00090861cb1e0cedf2a2255e3e7a50e892e97c00..e87be5e8dfe668bd70e0e85c814bf0986b241ad5 100644
+index 4e8d0a71ed3836803e9cc43260b5f9ec76adcff5..84b7384e17130900d3e0ac64b09c60d956a4c1df 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -404,7 +404,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -406,7 +406,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
      }
  
      public void aO() {
@@ -115,7 +115,7 @@ index 00090861cb1e0cedf2a2255e3e7a50e892e97c00..e87be5e8dfe668bd70e0e85c814bf098
          while (!this.l.isEmpty()) {
              ServerCommand servercommand = (ServerCommand) this.l.remove(0);
  
-@@ -418,8 +417,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -420,8 +419,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
              server.dispatchServerCommand(console, servercommand);
              // CraftBukkit end
          }

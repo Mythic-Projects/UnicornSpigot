@@ -5,7 +5,7 @@ Subject: [PATCH] Backport modern tick loop
 
 
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..00090861cb1e0cedf2a2255e3e7a50e892e97c00 100644
+index ec2f80ea8ce4aaa0dedcc97806f46d349e401c56..4e8d0a71ed3836803e9cc43260b5f9ec76adcff5 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
 @@ -39,8 +39,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer

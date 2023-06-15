@@ -22,10 +22,10 @@ index bb2407b3f43d12f60067449c4fdca38d8a4905f3..ce34f378f9f336d1f2f47820927833ca
      testImplementation("org.hamcrest:hamcrest-library:1.3")
  }
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index e87be5e8dfe668bd70e0e85c814bf0986b241ad5..84b7384e17130900d3e0ac64b09c60d956a4c1df 100644
+index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..ec2f80ea8ce4aaa0dedcc97806f46d349e401c56 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -115,6 +115,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -113,6 +113,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
          // CraftBukkit end
  
