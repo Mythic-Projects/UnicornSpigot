@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Peridot <peridot491@protonmail.com>
 Date: Fri, 16 Jun 2023 00:43:52 +0200
-Subject: [PATCH] Delete UnicornSpigot-API/Server license files
+Subject: [PATCH] Delete license files
 
 
 diff --git a/LGPL.txt b/LGPL.txt
