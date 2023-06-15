@@ -78,10 +78,10 @@ index 0000000000000000000000000000000000000000..8d5580278b83b4a8447adfd4d64735eb
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java b/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a5f84916da64c701cbf6832b428504d9f5aab2af
+index 0000000000000000000000000000000000000000..1d1b116436890dd3c79718a6b0439394199c2492
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/patcher/PacketDataSerializerPatch.java
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,78 @@
 +package org.mythicprojects.unicornspigot.patcher;
 +
 +import io.netty.buffer.ByteBuf;
@@ -110,11 +110,6 @@ index 0000000000000000000000000000000000000000..a5f84916da64c701cbf6832b428504d9
 +        if (!requirePatching()) {
 +            return;
 +        }
-+
-+        Set<Method> methodsToImplement = new HashSet<>(Arrays.asList(ByteBuf.class.getDeclaredMethods()));
-+        if (methodsToImplement.isEmpty()) {
-+            return;
-+        }
 +        DynamicPatcher.LOGGER.info("Patching PacketDataSerializer (Detected Netty 4.1.X or newer)");
 +
 +        ClassLoader classLoader = Main.class.getClassLoader();
@@ -124,7 +119,7 @@ index 0000000000000000000000000000000000000000..a5f84916da64c701cbf6832b428504d9
 +        DynamicType.Builder<Object> typeBuilder = new ByteBuddy()
 +                .rebase(packetDataSerializer, ClassFileLocator.ForClassLoader.of(classLoader));
 +
-+        for (Method method : methodsToImplement) {
++        for (Method method : ByteBuf.class.getDeclaredMethods()) {
 +            typeBuilder = typeBuilder
 +                    .method(ElementMatchers.is(method))
 +                    .intercept(MethodDelegation.toField("a"));
