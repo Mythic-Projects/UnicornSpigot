@@ -6,3 +6,7 @@ Private repository of paid fork of [PaperSpigot 1.8.8](https://github.com/PaperM
 
 Provides lots of new features, enhancements, optimizations, bug and exploits fixes and lots more! 
 
+## Licensing
+This project is licensed under the [Affero General Public License v3.0](LICENSE).
+This license applies to all files in this repository unless otherwise noted.
+
