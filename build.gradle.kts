@@ -26,6 +26,7 @@ allprojects {
         maven(url = "https://libraries.minecraft.net")
         maven(url = "https://repo.titanvale.net/releases")
         maven(url = "https://repo.titanvale.net/snapshots")
+        maven(url = "https://storehouse.okaeri.eu/repository/maven-public")
     }
 }
 

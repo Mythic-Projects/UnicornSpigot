@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 17 Jun 2023 22:34:28 +0200
+Subject: [PATCH] Add Server.Spigot#getUnicornConfig and #getPaperConfig
+
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 1b62463a1e18d7e35524e06e791d321d6b3823c0..96c342407293440ba0bafddfa3177f0b25d168a5 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -973,6 +973,16 @@ public interface Server extends PluginMessageRecipient {
+             throw new UnsupportedOperationException("Not supported yet.");
+         }
+ 
++        // Unicorn start
++        public org.bukkit.configuration.file.YamlConfiguration getPaperConfig() {
++            return this.getPaperSpigotConfig();
++        }
++
++        public org.bukkit.configuration.file.YamlConfiguration getUnicornConfig() {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++        // Unicorn end
++
+         /**
+          * Sends the component to the player
+          *

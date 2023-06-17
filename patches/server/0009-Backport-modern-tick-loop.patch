@@ -5,10 +5,10 @@ Subject: [PATCH] Backport modern tick loop
 
 
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index ec2f80ea8ce4aaa0dedcc97806f46d349e401c56..4e8d0a71ed3836803e9cc43260b5f9ec76adcff5 100644
+index 70638118fd6b42edf4706e623bddc54b5a8ee499..f2b097e5548c804385dcb2fa3e463502ba0c46e2 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -39,8 +39,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -40,8 +40,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
      private boolean s;
  
      // CraftBukkit start - Signature changed
@@ -22,10 +22,10 @@ index ec2f80ea8ce4aaa0dedcc97806f46d349e401c56..4e8d0a71ed3836803e9cc43260b5f9ec
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c21013855b 100644
+index 55bcb251fb00964086f5fb832efcf2f7385b16ca..060235135854a61f1b0eead5cca765497f037b16 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
+@@ -49,7 +49,7 @@ import org.bukkit.craftbukkit.Main;
  import co.aikar.timings.SpigotTimings; // Spigot
  // CraftBukkit end
  
@@ -34,7 +34,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
  
      public static final Logger LOGGER = LogManager.getLogger();
      public static final File a = new File("usercache.json");
-@@ -117,7 +117,36 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -118,7 +118,36 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      public int autosavePeriod;
      // CraftBukkit end
  
@@ -72,7 +72,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
          io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
          this.e = proxy;
          MinecraftServer.l = this;
-@@ -154,7 +183,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -155,7 +184,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          }
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
  
@@ -81,7 +81,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
      }
  
      public abstract PropertyManager getPropertyManager();
-@@ -557,12 +586,21 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -558,12 +587,21 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          }
      }
      // PaperSpigot End
@@ -105,7 +105,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
  
                  this.r.setMOTD(new ChatComponentText(this.motd));
                  this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
-@@ -572,31 +610,22 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -573,31 +611,22 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
                  //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
@@ -149,7 +149,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
                      if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                      {
                          final long diff = curTime - tickSection;
-@@ -613,8 +642,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -614,8 +643,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      }
                      lastTick = curTime;
  
@@ -166,7 +166,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
                  }
                  // Spigot end
              } else {
-@@ -666,6 +701,63 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -667,6 +702,63 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
  
      }
  
@@ -230,7 +230,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
      private void a(ServerPing serverping) {
          File file = this.d("server-icon.png");
  
-@@ -698,9 +790,15 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -699,9 +791,15 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
  
      protected void z() {}
  
@@ -247,7 +247,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
  
          ++this.ticks;
          if (this.T) {
-@@ -744,6 +842,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -745,6 +843,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
          }
  
@@ -259,7 +259,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
          this.methodProfiler.a("tallying");
          this.h[this.ticks % 100] = System.nanoTime() - i;
          this.methodProfiler.b();
-@@ -981,6 +1084,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -982,6 +1085,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              });
              */
  
@@ -267,7 +267,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
              DedicatedServer dedicatedserver = new DedicatedServer(options);
  
              if (options.has("port")) {
-@@ -1000,6 +1104,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -1001,6 +1105,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
  
              dedicatedserver.primaryThread.start();
              // CraftBukkit end
@@ -275,7 +275,7 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
          } catch (Exception exception) {
              MinecraftServer.LOGGER.fatal("Failed to start the minecraft server", exception);
          }
-@@ -1483,7 +1588,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -1484,7 +1589,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
      public static long az() {
@@ -285,10 +285,10 @@ index b5836dbc03f4fa3ae9e522731aa1af47294df174..c46072fc152ddac3db15cee5134a96c2
  
      public int getIdleTimeout() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index c936219196ea403a9d247ad6c8c0ffee79411da2..887a7948d4cd4c77128e47a14708c256d4bfe80d 100644
+index abea57b01ebf3132ac8d6dd64d859244a2d9d741..5b7a77aa845e2ac00babd8258f7a32686a97cd5c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -198,7 +198,30 @@ public class Main {
+@@ -206,7 +206,30 @@ public class Main {
                  }
                  // Spigot End
                  System.out.println("Loading libraries, please wait...");

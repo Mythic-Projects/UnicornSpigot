@@ -5,7 +5,7 @@ Subject: [PATCH] Remove Spigot Timings
 
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 1dde1dc953d550ba58ef2d0c6c73cca43404a8c0..695ffe57846041088d7bca577e47b788389057f4 100644
+index dc746da3abe6806305ea66b9e6b309803f5d8dc5..e8f7e82ebb34850713ba3ca8486dc93350e33906 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -1065,7 +1065,6 @@ public class Chunk {
@@ -26,7 +26,7 @@ index 1dde1dc953d550ba58ef2d0c6c73cca43404a8c0..695ffe57846041088d7bca577e47b788
  
      public BlockPosition h(BlockPosition blockposition) {
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index c4dab42bdf868f73f0c3875e8adfb852b2b02e18..2d1372cb844100382eacdce383e4d18d92821542 100644
+index 868a567829826f09190627587fb514842c787dbf..1c8e6221b3a9cdd59fd10ab8f2649da3e507e24a 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -152,7 +152,6 @@ public class ChunkProviderServer implements IChunkProvider {
@@ -104,10 +104,10 @@ index 6b244904d60ebbd2bf4a93a320c9b161e879451e..2a93fee0880834efd1689ff14dd64caa
          // return chunk; // CraftBukkit
      }
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 4e8d0a71ed3836803e9cc43260b5f9ec76adcff5..84b7384e17130900d3e0ac64b09c60d956a4c1df 100644
+index f2b097e5548c804385dcb2fa3e463502ba0c46e2..81f65e6f10472c2e14e0e46aa723d092ca9eca99 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -406,7 +406,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -411,7 +411,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
      }
  
      public void aO() {
@@ -115,7 +115,7 @@ index 4e8d0a71ed3836803e9cc43260b5f9ec76adcff5..84b7384e17130900d3e0ac64b09c60d9
          while (!this.l.isEmpty()) {
              ServerCommand servercommand = (ServerCommand) this.l.remove(0);
  
-@@ -420,8 +419,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -425,8 +424,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
              server.dispatchServerCommand(console, servercommand);
              // CraftBukkit end
          }
@@ -125,10 +125,10 @@ index 4e8d0a71ed3836803e9cc43260b5f9ec76adcff5..84b7384e17130900d3e0ac64b09c60d9
  
      public boolean ae() {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e8051c3f7 100644
+index dd94c380fa9c44a6cc5579a295b067f5a116ba6d..e32169012774522607d1575b07d037035bcf32f0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -791,7 +791,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -792,7 +792,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
  
      // Unicorn start - Modern tick loop
      protected void A(java.util.function.BooleanSupplier shouldKeepTicking) throws ExceptionWorldConflict { // CraftBukkit - added throws
@@ -136,7 +136,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
          long i = System.nanoTime();
          isOversleep = true;
          this.controlTerminate(() -> !this.canOversleep());
-@@ -821,7 +820,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -822,7 +821,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
          }
  
          if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
@@ -144,7 +144,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
              this.v.savePlayers();
              // Spigot Start
              // We replace this with saving each individual world as this.saveChunks(...) is broken,
-@@ -834,7 +832,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -835,7 +833,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
              server.playerCommandState = false;
              // this.saveChunks(true);
              // Spigot End
@@ -152,7 +152,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
          }
  
          // Unicorn start - Modern tick loop
-@@ -852,11 +849,9 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -853,11 +850,9 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
          }
  
          org.spigotmc.WatchdogThread.tick(); // Spigot
@@ -164,7 +164,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
          Queue queue = this.j;
  
          // Spigot start
-@@ -866,25 +861,16 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -867,25 +862,16 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
              SystemUtils.a(entry, MinecraftServer.LOGGER);
           }
          // Spigot end
@@ -190,7 +190,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
          // Send time updates to everyone, it will get the right time from the world the player is in.
          if (this.ticks % 20 == 0) {
              for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
-@@ -892,7 +878,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -893,7 +879,6 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
                  entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
              }
          }
@@ -198,7 +198,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
  
          int i;
  
-@@ -911,9 +896,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -912,9 +897,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
                  CrashReport crashreport;
  
                  try {
@@ -208,7 +208,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
                  } catch (Throwable throwable) {
                      // Spigot Start
                      try {
-@@ -927,9 +910,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -928,9 +911,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
                  }
  
                  try {
@@ -218,7 +218,7 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
                  } catch (Throwable throwable1) {
                      // Spigot Start
                      try {
-@@ -942,27 +923,19 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+@@ -943,27 +924,19 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
                      throw new ReportedException(crashreport);
                  }
  
@@ -247,18 +247,18 @@ index cbf2efad43e8a9e0033e6ca336c19f85ce1d9fb5..bc4023947895786626f327cebfdeb49e
  
      public boolean getAllowNether() {
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index f185036d140d0bdbea63d2e905aabb30443f70bd..4635357cbeb19d1c39d54cdd5680f3a82de1350c 100644
+index 7a552d04cb5a3bba7ce89d6d80f0fe91d0dcb5f7..339430411f7efe022d0a1601599ba4ebaec377d9 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1168,7 +1168,6 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -1170,7 +1170,6 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
      // CraftBukkit end
  
     private void handleCommand(String s) {
 -        SpigotTimings.playerCommandTimer.startTiming(); // Spigot
         // CraftBukkit start - whole method
-         if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
+         if ( SpigotConfig.get().commands.log ) // Spigot
          this.c.info(this.player.getName() + " issued server command: " + s);
-@@ -1179,22 +1178,18 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -1181,22 +1180,18 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          this.server.getPluginManager().callEvent(event);
  
          if (event.isCancelled()) {
@@ -282,10 +282,10 @@ index f185036d140d0bdbea63d2e905aabb30443f70bd..4635357cbeb19d1c39d54cdd5680f3a8
          // CraftBukkit end
      }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d7c196691 100644
+index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992fae10302 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1392,7 +1392,6 @@ public abstract class World implements IBlockAccess {
+@@ -1409,7 +1409,6 @@ public abstract class World implements IBlockAccess {
              }
          }
  
@@ -293,7 +293,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
          this.entityList.removeAll(this.g);
  
          int j;
-@@ -1413,10 +1412,8 @@ public abstract class World implements IBlockAccess {
+@@ -1430,10 +1429,8 @@ public abstract class World implements IBlockAccess {
          // Paper end
  
          this.g.clear();
@@ -304,7 +304,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
          guardEntityList = true; // Spigot
          // CraftBukkit start - Use field for loop variable
          co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
-@@ -1439,12 +1436,9 @@ public abstract class World implements IBlockAccess {
+@@ -1456,12 +1453,9 @@ public abstract class World implements IBlockAccess {
  
              if (!entity.dead) {
                  try {
@@ -317,7 +317,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
                      String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
                      System.err.println(msg);
                      throwable1.printStackTrace();
-@@ -1470,8 +1464,6 @@ public abstract class World implements IBlockAccess {
+@@ -1487,8 +1481,6 @@ public abstract class World implements IBlockAccess {
          }
          guardEntityList = false; // Spigot
  
@@ -326,7 +326,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
          this.M = true;
          // CraftBukkit start - From below, clean up tile entities before ticking them
          if (!this.c.isEmpty()) {
-@@ -1500,11 +1492,9 @@ public abstract class World implements IBlockAccess {
+@@ -1517,11 +1509,9 @@ public abstract class World implements IBlockAccess {
  
                  if (this.isLoaded(blockposition) && this.N.a(blockposition)) {
                      try {
@@ -338,7 +338,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
                          String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
                          System.err.println(msg);
                          throwable2.printStackTrace();
-@@ -1516,7 +1506,7 @@ public abstract class World implements IBlockAccess {
+@@ -1533,7 +1523,7 @@ public abstract class World implements IBlockAccess {
                      }
                      // Spigot start
                      finally {
@@ -347,7 +347,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
                      }
                      // Spigot end
                  }
-@@ -1532,8 +1522,6 @@ public abstract class World implements IBlockAccess {
+@@ -1549,8 +1539,6 @@ public abstract class World implements IBlockAccess {
              }
          }
  
@@ -356,7 +356,7 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
          this.M = false;
          /* CraftBukkit start - Moved up
          if (!this.c.isEmpty()) {
-@@ -1565,7 +1553,6 @@ public abstract class World implements IBlockAccess {
+@@ -1582,7 +1570,6 @@ public abstract class World implements IBlockAccess {
              this.b.clear();
          }
  
@@ -365,10 +365,18 @@ index 748b50e02b0d4e574c99f5dd9853a01a38e53a54..ed934224345746803392349bcea7ea7d
      }
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0d514f115 100644
+index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bfa2a35122 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -223,13 +223,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -23,6 +23,7 @@ import java.util.logging.Level;
+ 
+ import org.bukkit.WeatherType;
+ import org.bukkit.block.BlockState;
++import org.bukkit.craftbukkit.util.LongHash;
+ import org.bukkit.craftbukkit.util.HashTreeSet;
+ 
+ import org.bukkit.event.block.BlockFormEvent;
+@@ -223,13 +224,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
          long time = this.worldData.getTime();
          if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
@@ -382,7 +390,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
          this.chunkProvider.unloadChunks();
          int j = this.a(1.0F);
  
-@@ -242,29 +239,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -242,29 +240,18 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
          }
  
@@ -392,9 +400,9 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
 -        timings.scheduledBlocks.stopTiming(); // Spigot
 -        timings.chunkTicks.startTiming(); // Spigot
          this.h();
--        timings.chunkTicks.stopTiming(); // Spigot
-         spigotConfig.antiXrayInstance.flushUpdates(this); // PaperSpigot
--        timings.doChunkMap.startTiming(); // Spigot
+         timings.chunkTicks.stopTiming(); // Spigot
+         this.antiXray.flushUpdates(this); // PaperSpigot
+         timings.doChunkMap.startTiming(); // Spigot
          this.manager.flush();
 -        timings.doChunkMap.stopTiming(); // Spigot
 -        timings.doVillages.startTiming(); // Spigot
@@ -412,7 +420,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
      }
  
      public BiomeBase.BiomeMeta a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
-@@ -459,7 +443,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -459,7 +446,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      }
                  }
  
@@ -420,7 +428,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
                  i1 = this.getGameRules().c("randomTickSpeed");
                  if (i1 > 0) {
                      ChunkSection[] achunksection = chunk.getSections();
-@@ -488,7 +471,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -488,7 +474,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                          }
                      }
                  }
@@ -428,7 +436,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
              }
  
          }
-@@ -618,7 +600,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -618,7 +603,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -436,15 +444,15 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
                  NextTickListEntry nextticklistentry;
  
                  for (int j = 0; j < i; ++j) {
-@@ -631,7 +612,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -631,7 +615,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      this.M.remove(nextticklistentry);
                      this.V.add(nextticklistentry);
                  }
 -                timings.scheduledBlocksCleanup.stopTiming(); // Spigot
  
                  // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
-                 if (paperSpigotConfig.tickNextTickListCapIgnoresRedstone) {
-@@ -650,7 +630,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 if (paperConfigUnicorn.tickNextTickListCapIgnoresRedstone) {
+@@ -650,7 +633,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -452,7 +460,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
                  Iterator iterator = this.V.iterator();
  
                  while (iterator.hasNext()) {
-@@ -661,7 +640,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -661,7 +643,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      if (this.areChunksLoadedBetween(nextticklistentry.a.a(-b0, -b0, -b0), nextticklistentry.a.a(b0, b0, b0))) {
                          IBlockData iblockdata = this.getType(nextticklistentry.a);
                          co.aikar.timings.Timing timing = iblockdata.getBlock().getTiming(); // Spigot
@@ -460,7 +468,7 @@ index 003686dc3f5a44ce2f97e115134388513a550c9b..c1254df4714891165658593c7ea4d3b0
  
                          if (iblockdata.getBlock().getMaterial() != Material.AIR && Block.a(iblockdata.getBlock(), nextticklistentry.a())) {
                              try {
-@@ -674,12 +652,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -674,12 +655,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                                  throw new ReportedException(crashreport);
                              }
                          }
@@ -518,7 +526,7 @@ index 4b1e352361e8f92f34901b23ff4326f0ec5cbd14..a9ba6ca73bbc17426956b0b633e4dcdc
  
      long getPeriod() {
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index d3767d2a8963e72253fd05b4d177acd7415158bb..67d36b47f9348bb758fb5375bcad97cdc92b7ed4 100644
+index 9551937b5dddb26ea1aa8c13733bea6417d73799..f109c7ce27341aa81cddc64d4ed1e41fcac3cef5 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -101,7 +101,6 @@ public class ActivationRange
@@ -526,9 +534,9 @@ index d3767d2a8963e72253fd05b4d177acd7415158bb..67d36b47f9348bb758fb5375bcad97cd
      public static void activateEntities(World world)
      {
 -        SpigotTimings.entityActivationCheckTimer.startTiming();
-         final int miscActivationRange = world.spigotConfig.miscActivationRange;
-         final int animalActivationRange = world.spigotConfig.animalActivationRange;
-         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
+         final int miscActivationRange = world.spigotConfigUnicorn.entityActivationRange.ambient;
+         final int animalActivationRange = world.spigotConfigUnicorn.entityActivationRange.animals;
+         final int monsterActivationRange = world.spigotConfigUnicorn.entityActivationRange.monsters;
 @@ -135,7 +134,6 @@ public class ActivationRange
                  }
              }
@@ -557,10 +565,10 @@ index d3767d2a8963e72253fd05b4d177acd7415158bb..67d36b47f9348bb758fb5375bcad97cd
      }
  }
 diff --git a/src/main/java/org/spigotmc/AntiXray.java b/src/main/java/org/spigotmc/AntiXray.java
-index c2ad90c820b92cea823f7b3d92787854d3c5ca71..4d800f13ae4d00e8f0d6f4ebb64477720455f8b1 100644
+index 5b15f0730293abfdbe6c82fddd8e1304c99c544a..443469912e738c278acefbc5908250182453b7a1 100644
 --- a/src/main/java/org/spigotmc/AntiXray.java
 +++ b/src/main/java/org/spigotmc/AntiXray.java
-@@ -84,9 +84,7 @@ public class AntiXray
+@@ -107,9 +107,7 @@ public class AntiXray
                  return;
              }
              // PaperSpigot end
@@ -570,9 +578,9 @@ index c2ad90c820b92cea823f7b3d92787854d3c5ca71..4d800f13ae4d00e8f0d6f4ebb6447772
          }
      }
  
-@@ -98,9 +96,7 @@ public class AntiXray
+@@ -121,9 +119,7 @@ public class AntiXray
      {
-         if ( world.spigotConfig.antiXray )
+         if ( world.spigotConfigUnicorn.antiXray.enabled )
          {
 -            SpigotTimings.antiXrayObfuscateTimer.startTiming();
              obfuscate( chunkX, chunkY, bitmask, buffer, world );
@@ -581,7 +589,7 @@ index c2ad90c820b92cea823f7b3d92787854d3c5ca71..4d800f13ae4d00e8f0d6f4ebb6447772
      }
  
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
-index b9d185d99f6432e8636eb573a28f19eccf16258a..18254f5066f20c3c58ff4debe52c693117261876 100644
+index 77b1a6382ef85c70957d9202ea7b105c9b277f5c..9c4cca4cb44bacf01b8c3fd461c7fb67fe37dd24 100644
 --- a/src/main/java/org/spigotmc/SpigotConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotConfig.java
 @@ -28,8 +28,6 @@ import org.bukkit.command.Command;
@@ -591,9 +599,9 @@ index b9d185d99f6432e8636eb573a28f19eccf16258a..18254f5066f20c3c58ff4debe52c6931
 -import co.aikar.timings.Timings;
 -import co.aikar.timings.TimingsManager;
  
+ @Deprecated // Unicorn
  public class SpigotConfig
- {
-@@ -236,26 +234,6 @@ public class SpigotConfig
+@@ -237,26 +235,6 @@ public class SpigotConfig
          bungee = getBoolean( "settings.bungeecord", false );
      }
  
