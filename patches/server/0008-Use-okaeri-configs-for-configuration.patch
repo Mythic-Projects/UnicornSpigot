@@ -3297,6 +3297,7 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +    }
 +
 +    @Comment("Send a warning to console when players are moving at excessive speeds.")
++    @CustomKey("warnWhenSettingExcessiveVelocity")
 +    public boolean warnWhenSettingExcessiveVelocity = true;
 +
 +    @Comment("List of items that are allowed to keep invalid data values.")
@@ -3842,10 +3843,10 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..35304f48e41ed6368c9216e67784a2cfd166b7b5
+index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e88088db29bc
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
-@@ -0,0 +1,230 @@
+@@ -0,0 +1,231 @@
 +package org.mythicprojects.unicornspigot.config;
 +
 +import com.google.common.collect.ImmutableSet;
@@ -3865,6 +3866,7 @@ index 0000000000000000000000000000000000000000..35304f48e41ed6368c9216e67784a2cf
 +
 +    public static class AntiXray extends UnicornConfigSection {
 +
++        @Exclude
 +        private org.spigotmc.AntiXray instance;
 +
 +        @Comment("Whether to enable the anti-xray module.")
