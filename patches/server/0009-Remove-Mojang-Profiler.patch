@@ -5,7 +5,7 @@ Subject: [PATCH] Remove Mojang Profiler
 
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 33f8bfd39f885f69f7260b44a0f3b9dd854e7e69..dc746da3abe6806305ea66b9e6b309803f5d8dc5 100644
+index 3b484ca5cebfff540e87bb25128d0d71d6c71ac3..988e6510f7a121be24b0ee0d559161a2e1d3c6ff 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -277,7 +277,6 @@ public class Chunk {

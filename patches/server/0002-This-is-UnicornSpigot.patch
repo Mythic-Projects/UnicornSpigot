@@ -4,6 +4,19 @@ Date: Wed, 14 Jun 2023 21:44:49 +0200
 Subject: [PATCH] This is UnicornSpigot
 
 
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 024caf5368ada328f9262152fcca413921d17275..30770a893f156454c87a0fa04893b2e4fba5714e 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -1,7 +1,7 @@
+ val minecraftVersion = "1_8_R3"
+ 
+ dependencies {
+-    implementation(project(":paperspigot-api"))
++    implementation(project(":unicornspigot-api"))
+ 
+     // Minecraft libraries:
+     implementation("com.mojang:authlib:1.5.21")
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
 index 864b3bc1375cb72588b63855eee8fa4ff569a5d3..b5836dbc03f4fa3ae9e522731aa1af47294df174 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java

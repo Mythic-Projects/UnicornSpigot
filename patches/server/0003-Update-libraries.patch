@@ -1,19 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Peridot <peridot491@protonmail.com>
-Date: Wed, 14 Jun 2023 23:09:02 +0200
+Date: Mon, 19 Jun 2023 02:15:27 +0200
 Subject: [PATCH] Update libraries
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 2ae153cf0e3025672fbcc843f843549e8fbadafc..bb2407b3f43d12f60067449c4fdca38d8a4905f3 100644
+index 30770a893f156454c87a0fa04893b2e4fba5714e..bb2407b3f43d12f60067449c4fdca38d8a4905f3 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -3,25 +3,23 @@ val minecraftVersion = "1_8_R3"
+@@ -3,24 +3,23 @@ val minecraftVersion = "1_8_R3"
  dependencies {
      implementation(project(":unicornspigot-api"))
  
 -    // Minecraft libraries:
--    implementation("com.mojang:netty:1.7.7")
 -    implementation("com.mojang:authlib:1.5.21")
 -    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
 -    implementation("org.apache.logging.log4j:log4j-core:2.17.0")

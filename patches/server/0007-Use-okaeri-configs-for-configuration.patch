@@ -339,7 +339,7 @@ index 3d1e583f3097029fa24241aa441f1b6b94f79fdb..2d690f9dcc06bd1a9be01732fa066b68
                  // PaperSpigot end
  
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index ab0d41cadabe4c010751994515925525df66dace..33f8bfd39f885f69f7260b44a0f3b9dd854e7e69 100644
+index 3da0854a171182cdd42b9ac9968b9ca2b6d28e46..3b484ca5cebfff540e87bb25128d0d71d6c71ac3 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -63,7 +63,7 @@ public class Chunk {
@@ -715,7 +715,7 @@ index eac0363c2e8c2a75481000077725f09f2c492e3e..e146aff133c3d840affdb52887d8368b
                  }
              } else {
 diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
-index 0e6f8c03501dd6ce5bda003ae54729763201ebd3..2ae3383dcff48a752b1a09f106fb95b16fe7c515 100644
+index 2d40ba90fd50eaf34e0b4709414e8f05bb984f97..954cf60ed5bf9114499150f88566a7f2771eb6a6 100644
 --- a/src/main/java/net/minecraft/server/EntityBoat.java
 +++ b/src/main/java/net/minecraft/server/EntityBoat.java
 @@ -486,7 +486,7 @@ public class EntityBoat extends Entity {
@@ -778,7 +778,7 @@ index 319c0bc6f621d54ca36e6e2b210a308122f1e070..15b1ba66de9957a836f51571fdebecfe
          }
          // PaperSpigot end
 diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
-index 36c384eb9c2280e618eac770ce67ad0abfd7dc88..c773de84518a7774c2011f982bb77bb0aa60e825 100644
+index 174087abf83e0bb3c28f215ad7438a3bd88f025d..003f71f060622ccaa4a7dcdf2833f27a3ddd574a 100644
 --- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
 +++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
 @@ -26,7 +26,7 @@ public class EntityFallingBlock extends Entity {
@@ -821,7 +821,7 @@ index 36c384eb9c2280e618eac770ce67ad0abfd7dc88..c773de84518a7774c2011f982bb77bb0
              // PaperSpigot start - Drop falling blocks above the specified height
 -            if (this.world.paperSpigotConfig.fallingBlockHeightNerf != 0 && this.locY > this.world.paperSpigotConfig.fallingBlockHeightNerf) {
 +            if (this.world.paperConfigUnicorn.fallingBlockHeightNerf != 0 && this.locY > this.world.paperConfigUnicorn.fallingBlockHeightNerf) {
-                 if (this.dropItem) {
+                 if (this.dropItem && this.world.getGameRules().getBoolean("doEntityDrops")) {
                      this.a(new ItemStack(block, 1, block.getDropData(this.block)), 0.0F);
                  }
 @@ -118,7 +118,7 @@ public class EntityFallingBlock extends Entity {
@@ -1200,7 +1200,7 @@ index 872d9659c20a8f6931e35f41c58f56efeacd9c03..3ab7efff8e01c1bda89a2662eb902429
          // Preserve velocity while calling the super method
          double oldMotX = this.motX;
 diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
-index fb19bad3c01b03991f9dbaff6041acbccda3c8b3..31361d6617b656986ff10357028997ccd4c17cf9 100644
+index 6f7a68814ae7532a8934d9ba928dbed87be55850..358cd95ddc43c07c30ad5e3fb7bc4a799025beb6 100644
 --- a/src/main/java/net/minecraft/server/EntityWither.java
 +++ b/src/main/java/net/minecraft/server/EntityWither.java
 @@ -5,6 +5,7 @@ import com.google.common.base.Predicates;
@@ -4019,7 +4019,7 @@ index 0000000000000000000000000000000000000000..751fd5863bbfaa6d718e4cfa832139f7
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d3d5ac33e78bce76bc2320316beacd2956d90571
+index 0000000000000000000000000000000000000000..df94dde4bdb4fcacf37b68a88bc3399301719f89
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 @@ -0,0 +1,322 @@

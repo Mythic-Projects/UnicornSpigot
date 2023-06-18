@@ -5,7 +5,7 @@ Subject: [PATCH] Remove Spigot Timings
 
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index dc746da3abe6806305ea66b9e6b309803f5d8dc5..e8f7e82ebb34850713ba3ca8486dc93350e33906 100644
+index 988e6510f7a121be24b0ee0d559161a2e1d3c6ff..dc9f2b3ef53d1d194bf4e60fa90df7bccba73538 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -1065,7 +1065,6 @@ public class Chunk {

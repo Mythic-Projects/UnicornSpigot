@@ -5,7 +5,7 @@ Subject: [PATCH] Update libraries
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index cfdc1361618bade1831f11015f6b5d22f7af32c5..a10a4d1093c5624c0a73967531e0017e701d9fdc 100644
+index 832ebb1cbd4f1300c13060875e6f623ea5f42589..a10a4d1093c5624c0a73967531e0017e701d9fdc 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -4,19 +4,24 @@ java {
@@ -39,12 +39,3 @@ index cfdc1361618bade1831f11015f6b5d22f7af32c5..a10a4d1093c5624c0a73967531e0017e
      testImplementation("org.hamcrest:hamcrest-library:1.3")
      testImplementation("net.sf.trove4j:trove4j:3.0.3") // required by tests
  }
-@@ -33,7 +38,7 @@ tasks {
- 
-     jar {
-         from(generateApiVersioningFile.map { it.outputs.files.singleFile }) {
--            into("META-INF/maven/${project.group}/${project.name.toLowerCase()}")
-+            into("META-INF/maven/${project.group}/${project.name.lowercase()}")
-         }
- 
-         manifest {
