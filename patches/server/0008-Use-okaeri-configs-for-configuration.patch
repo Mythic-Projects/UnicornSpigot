@@ -1995,7 +1995,7 @@ index 0f82e06cba1c245846b665ee00ab9a6e388884d3..84849186b6bb3cf7bdc5a61b9e807169
  
          try {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049639912a9 100644
+index 8f3511f800818c36b9387b92376e0b9785ec52b5..12ec5d2d4100eb2ab162022e074dd4012490b4d4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -4,18 +4,19 @@ import com.google.common.base.Predicate;
@@ -2034,25 +2034,23 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
      public final co.aikar.timings.WorldTimingsHandler timings; // Spigot
  
      public CraftWorld getWorld() {
-@@ -178,8 +186,15 @@ public abstract class World implements IBlockAccess {
-     }
- 
+@@ -180,6 +188,15 @@ public abstract class World implements IBlockAccess {
      protected World(IDataManager idatamanager, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
--        this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
--        this.paperSpigotConfig = new org.github.paperspigot.PaperSpigotWorldConfig( worlddata.getName() ); // PaperSpigot
-+        // Unicorn start
-+        this.spigotConfig = null; //new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
-+        this.paperSpigotConfig = null; //new org.github.paperspigot.PaperSpigotWorldConfig( worlddata.getName() ); // PaperSpigot
+         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
+         this.paperSpigotConfig = new org.github.paperspigot.PaperSpigotWorldConfig( worlddata.getName() ); // PaperSpigot
++        // Unicorn start - modern config system
++        this.worldData = worlddata;
 +        CraftServer server = this.getServer();
 +        this.unicornConfig = server.unicornConfig.getWorldConfig( worlddata.getName() );
 +        this.spigotConfigUnicorn = server.spigotConfig.getWorldConfig( worlddata.getName() );
 +        this.paperConfigUnicorn = server.paperConfig.getWorldConfig( worlddata.getName() );
 +        this.antiXray = this.spigotConfigUnicorn.getAntiXray();
++        server.unicornSpigot.remapConfigs(this);
 +        // Unicorn end
          this.generator = gen;
          this.world = new CraftWorld((WorldServer) this, gen, env);
          this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
-@@ -187,7 +202,7 @@ public abstract class World implements IBlockAccess {
+@@ -187,7 +204,7 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit end
          // Spigot start
          this.chunkTickRadius = (byte) ( ( this.getServer().getViewDistance() < 7 ) ? this.getServer().getViewDistance() : 7 );
@@ -2061,7 +2059,16 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
          this.chunkTickList.setAutoCompactionFactor( 0 );
          // Spigot end
  
-@@ -230,10 +245,10 @@ public abstract class World implements IBlockAccess {
+@@ -197,7 +214,7 @@ public abstract class World implements IBlockAccess {
+         this.H = new int['\u8000'];
+         this.dataManager = idatamanager;
+         this.methodProfiler = methodprofiler;
+-        this.worldData = worlddata;
++        //this.worldData = worlddata; // Unicorn - moved up
+         this.worldProvider = worldprovider;
+         this.isClientSide = flag;
+         this.N = worldprovider.getWorldBorder();
+@@ -230,10 +247,10 @@ public abstract class World implements IBlockAccess {
          }); 
          this.getServer().addWorld(this.world); 
          // CraftBukkit end
@@ -2075,7 +2082,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
      }
  
      public World b() {
-@@ -534,7 +549,7 @@ public abstract class World implements IBlockAccess {
+@@ -534,7 +551,7 @@ public abstract class World implements IBlockAccess {
          this.d(blockposition.up(), block);
          this.d(blockposition.north(), block);
          this.d(blockposition.south(), block);
@@ -2084,7 +2091,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
      }
  
      public void a(BlockPosition blockposition, Block block, EnumDirection enumdirection) {
-@@ -1026,7 +1041,7 @@ public abstract class World implements IBlockAccess {
+@@ -1026,7 +1043,7 @@ public abstract class World implements IBlockAccess {
          // Spigot start
          else if (entity instanceof EntityExperienceOrb) {
              EntityExperienceOrb xp = (EntityExperienceOrb) entity;
@@ -2093,7 +2100,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
              if (radius > 0) {
                  List<Entity> entities = this.getEntities(entity, entity.getBoundingBox().grow(radius, radius, radius));
                  for (Entity e : entities) {
-@@ -1214,7 +1229,7 @@ public abstract class World implements IBlockAccess {
+@@ -1214,7 +1231,7 @@ public abstract class World implements IBlockAccess {
                              {
                                  // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
                                  Block b = block.getBlock();
@@ -2102,7 +2109,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
                                      AxisAlignedBB aabb = AxisAlignedBB.a(x, y, z, x + 1.0, y + 1.0, z + 1.0);
                                      if (axisalignedbb.b(aabb)) arraylist.add(aabb);
                                  } else {
-@@ -1627,9 +1642,9 @@ public abstract class World implements IBlockAccess {
+@@ -1627,9 +1644,9 @@ public abstract class World implements IBlockAccess {
              entity.ticksLived++;
              entity.inactiveTick();
              // PaperSpigot start - Remove entities in unloaded chunks
@@ -2115,7 +2122,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
                  entity.inUnloadedChunk = true;
                  entity.die();
              }
-@@ -2202,7 +2217,7 @@ public abstract class World implements IBlockAccess {
+@@ -2202,7 +2219,7 @@ public abstract class World implements IBlockAccess {
          int l;
  
          // Spigot start
@@ -2124,7 +2131,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
          // Quick conditions to allow us to exist early
          if ( optimalChunks > 0  ) {
          // Keep chunks with growth inside of the optimal chunk range
-@@ -2245,7 +2260,7 @@ public abstract class World implements IBlockAccess {
+@@ -2245,7 +2262,7 @@ public abstract class World implements IBlockAccess {
          }
  
          this.methodProfiler.a("playerCheckLight");
@@ -2133,7 +2140,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
              i = this.random.nextInt(this.players.size());
              entityhuman = (EntityHuman) this.players.get(i);
              j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
-@@ -2261,7 +2276,7 @@ public abstract class World implements IBlockAccess {
+@@ -2261,7 +2278,7 @@ public abstract class World implements IBlockAccess {
  
      protected void a(int i, int j, Chunk chunk) {
          this.methodProfiler.c("moodSound");
@@ -2142,7 +2149,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
              this.m = this.m * 3 + 1013904223;
              int k = this.m >> 2;
              int l = k & 15;
-@@ -2533,7 +2548,7 @@ public abstract class World implements IBlockAccess {
+@@ -2533,7 +2550,7 @@ public abstract class World implements IBlockAccess {
              }
  
              // PaperSpigot start - Asynchronous light updates
@@ -2151,7 +2158,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
                  chunk.pendingLightUpdates.decrementAndGet();
                  if (neighbors != null) {
                      for (Chunk neighbor : neighbors) {
-@@ -2558,7 +2573,7 @@ public abstract class World implements IBlockAccess {
+@@ -2558,7 +2575,7 @@ public abstract class World implements IBlockAccess {
              return false;
          }
  
@@ -2160,6 +2167,19 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..5488a7f5d8df8170c13106b965133049
              return this.c(enumskyblock, position, chunk, null);
          }
  
+@@ -3028,6 +3045,12 @@ public abstract class World implements IBlockAccess {
+         return this.worldData;
+     }
+ 
++    // Unicorn start
++    public String getWorldName() {
++        return this.worldData.getName();
++    }
++    // Unicorn end
++
+     public GameRules getGameRules() {
+         return this.worldData.x();
+     }
 diff --git a/src/main/java/net/minecraft/server/WorldGenLargeFeature.java b/src/main/java/net/minecraft/server/WorldGenLargeFeature.java
 index 171be82cc4c039d0c45ffd3fde87cd4d2329dbb8..73152f1b85c44ad5479547f05846d888c3a3ed1b 100644
 --- a/src/main/java/net/minecraft/server/WorldGenLargeFeature.java
@@ -2285,7 +2305,7 @@ index 87529552aa27fc89a542130a27a6b2bfdda44ccd..ec225dc6437c9695eae1238842289163
                      while (iterator.hasNext()) {
                          NextTickListEntry next = iterator.next();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd4d888282 100644
+index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..b682fe74e7b9e8dcdee8551bf71095bc9dc1182a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -102,6 +102,11 @@ import org.bukkit.plugin.messaging.StandardMessenger;
@@ -2536,7 +2556,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
          for (WorldServer world : console.worlds) {
              world.worldData.setDifficulty(difficulty);
              world.setSpawnFlags(monsters, animals);
-@@ -728,14 +766,16 @@ public final class CraftServer implements Server {
+@@ -728,15 +766,19 @@ public final class CraftServer implements Server {
              } else {
                  world.ticksPerMonsterSpawns = this.getTicksPerMonsterSpawns();
              }
@@ -2552,11 +2572,15 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
          commandMap.clearCommands();
          resetRecipes();
 -        org.spigotmc.SpigotConfig.registerCommands(); // Spigot
-+        //org.spigotmc.SpigotConfig.registerCommands(); // Spigot // Unicorn
-         org.github.paperspigot.PaperSpigotConfig.registerCommands(); // PaperSpigot
+-        org.github.paperspigot.PaperSpigotConfig.registerCommands(); // PaperSpigot
++        // Unicorn start
++        //org.spigotmc.SpigotConfig.registerCommands(); // Spigot
++        //org.github.paperspigot.PaperSpigotConfig.registerCommands(); // PaperSpigot
++        // Unicorn end
  
          overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
-@@ -783,7 +823,7 @@ public final class CraftServer implements Server {
+ 
+@@ -783,7 +825,7 @@ public final class CraftServer implements Server {
  
      @SuppressWarnings({ "unchecked", "finally" })
      private void loadCustomPermissions() {
@@ -2565,7 +2589,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
          FileInputStream stream;
  
          try {
-@@ -1093,12 +1133,16 @@ public final class CraftServer implements Server {
+@@ -1093,12 +1135,16 @@ public final class CraftServer implements Server {
      public void configureDbConfig(ServerConfig config) {
          Validate.notNull(config, "Config cannot be null");
  
@@ -2587,7 +2611,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
  
          if (ds.getDriver().contains("sqlite")) {
              config.setDatabasePlatform(new SQLitePlatform());
-@@ -1190,17 +1234,20 @@ public final class CraftServer implements Server {
+@@ -1190,17 +1236,20 @@ public final class CraftServer implements Server {
      }
  
      public void removeBukkitSpawnRadius() {
@@ -2612,7 +2636,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
      }
  
      @Override
-@@ -1210,8 +1257,11 @@ public final class CraftServer implements Server {
+@@ -1210,8 +1259,11 @@ public final class CraftServer implements Server {
  
      @Override
      public void setSpawnRadius(int value) {
@@ -2626,7 +2650,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
      }
  
      @Override
-@@ -1231,18 +1281,25 @@ public final class CraftServer implements Server {
+@@ -1231,18 +1283,25 @@ public final class CraftServer implements Server {
  
      @Override
      public boolean useExactLoginLocation() {
@@ -2656,7 +2680,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
  
                  if ((name != null) && (!name.equals(""))) {
                      String[] split = name.split(":", 2);
-@@ -1264,8 +1321,9 @@ public final class CraftServer implements Server {
+@@ -1264,8 +1323,9 @@ public final class CraftServer implements Server {
                          }
                      }
                  }
@@ -2668,7 +2692,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
  
          return result;
      }
-@@ -1338,7 +1396,7 @@ public final class CraftServer implements Server {
+@@ -1338,7 +1398,7 @@ public final class CraftServer implements Server {
              // Spigot Start
              GameProfile profile = null;
              // Only fetch an online UUID in online mode
@@ -2677,7 +2701,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
              {
                  profile = MinecraftServer.getServer().getUserCache().getProfile( name );
              }
-@@ -1496,7 +1554,7 @@ public final class CraftServer implements Server {
+@@ -1496,7 +1556,7 @@ public final class CraftServer implements Server {
          }
  
          if (container == null) {
@@ -2686,7 +2710,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
          }
  
          return container;
-@@ -1646,7 +1704,7 @@ public final class CraftServer implements Server {
+@@ -1646,7 +1706,7 @@ public final class CraftServer implements Server {
       */
      public List<String> tabCompleteCommand(Player player, String message, BlockPosition blockPosition) {
          // Spigot Start
@@ -2695,7 +2719,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
          {
              return ImmutableList.of();
          }
-@@ -1656,7 +1714,7 @@ public final class CraftServer implements Server {
+@@ -1656,7 +1716,7 @@ public final class CraftServer implements Server {
          try {
              // send location info if present
              // completions = getCommandMap().tabComplete(player, message.substring(1));
@@ -2704,7 +2728,7 @@ index c3d9e8a9a75739a26e3d4478900cb09835fcb0b9..cb5152dd4528309fd6c37e960ff2f4bd
                  completions = getCommandMap().tabComplete(player, message.substring(1));
              } else {
                  completions = getCommandMap().tabComplete(player, message.substring(1), new Location(player.getWorld(), blockPosition.getX(), blockPosition.getY(), blockPosition.getZ()));
-@@ -1797,14 +1855,21 @@ public final class CraftServer implements Server {
+@@ -1797,14 +1857,21 @@ public final class CraftServer implements Server {
          @Override
          public YamlConfiguration getSpigotConfig()
          {
@@ -2810,7 +2834,7 @@ index 8168f69c4499fcb761e0856fbe20175ccebe9778..27c395e9a3109734ed033666f3fda76a
 +}
 \ No newline at end of file
 diff --git a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
-index 67e56df017b98222e64fc46e97a2b104e6f0d69f..c602ff4a35d2da9e349b517646974d403ec8d70f 100644
+index 67e56df017b98222e64fc46e97a2b104e6f0d69f..172468f5756b116a1ba35f6f92edcb9eed44a15b 100644
 --- a/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
 +++ b/src/main/java/org/github/paperspigot/PaperSpigotWorldConfig.java
 @@ -4,6 +4,7 @@ import java.util.List;
@@ -2821,34 +2845,36 @@ index 67e56df017b98222e64fc46e97a2b104e6f0d69f..c602ff4a35d2da9e349b517646974d40
  public class PaperSpigotWorldConfig
  {
  
+@@ -15,7 +16,7 @@ public class PaperSpigotWorldConfig
+     {
+         this.worldName = worldName;
+         this.config = PaperSpigotConfig.config;
+-        init();
++        //init(); // Unicorn
+     }
+ 
+     public void init()
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..da3454e68f77c6ae426b1ca6eef6d36bce859a28
+index 0000000000000000000000000000000000000000..5bace430488a53f545713566bc5d661b8f03b4f2
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
-@@ -0,0 +1,156 @@
+@@ -0,0 +1,142 @@
 +package org.mythicprojects.unicornspigot;
 +
-+import eu.okaeri.configs.ConfigManager;
-+import eu.okaeri.configs.OkaeriConfig;
-+import eu.okaeri.configs.serdes.commons.SerdesCommons;
-+import eu.okaeri.configs.validator.okaeri.OkaeriValidator;
-+import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
-+import java.io.File;
 +import java.util.HashMap;
 +import java.util.Map;
 +import java.util.Objects;
-+import java.util.function.Consumer;
 +import net.minecraft.server.MinecraftServer;
-+import org.bukkit.Bukkit;
++import net.minecraft.server.World;
 +import org.bukkit.command.Command;
 +import org.bukkit.configuration.file.YamlConfiguration;
 +import org.jetbrains.annotations.NotNull;
 +import org.mythicprojects.unicornspigot.config.BukkitConfig;
++import org.mythicprojects.unicornspigot.config.ConfigurationFactory;
 +import org.mythicprojects.unicornspigot.config.PaperConfig;
 +import org.mythicprojects.unicornspigot.config.SpigotConfig;
 +import org.mythicprojects.unicornspigot.config.UnicornConfig;
-+import org.mythicprojects.unicornspigot.config.serdes.DecolorTransformer;
 +import org.mythicprojects.unicornspigot.config.serdes.WarningStateTransformer;
 +import org.mythicprojects.unicornspigot.util.Pair;
 +import org.spigotmc.RestartCommand;
@@ -2880,44 +2906,18 @@ index 0000000000000000000000000000000000000000..da3454e68f77c6ae426b1ca6eef6d36b
 +
 +    public void init() {
 +        // Configs
-+        this.unicornConfig = this.createServerConfig(UnicornConfig.class, this.unicornConfiguration,"unicorn-settings", it -> {
++        ConfigurationFactory configurationFactory = new ConfigurationFactory(this.server);
++        this.unicornConfig = configurationFactory.createServerConfig(UnicornConfig.class, this.unicornConfiguration, "unicorn-settings", it -> {
 +            it.withSerdesPack(registry -> registry.register(new WarningStateTransformer()));
 +        });
-+        this.bukkitConfig = this.createServerConfig(BukkitConfig.class, this.bukkitConfiguration, "bukkit-settings");
-+        this.spigotConfig = this.createServerConfig(SpigotConfig.class, this.spigotConfiguration, "spigot-settings");
-+        this.paperConfig = this.createServerConfig(PaperConfig.class, this.paperConfiguration, "paper-settings");
++        this.bukkitConfig = configurationFactory.createServerConfig(BukkitConfig.class, this.bukkitConfiguration, "bukkit-settings");
++        this.spigotConfig = configurationFactory.createServerConfig(SpigotConfig.class, this.spigotConfiguration, "spigot-settings");
++        this.paperConfig = configurationFactory.createServerConfig(PaperConfig.class, this.paperConfiguration, "paper-settings");
++        this.remapConfigs();
 +
 +        // Commands
 +        this.registerCommand("restart", "Spigot", new RestartCommand("restart"));
 +        this.registerCommand("tps", "Spigot", new TicksPerSecondCommand("tps"));
-+    }
-+
-+    private <T extends OkaeriConfig> @NotNull T createServerConfig(
-+            @NotNull Class<T> configClass,
-+            @NotNull YamlConfiguration configuration,
-+            @NotNull String fileNameOption,
-+            @NotNull Consumer<T> create
-+    ) {
-+        return ConfigManager.create(configClass, it -> {
-+            it.withConfigurer(new OkaeriValidator(new YamlBukkitConfigurer(configuration), true), new SerdesCommons());
-+            it.withSerdesPack(registry -> {
-+                registry.register(new DecolorTransformer());
-+            });
-+            it.withBindFile((File) this.server.options.valueOf(fileNameOption));
-+            it.withLogger(Bukkit.getLogger());
-+            it.saveDefaults();
-+            it.load(true);
-+            create.accept((T) it);
-+        });
-+    }
-+
-+    private <T extends OkaeriConfig> @NotNull T createServerConfig(
-+            @NotNull Class<T> configClass,
-+            @NotNull YamlConfiguration configuration,
-+            @NotNull String fileNameOption
-+    ) {
-+        return this.createServerConfig(configClass, configuration, fileNameOption, it -> {
-+        });
 +    }
 +
 +    public @NotNull YamlConfiguration getUnicornConfiguration() {
@@ -2954,14 +2954,33 @@ index 0000000000000000000000000000000000000000..da3454e68f77c6ae426b1ca6eef6d36b
 +
 +    public void reloadConfigs() {
 +        this.isReload = true;
++
 +        this.unicornConfig.load();
 +        this.bukkitConfig.load();
 +        this.spigotConfig.load();
 +        this.paperConfig.load();
++
 +        this.server.worlds.forEach(server -> {
 +            server.antiXray = this.spigotConfig.getWorldConfig(server.getWorld().getName()).getAntiXray();
 +        });
++
++        this.remapConfigs();
++
 +        this.isReload = false;
++    }
++
++    public void remapConfigs() {
++        this.unicornConfig.remap();
++        this.spigotConfig.remap();
++        this.paperConfig.remap();
++        this.server.worlds.forEach(this::remapConfigs);
++    }
++
++    public void remapConfigs(@NotNull World world) {
++        String worldName = world.getWorldName();
++        this.unicornConfig.getWorldConfig(worldName).remap(world.unicornConfig);
++        this.spigotConfig.getWorldConfig(worldName).remap(world.spigotConfig);
++        this.paperConfig.getWorldConfig(worldName).remap(world.paperSpigotConfig);
 +    }
 +
 +    public void registerCommand(@NotNull String name, @NotNull String fallbackPrefix, @NotNull Command command) {
@@ -3124,17 +3143,75 @@ index 0000000000000000000000000000000000000000..93a98a1f8b2529bc15e03b955345326a
 +    }
 +
 +}
-diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/ConfigurationFactory.java b/src/main/java/org/mythicprojects/unicornspigot/config/ConfigurationFactory.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f5ed97d1f34eab4559ce10610961401a50abc479
+index 0000000000000000000000000000000000000000..745568b60eafd509ccaba585618982348c360977
 --- /dev/null
-+++ b/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java
-@@ -0,0 +1,38 @@
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/ConfigurationFactory.java
+@@ -0,0 +1,52 @@
 +package org.mythicprojects.unicornspigot.config;
 +
-+import eu.okaeri.configs.annotation.Comment;
++import eu.okaeri.configs.ConfigManager;
++import eu.okaeri.configs.OkaeriConfig;
++import eu.okaeri.configs.serdes.commons.SerdesCommons;
++import eu.okaeri.configs.validator.okaeri.OkaeriValidator;
++import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer;
++import java.io.File;
++import java.util.function.Consumer;
++import net.minecraft.server.MinecraftServer;
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.file.YamlConfiguration;
++import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.config.serdes.DecolorTransformer;
++
++public class ConfigurationFactory {
++
++    private final MinecraftServer server;
++
++    public ConfigurationFactory(@NotNull MinecraftServer server) {
++        this.server = server;
++    }
++
++    public  <T extends OkaeriConfig> @NotNull T createServerConfig(
++            @NotNull Class<T> configClass,
++            @NotNull YamlConfiguration configuration,
++            @NotNull String fileOptions,
++            @NotNull Consumer<T> create
++    ) {
++        return ConfigManager.create(configClass, it -> {
++            it.withConfigurer(new OkaeriValidator(new YamlBukkitConfigurer(configuration), true), new SerdesCommons());
++            it.withSerdesPack(registry -> {
++                registry.register(new DecolorTransformer());
++            });
++            it.withBindFile((File) this.server.options.valueOf(fileOptions));
++            it.withLogger(Bukkit.getLogger());
++            it.saveDefaults();
++            it.load(true);
++            create.accept((T) it);
++        });
++    }
++
++    public  <T extends OkaeriConfig> @NotNull T createServerConfig(
++            @NotNull Class<T> configClass,
++            @NotNull YamlConfiguration configuration,
++            @NotNull String fileOptions
++    ) {
++        return this.createServerConfig(configClass, configuration, fileOptions, it -> {
++        });
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..27e49e2d526c372e56a8abf4327065acc958e58b
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/EngineConfig.java
+@@ -0,0 +1,43 @@
++package org.mythicprojects.unicornspigot.config;
++
 +import java.util.Map;
 +import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.config.legacy.LegacyRemapper;
 +
 +public abstract class EngineConfig<W extends EngineConfig.WorldConfig> extends UnicornConfigSection {
 +
@@ -3156,13 +3233,18 @@ index 0000000000000000000000000000000000000000..f5ed97d1f34eab4559ce10610961401a
 +        this.getWorldConfig("default");
 +    }
 +
++    public void remap() {
++        LegacyRemapper.map(this, null);
++    }
++
 +    public static abstract class WorldConfig extends UnicornConfigSection {
 +
-+        @Comment("Whether to log the per-world settings in console.")
-+        public static boolean verbose = true;
++        public void remap(@NotNull Object target) {
++            LegacyRemapper.map(this, target);
++        }
 +
 +        protected static void log(String log) {
-+            UnicornConfig.log(verbose, log);
++            UnicornConfig.log(log);
 +        }
 +
 +    }
@@ -3170,10 +3252,10 @@ index 0000000000000000000000000000000000000000..f5ed97d1f34eab4559ce10610961401a
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f07c448605
+index 0000000000000000000000000000000000000000..221890b9f99d2b5c846dc9ce633239edddc7a06d
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
-@@ -0,0 +1,153 @@
+@@ -0,0 +1,146 @@
 +package org.mythicprojects.unicornspigot.config;
 +
 +import eu.okaeri.configs.OkaeriConfig;
@@ -3190,15 +3272,18 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +import java.util.HashSet;
 +import java.util.Map;
 +import java.util.Set;
-+import java.util.logging.Level;
 +import net.minecraft.server.Items;
 +import org.bukkit.Material;
++import org.github.paperspigot.PaperSpigotConfig;
 +import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.config.legacy.Remap;
++import org.mythicprojects.unicornspigot.config.legacy.RemapTarget;
 +
 +@Header("This is the main configuration file for PaperSpigot.")
 +@Header("As you can see, there's tons to configure. Some options may impact gameplay, so use")
 +@Header("with caution, and make sure you know what each option does before configuring.")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++@RemapTarget(target = PaperSpigotConfig.class)
 +public class PaperConfig extends EngineConfig<PaperWorldConfig> {
 +
 +    // For tests to work properly
@@ -3212,39 +3297,17 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +    public static class Settings extends UnicornConfigSection {
 +
 +        @Comment("Whether interaction packets should be limited from clients.")
++        @Remap("interactLimitEnabled")
 +        public boolean limitPlayerInteractions = true;
 +
 +        @Comment("Speed at which baby zombies can move.")
++        @Remap("babyZombieMovementSpeed")
 +        public double babyZombieMovementSpeed = 0.5;
-+
-+        @Comment("Whether to save player data to disk.")
-+        public boolean savePlayerData = true;
-+
-+        @Comment("Number of ticks between player data saves to disk.")
-+        public int playerAutoSaveRate = -1;
-+
-+        @Comment("Maximum number of player data to save per tick.")
-+        @CustomKey("max-players-auto-save-per-tick")
-+        public int maxPlayersAutoSavePerTick_ = 10;
-+        @Exclude
-+        public int maxPlayersAutoSavePerTick = 10;
 +
 +        @Override
 +        public void loadProperties() {
 +            if (!this.limitPlayerInteractions) {
 +                UnicornConfig.log("Disabling player interaction limiter, your server may be more vulnerable to malicious users");
-+            }
-+
-+            if (!this.savePlayerData) {
-+                UnicornConfig.log(Level.WARNING, "Player Data Saving is currently disabled. Any changes to your players data, " +
-+                        "such as inventories, experience points, advancements and the like will not be saved when they log out.");
-+            }
-+
-+            if (maxPlayersAutoSavePerTick_ == -1) { // -1 Automatic / "Recommended"
-+                // 10 should be safe for everyone unless your mass spamming player auto save
-+                this.maxPlayersAutoSavePerTick = (playerAutoSaveRate == -1 || playerAutoSaveRate > 100) ? 10 : 20;
-+            } else {
-+                this.maxPlayersAutoSavePerTick = maxPlayersAutoSavePerTick_;
 +            }
 +        }
 +
@@ -3255,7 +3318,10 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +
 +    public static class EffectModifiers extends UnicornConfigSection {
 +
++        @Remap("strengthEffectModifier")
 +        public double strength = 1.3;
++
++        @Remap("weaknessEffectModifier")
 +        public double weakness = -0.3;
 +
 +    }
@@ -3265,8 +3331,13 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +
 +    public static class StackableBuckets extends UnicornConfigSection {
 +
++        @Remap("stackableLavaBuckets")
 +        public boolean lava = false;
++
++        @Remap("stackableWaterBuckets")
 +        public boolean water = false;
++
++        @Remap("stackableMilkBuckets")
 +        public boolean milk = false;
 +
 +        @Override
@@ -3297,10 +3368,12 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +    }
 +
 +    @Comment("Send a warning to console when players are moving at excessive speeds.")
++    @Remap("warnForExcessiveVelocity")
 +    @CustomKey("warnWhenSettingExcessiveVelocity")
 +    public boolean warnWhenSettingExcessiveVelocity = true;
 +
 +    @Comment("List of items that are allowed to keep invalid data values.")
++    @Remap("dataValueAllowedItems")
 +    public Set<Integer> dataValueAllowedItems = new HashSet<>();
 +
 +    @Comment("Per world settings.")
@@ -3328,12 +3401,13 @@ index 0000000000000000000000000000000000000000..29e33158953a5610cca95853a15963f0
 +    }
 +
 +}
++
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c4377342e
+index 0000000000000000000000000000000000000000..c68c8e67650183c025913199d121c1431e6d3b29
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
-@@ -0,0 +1,262 @@
+@@ -0,0 +1,326 @@
 +package org.mythicprojects.unicornspigot.config;
 +
 +import eu.okaeri.configs.annotation.Comment;
@@ -3342,36 +3416,43 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +import eu.okaeri.configs.annotation.NameModifier;
 +import eu.okaeri.configs.annotation.NameStrategy;
 +import eu.okaeri.configs.annotation.Names;
-+import net.minecraft.server.MinecraftServer;
++import org.mythicprojects.unicornspigot.config.legacy.Remap;
++import org.mythicprojects.unicornspigot.config.legacy.RemapTarget;
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++@RemapTarget(target = org.github.paperspigot.PaperSpigotWorldConfig.class)
 +public class PaperWorldConfig extends EngineConfig.WorldConfig {
 +
-+    @Comment("Number of ticks before attempting to spread grass.")
-+    public int grassSpreadTickRate = 1;
-+
 +    @Comment("Whether to revert tnt cannon logic to 1.7.")
++    @Remap("fixCannons")
 +    public boolean fixCannons = false;
 +
 +    @Comment("Percent of damage to receive while blocking.")
++    @Remap("playerBlockingDamageMultiplier")
 +    public float playerBlockingDamageMultiplier = 0.5F;
 +
 +    @Comment("Whether to delete invalid mob spawner items.")
++    @Remap("removeInvalidMobSpawnerTEs")
 +    public boolean removeInvalidMobSpawnerTileEntities = true;
 +
 +    @Comment("Whether to remove dead entities in the explosion radius.")
++    @Remap("optimizeExplosions")
 +    public boolean optimizeExplosions = false;
 +
 +    @Comment("Number of ticks to check for mob spawner locations.")
++    @Remap("mobSpawnerTickRate")
 +    public int mobSpawnerTickRate = 1;
 +
 +    @Comment("Whether to cache chunks when sending packets.")
++    @Remap("cacheChunkMaps")
 +    public boolean cacheChunkMaps = false;
 +
 +    @Comment("Magic number for how loud tnt explosions should be.")
++    @Remap("tntExplosionVolume")
 +    public float tntExplosionVolume = 4.0F;
 +
 +    @Comment("Whether to disable the suffocation check before every teleportation event.")
++    @Remap("disableTeleportationSuffocationCheck")
 +    public boolean disableTeleportationSuffocationCheck = false;
 +
 +    @Comment("Y-level at which squids will spawn.")
@@ -3379,7 +3460,10 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class SquidSpawnHeight extends UnicornConfigSection {
 +
++        @Remap("squidMinSpawnHeight")
 +        public double minimum = 45.0;
++
++        @Remap("squidMaxSpawnHeight")
 +        public double maximum = 63.0;
 +
 +    }
@@ -3389,7 +3473,10 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class MaxGrowthHeight extends UnicornConfigSection {
 +
++        @Remap("cactusMaxHeight")
 +        public int cactus = 3;
++
++        @Remap("reedMaxHeight")
 +        public int reeds = 3;
 +
 +    }
@@ -3399,9 +3486,10 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class FishingTimeRange extends UnicornConfigSection {
 +
-+        @CustomKey("MinimumTicks")
++        @CustomKey("fishingMinTicks")
 +        public int minimumTicks = 100;
-+        @CustomKey("MaximumTicks")
++
++        @CustomKey("fishingMaxTicks")
 +        public int maximumTicks = 900;
 +
 +    }
@@ -3411,7 +3499,10 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class PlayerExhaustion extends UnicornConfigSection {
 +
++        @Remap("blockBreakExhaustion")
 +        public float blockBreak = 0.025F;
++
++        @Remap("playerSwimmingExhaustion")
 +        public float swimming = 0.015F;
 +
 +    }
@@ -3421,14 +3512,18 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +    public static class DespawnRanges extends UnicornConfigSection {
 +
 +        @Comment("Distance in blocks that mobs are randomly queued for removal.")
++        @Remap("softDespawnDistance")
 +        @CustomKey("soft")
 +        public int soft_ = 32;
++
 +        @Exclude
 +        public int soft = 0;
 +
 +        @Comment("Distance in blocks that mobs are immediately removed.")
++        @Remap("hardDespawnDistance")
 +        @CustomKey("hard")
 +        public int hard_ = 128;
++
 +        @Exclude
 +        public int hard = 0;
 +
@@ -3445,6 +3540,7 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +    }
 +
 +    @Comment("Y-level at which falling blocks will despawn.")
++    @Remap("fallingBlockHeightNerf")
 +    public int fallingBlockHeightNerf = 0;
 +
 +    @Comment("Whether to remove certain entities when entering unloaded chunks.")
@@ -3452,8 +3548,13 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class RemoveUnloaded extends UnicornConfigSection {
 +
++        @Remap("removeUnloadedEnderPearls")
 +        public boolean enderpearls = true;
++
++        @Remap("removeUnloadedTNTEntities")
 +        public boolean tntEntities = true;
++
++        @Remap("removeUnloadedFallingBlocks")
 +        public boolean fallingBlocks = true;
 +
 +    }
@@ -3463,8 +3564,13 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class LoadChunks extends UnicornConfigSection {
 +
++        @Remap("loadUnloadedEnderPearls")
 +        public boolean enderpearls = false;
++
++        @Remap("loadUnloadedTNTEntities")
 +        public boolean tntEntities = false;
++
++        @Remap("loadUnloadedFallingBlocks")
 +        public boolean fallingBlocks = false;
 +
 +    }
@@ -3474,20 +3580,25 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +    public static class GameMechanics extends UnicornConfigSection {
 +
 +        @Comment("Whether boats should always drop boat items.")
++        @Remap("boatsDropBoats")
 +        public boolean boatsDropBoats = false;
 +
 +        @Comment("Whether to disable critical hits in PvP.")
++        @Remap("disablePlayerCrits")
 +        public boolean disablePlayerCrits = false;
 +
 +        @Comment("Whether to allow chests to open with cats on top of them.")
++        @Remap("disableChestCatDetection")
 +        public boolean disableChestCatDetections = false;
 +
 +        @Comment("Whether to never send end credits.")
++        @Remap("disableEndCredits")
 +        public boolean disableEndCredits = false;
 +
 +    }
 +
 +    @Comment("Whether to apply void damage to entities on top of a nether portal.")
++    @Remap("netherVoidTopDamage")
 +    public boolean netherCeilingVoidDamage = false;
 +
 +    @Comment("Whether liquids should drain faster than normal.")
@@ -3495,7 +3606,10 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class FastDrain extends UnicornConfigSection {
 +
++        @Remap("fastDrainLava")
 +        public boolean lava = false;
++
++        @Remap("fastDrainWater")
 +        public boolean water = false;
 +
 +    }
@@ -3505,105 +3619,130 @@ index 0000000000000000000000000000000000000000..28eba4da971133372aa777ee314a131c
 +
 +    public static class LavaFlowSpeed extends UnicornConfigSection {
 +
++        @Remap("lavaFlowSpeedNormal")
 +        public int normal = 30;
++
++        @Remap("lavaFlowSpeedNether")
 +        public int nether = 10;
 +
 +    }
 +
 +    @Comment("Whether entities should not receive knockback from explosions.")
++    @Remap("disableExplosionKnockback")
 +    public boolean disableExplosionKnockback = false;
 +
 +    @Comment("Whether undead horses are allowed to be leashed.")
++    @Remap("allowUndeadHorseLeashing")
 +    public boolean allowUndeadHorseLeashing = false;
 +
 +    @Comment("Speed in ticks at which water flows over lava.")
++    @Remap("waterOverLavaFlowSpeed")
 +    public int waterOverLavaFlowSpeed = 5;
 +
 +    @Comment("Y-level at which primed tnt will despawn.")
++    @Remap("tntEntityHeightNerf")
 +    public int tntEntityHeightNerf = 0;
 +
 +    @Comment("Whether to recognize the hopper-check configuration options.")
++    @Remap("useHopperCheck")
 +    public boolean useHopperCheck = false;
 +
 +    @Comment("Whether all chunks are allowed to spawn slimes.")
++    @Remap("allChunksAreSlimeChunks")
 +    public boolean allChunksAreSlimeChunks = false;
 +
 +    @Comment("Number of ticks to update inventory containers.")
++    @Remap("containerUpdateTickRate")
 +    public int containerUpdateTickRate = 1;
 +
 +    @Comment("Whether to keep spawn chunks loaded at all times.")
++    @Remap("keepSpawnInMemory")
 +    public boolean keepSpawnLoaded = true;
 +
 +    @Comment("Whether falling blocks should not break when colliding with signs.")
++    @Remap("fallingBlocksCollideWithSigns")
 +    public boolean fallingBlocksCollideWithSigns = false;
 +
 +    @Comment("Whether to not send cave and ambient sounds.")
++    @Remap("disableMoodSounds")
 +    public boolean disableMoodSounds = false;
 +
 +    @Comment("Whether to use asynchronous lighting for better performance.")
++    @Remap("useAsyncLighting")
 +    public boolean useAsyncLightning = false;
 +
 +    @Comment("Maximum number of blocks to search for a nether portal before generating a new one.")
++    @Remap("portalSearchRadius")
 +    public int portalSearchRadius = 128;
 +
 +    @Comment("Whether to disable thunder events.")
++    @Remap("disableThunder")
 +    public boolean disableThunder = false;
 +
 +    @Comment("Whether to disable ice and snow formation.")
++    @Remap("disableIceAndSnow")
 +    public boolean disableIceAndSnow = false;
 +
 +    @Comment("Maximum number of objects that follow the tick loop.")
 +    @Comment("Use with extreme caution.")
++    @Remap("tickNextTickCap")
 +    public int tickNextTickListCap = 10000;
 +
 +    @Comment("Whether or not to always tick redstone even if the number of ticking objects is above the limit.")
++    @Remap("tickNextTickListCapIgnoresRedstone")
 +    public boolean tickNextTickListCapIgnoresRedstone = false;
-+
-+    @Comment("Number of ticks before saving the world.")
-+    @CustomKey("auto-save-interval")
-+    public int autoSaveInterval_ = -1;
-+    @Exclude
-+    public int autoSaveInterval = -1;
 +
 +    @Comment("Whether to enable certain features during world generation.")
 +    public GeneratorSettings generatorSettings = new GeneratorSettings();
 +
 +    public static class GeneratorSettings extends UnicornConfigSection {
 +
++        @Remap("generateCanyon")
 +        public boolean canyon = true;
++
++        @Remap("generateCaves")
 +        public boolean caves = true;
++
++        @Remap("generateDungeon")
 +        public boolean dungeon = true;
++
++        @Remap("generateFortress")
 +        public boolean fortress = true;
++
++        @Remap("generateMineshaft")
 +        public boolean mineshaft = true;
++
++        @Remap("generateMonument")
 +        public boolean monument = true;
++
++        @Remap("generateStronghold")
 +        public boolean stronghold = true;
++
++        @Remap("generateTemple")
 +        public boolean temple = true;
++
++        @Remap("generateVillage")
 +        public boolean village = true;
++
++        @Remap("generateFlatBedrock")
 +        public boolean flatBedrock = false;
 +
 +    }
 +
 +    @Comment("Whether block locations are allowed to be tab completed.")
++    @Remap("allowBlockLocationTabCompletion")
 +    public boolean allowBlockLocationTabCompletion = true;
-+
-+    @Override
-+    public void loadProperties() {
-+        if (autoSaveInterval_ > 0) {
-+            autoSaveInterval = autoSaveInterval_;
-+        } else if (autoSaveInterval < 0) {
-+            autoSaveInterval = MinecraftServer.getServer().autosavePeriod;
-+        }
-+    }
 +
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060c520a67b
+index 0000000000000000000000000000000000000000..751fd5863bbfaa6d718e4cfa832139f79cff8baf
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,277 @@
 +package org.mythicprojects.unicornspigot.config;
 +
++import com.google.common.collect.ImmutableList;
 +import com.google.common.collect.ImmutableSet;
 +import eu.okaeri.configs.OkaeriConfig;
 +import eu.okaeri.configs.annotation.Comment;
@@ -3615,6 +3754,7 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +import eu.okaeri.configs.annotation.Names;
 +import eu.okaeri.configs.exception.OkaeriException;
 +import java.util.HashMap;
++import java.util.List;
 +import java.util.Map;
 +import java.util.Set;
 +import java.util.logging.Level;
@@ -3624,6 +3764,8 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +import org.apache.logging.log4j.core.LoggerContext;
 +import org.apache.logging.log4j.core.config.Configuration;
 +import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.config.legacy.Remap;
++import org.mythicprojects.unicornspigot.config.legacy.RemapTarget;
 +import org.spigotmc.WatchdogThread;
 +
 +@Header("This is the main configuration file for Spigot.")
@@ -3634,6 +3776,7 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +@Header("")
 +@Header("Forum: https://www.spigotmc.org/")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++@RemapTarget(target = org.spigotmc.SpigotConfig.class)
 +public class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
 +
 +    // For tests to work properly
@@ -3647,49 +3790,60 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +    public static class Settings extends UnicornConfigSection {
 +
 +        @Comment("Whether to run in debugger mode.")
++        @Remap("debug")
 +        public boolean debug = false;
 +
 +        @Comment("Whether to write the user cache to disk only before shutdown.")
++        @Remap("saveUserCacheOnStopOnly")
 +        public boolean saveUserCacheOnStopOnly = false;
 +
 +        @Comment("Number of seconds to abort and print a thread dump when the server is unresponsive.")
++        @Remap("timeoutTime")
 +        public int timeoutTime = 60;
 +
 +        @Comment("Whether to run the restart-script on server-crash.")
++        @Remap("restartOnCrash")
 +        public boolean restartOnCrash = false;
 +
 +        @Comment("Path to a restart script to turn the server back on.")
++        @Remap("restartScript")
 +        public String restartScript = "./start.sh";
 +
 +        @Comment("Whether to bind to the network only after all plugins are loaded.")
++        @Remap("lateBind")
 +        public boolean lateBind = false;
 +
 +        @Comment("Whether the server is running behind a bungee cord proxy")
++        @Remap("bungee")
 +        public boolean bungeecord = false;
 +
 +        @Comment("Maximum number of players to publish in ping messages.")
++        @Remap("playerSample")
 +        public int sampleCount = 12;
 +
 +        @Comment("Number of ticks before shuffling the tick-order of players to prevent relog gaming to be first to get items.")
++        @Remap("playerShuffle")
 +        public int playerShuffle = 0;
 +
 +        @Comment("Whether to blacklist certain items that creative players can spawn.")
++        @Remap("filterCreativeItems")
 +        public boolean filterCreativeItems = true;
 +
 +        @Comment("Maximum number of entries in the usercache.json file.")
++        @Remap("userCacheCap")
 +        public int userCacheSize = 1000;
 +
 +        @Comment("Maximum number of entries in the integer cache, which is used extensively during world generation.")
++        @Remap("intCacheLimit")
 +        public int cacheLimit = 1024;
 +
 +        @Comment("Magic number used as a threshold for invalid move events.")
++        @Remap("movedWronglyThreshold")
 +        public double movedWronglyThreshold = 0.0625;
 +
 +        @Comment("Maximum number of blocks per second a player can move before the event is cancelled.")
++        @Remap("movedTooQuicklyThreshold")
 +        public double movedTooQuicklyThreshold = 100.0;
-+
-+        @Comment("Whether to fetch the UUID of old skulls that only contain a username.")
-+        public boolean fetchSkulls = true;
 +
 +        @Comment("Number of networking threads to allocate.")
 +        public int nettyThreads = 4;
@@ -3700,10 +3854,15 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +        public static class Attribute extends UnicornConfigSection {
 +
 +            @CustomKey("maxHealth.max")
++            @Remap("maxHealth")
 +            public double maxHealth = 2048;
++
 +            @CustomKey("movementSpeed.max")
++            @Remap("movementSpeed")
 +            public double movementSpeed = 2048;
++
 +            @CustomKey("attackDamage.max")
++            @Remap("attackDamage")
 +            public double attackDamage = 2048;
 +
 +            @Override
@@ -3743,15 +3902,25 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +
 +    public static class Messages extends UnicornConfigSection {
 +
++        @Remap("restartMessage")
 +        public String restart = "&cServer is restarting!";
++
++        @Remap("whitelistMessage")
 +        public String whitelist = "&cYou are not on the whitelist!";
++
++        @Remap("serverFullMessage")
 +        public String serverFull = "&cThe server is full!";
++
 +        @Comment("You can use {0} to insert the server version.")
++        @Remap("outdatedClientMessage")
 +        public String outdatedClient = "&7Outdated client! Please use &c{0}";
++
 +        @Comment("You can use {0} to insert the server version.")
++        @Remap("outdatedServerMessage")
 +        public String outdatedServer = "&7Outdated server! Server is on &c{0}";
 +
 +        @Comment("You can use {0} to insert the command that was tried to use (without slash).")
++        @Remap("unknownCommandMessage")
 +        public String unknownCommand = "&7Unknown command. Type &c/help &7for help.";
 +
 +    }
@@ -3761,12 +3930,15 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +    public static class Commands extends UnicornConfigSection {
 +
 +        @Comment("Whether player commands should be logged.")
++        @Remap("logCommands")
 +        public boolean log = true;
 +
 +        @Comment("Whether command block commands should be logged to console.")
++        @Remap("silentCommandBlocks")
 +        public boolean silentCommandblockConsole = false;
 +
 +        @Comment("Disables the bukkit variants of the following commands and defaults to the vanilla variants.")
++        @Remap("replaceCommands")
 +        public Set<String> replaceCommands = ImmutableSet.<String>builder()
 +                .add("setblock")
 +                .add("summon")
@@ -3775,7 +3947,8 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +                .build();
 +
 +        @Comment("Which commands should be excluded from spamming disconnect (if player use commands to often servers disconnect him).")
-+        public Set<String> spamExclusions = ImmutableSet.<String>builder()
++        @Remap("spamExclusions")
++        public List<String> spamExclusions = ImmutableList.<String>builder()
 +                .add("/skill")
 +                .build();
 +
@@ -3783,6 +3956,7 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +        @Comment("Disable all tab completion with -1.")
 +        @Comment("Enable server commands to be queryable with 0.")
 +        @Comment("Require n letters to be typed before completing with n.")
++        @Remap("tabComplete")
 +        public int tabComplete = 0;
 +
 +    }
@@ -3792,6 +3966,7 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +    public static class Stats extends UnicornConfigSection {
 +
 +        @Comment("Whether to disable saving of player statistics and achievements.")
++        @Remap("disableStatSaving")
 +        public boolean disableSaving = false;
 +
 +        @Comment("Map of statistics and the values they should be forced.")
@@ -3799,6 +3974,7 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +        private Map<String, Map<String, Integer>> forcedStats_ = new HashMap<>();
 +
 +        @Exclude
++        @Remap("forcedStats")
 +        public Map<String, Integer> forcedStats = new HashMap<>();
 +
 +        @Override
@@ -3843,46 +4019,70 @@ index 0000000000000000000000000000000000000000..52e772c4952fc7dd9b0c656c2b2c7060
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e88088db29bc
+index 0000000000000000000000000000000000000000..d3d5ac33e78bce76bc2320316beacd2956d90571
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
-@@ -0,0 +1,231 @@
+@@ -0,0 +1,322 @@
 +package org.mythicprojects.unicornspigot.config;
 +
++import com.google.common.collect.ImmutableList;
 +import com.google.common.collect.ImmutableSet;
 +import eu.okaeri.configs.OkaeriConfig;
 +import eu.okaeri.configs.annotation.Comment;
++import eu.okaeri.configs.annotation.CustomKey;
 +import eu.okaeri.configs.annotation.Exclude;
 +import eu.okaeri.configs.annotation.NameModifier;
 +import eu.okaeri.configs.annotation.NameStrategy;
 +import eu.okaeri.configs.annotation.Names;
++import java.util.HashSet;
++import java.util.List;
 +import java.util.Set;
 +import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.config.legacy.Remap;
++import org.mythicprojects.unicornspigot.config.legacy.RemapTarget;
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++@RemapTarget(target = org.spigotmc.SpigotWorldConfig.class)
 +public class SpigotWorldConfig extends EngineConfig.WorldConfig {
 +
 +    public AntiXray antiXray = new AntiXray();
 +
 +    public static class AntiXray extends UnicornConfigSection {
 +
++        @Remap("antiXrayInstance")
 +        @Exclude
 +        private org.spigotmc.AntiXray instance;
 +
 +        @Comment("Whether to enable the anti-xray module.")
++        @Remap("antiXray")
 +        public boolean enabled = true;
 +
 +        @Comment("Controls which anti-xray modes to use.")
 +        @Comment("Mode 1 will hide all ores with stone.")
 +        @Comment("Mode 2 will create fake, client-side ores around the world, which can impact client lag and network latency.")
++        @Remap("engineMode")
 +        public int engineMode = 1;
 +
 +        @Comment("IDs of blocks that should be hidden in mode 1.")
++        @Remap("hiddenBlocks")
++        @CustomKey("hide-blocks")
++        public List<Integer> hideBlocks_ = ImmutableList.<Integer>builder()
++                .add(14, 15, 16, 21, 48, 49, 54, 56, 73, 74, 82, 129, 130)
++                .build();
++
++        @Exclude
 +        public Set<Integer> hideBlocks = ImmutableSet.<Integer>builder()
 +                .add(14, 15, 16, 21, 48, 49, 54, 56, 73, 74, 82, 129, 130)
 +                .build();
 +
 +        @Comment("IDs of blocks that should be replaced in mode 2.")
++        @Remap("replaceBlocks")
++        @CustomKey("replace-blocks")
++        public List<Integer> replaceBlocks_ = ImmutableList.<Integer>builder()
++                .add(1, 5)
++                .build();
++
++        @Exclude
 +        public Set<Integer> replaceBlocks = ImmutableSet.<Integer>builder()
 +                .add(1, 5)
 +                .build();
@@ -3890,11 +4090,14 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +        @Override
 +        public void loadProperties() {
 +            this.instance = new org.spigotmc.AntiXray(this);
++            this.hideBlocks = new HashSet<>(this.hideBlocks_);
++            this.replaceBlocks = new HashSet<>(this.replaceBlocks_);
 +        }
 +
 +    }
 +
 +    @Comment("Whether to remove AI from mobs that originate from mob spawners.")
++    @Remap("nerfSpawnerMobs")
 +    public boolean nerfSpawnerMobs = false;
 +
 +    @Comment("Speed at which certain crops will grow.")
@@ -3903,13 +4106,28 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class Growth extends UnicornConfigSection {
 +
++        @Remap("cactusModifier")
 +        public int cactusModifier = 100;
++
++        @Remap("caneModifier")
 +        public int caneModifier = 100;
++
++        @Remap("melonModifier")
 +        public int melonModifier = 100;
++
++        @Remap("pumpkinModifier")
 +        public int pumpkinModifier = 100;
++
++        @Remap("wheatModifier")
 +        public int wheatModifier = 100;
++
++        @Remap("mushroomModifier")
 +        public int mushroomModifier = 100;
++
++        @Remap("saplingModifier")
 +        public int saplingModifier = 100;
++
++        @Remap("wartModifier")
 +        public int netherWartModifier = 100;
 +
 +        @Override
@@ -3935,6 +4153,7 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +    }
 +
 +    @Comment("Radius of chunks around players that mobs will naturally spawn.")
++    @Remap("mobSpawnRange")
 +    public byte mobSpawnRange = 4;
 +
 +    @Comment("Radius in blocks around players that mobs are marked as active and are ticked.")
@@ -3942,8 +4161,13 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class EntityActivationRange extends UnicornConfigSection {
 +
++        @Remap("animalActivationRange")
 +        public int animals = 32;
++
++        @Remap("monsterActivationRange")
 +        public int monsters = 32;
++
++        @Remap("miscActivationRange")
 +        public int ambient = 16;
 +
 +    }
@@ -3954,10 +4178,19 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class EntityTrackingRange extends UnicornConfigSection {
 +
++        @Remap("playerTrackingRange")
 +        public int players = 48;
++
++        @Remap("animalTrackingRange")
 +        public int animals = 48;
++
++        @Remap("monsterTrackingRange")
 +        public int monsters = 48;
++
++        @Remap("miscTrackingRange")
 +        public int misc = 32;
++
++        @Remap("otherTrackingRange")
 +        public int other = 64;
 +
 +    }
@@ -3967,37 +4200,49 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class TicksPer extends OkaeriConfig {
 +
++        @Remap("hopperTransfer")
 +        public int hopperTransfer = 8;
++
++        @Remap("hopperCheck")
 +        public int hopperCheck = 8;
 +
 +    }
 +
 +    @Comment("Maximum throughput of items in a hopper per tick cycle.")
++    @Remap("hopperAmount")
 +    public int hopperAmount = 1;
 +
 +    @Comment("Whether to randomly sample chunks and validate lighting integrity.")
++    @Remap("randomLightUpdates")
 +    public boolean randomLightUpdates = false;
 +
 +    @Comment("Whether to save generic structure information.")
 +    @Comment("Only affects certain gameplay features such as witches spawning in huts.")
++    @Remap("saveStructureInfo")
 +    public boolean saveStructureInfo = true;
 +
 +    @Comment("Maximum number of chunks to send per packet.")
++    @Remap("maxBulkChunk")
 +    public int maxBulkChunks = 10;
 +
 +    @Comment("Maximum number of other entities and entity can collide with per tick.")
++    @Remap("maxCollisionsPerEntity")
 +    public int maxEntityCollisions = 8;
 +
 +    @Comment("Radius around dragons that players will hear the death sound.")
++    @Remap("dragonDeathSoundRadius")
 +    public int dragonDeathSoundRadius = 0;
 +
 +    @Comment("Radius around withers that players will hear the spawn sound.")
++    @Remap("witherSpawnSoundRadius")
 +    public int witherSpawnSoundRadius = 0;
 +
 +    @Comment("Random seed used to generate and place villages.")
++    @Remap("villageSeed")
 +    public int seedVillage = 10387312;
 +
 +    @Comment("Random seed used to generate and place nether strongholds.")
++    @Remap("largeFeatureSeed")
 +    public int seedFeature = 14357617;
 +
 +    @Comment("Number of hunger points to subtract upon each event.")
@@ -4005,18 +4250,26 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class Hunger extends UnicornConfigSection {
 +
++        @Remap("walkExhaustion")
 +        public float walkExhaustion = 0.2F;
++
++        @Remap("sprintExhaustion")
 +        public float sprintExhaustion = 0.8F;
++
++        @Remap("combatExhaustion")
 +        public float combatExhaustion = 0.3F;
++
++        @Remap("regenExhaustion")
 +        public float regenExhaustion = 3F;
 +
 +    }
 +
 +    @Comment("Maximum number of primed tnt entities per tick.")
++    @Remap("maxTntTicksPerTick")
 +    public int maxTntPerTick = 100;
 +
 +    @Exclude
-+    public static int currentPrimedTnt = 0;
++    public int currentPrimedTnt = 0;
 +
 +    @Comment("Maximum number of milliseconds for entity movements tasks to have before getting skipped.")
 +    @Comment("Use 1000 to disable this feature, as recommended by paper.")
@@ -4024,18 +4277,24 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class MaxTickTime extends UnicornConfigSection {
 +
++        @Remap("tileMaxTickTime")
 +        public int tile = 50;
++
++        @Remap("entityMaxTickTime")
 +        public int entity = 50;
 +
 +    }
 +
 +    @Comment("Set the tick update interval for hanging entities.")
++    @Remap("hangingTickFrequency")
 +    public int hangingTickFrequency = 100;
 +
 +    @Comment("Number of ticks before items on the ground will despawn.")
++    @Remap("itemDespawnRate")
 +    public int itemDespawnRate = 6000;
 +
 +    @Comment("Number of ticks before despawning arrows on the ground.")
++    @Remap("arrowDespawnRate")
 +    public int arrowDespawnRate = 1200;
 +
 +    @Comment("Radius in blocks for certain entities to merge together.")
@@ -4043,26 +4302,34 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +
 +    public static class MergeRadius extends UnicornConfigSection {
 +
++        @Remap("itemMerge")
 +        public double item = 2.5;
++
++        @Remap("expMerge")
 +        public double exp = 3.0;
 +
 +    }
 +
 +    @Comment("Whether to allow zombie pigmen from spawning inside nether portals.")
++    @Remap("enableZombiePigmenPortalSpawns")
 +    public boolean enableZombiePigmenPortalSpawns = true;
 +
 +    @Comment("Number of chunks to load around each player.")
 +    @Comment("Must be within 1 and 15.")
++    @Remap("viewDistance")
 +    public int viewDistance = 10;
 +
 +    @Comment("Radius around withers that players will hear the spawn sound.")
++    @Remap("zombieAggressiveTowardsVillager")
 +    public boolean zombieAggressiveTowardsVillager = true;
 +
 +    @Comment("Number of chunks to be updated for growth per tick.")
++    @Remap("chunksPerTick")
 +    public int chunksPerTick = 650;
 +
 +    @Comment("Prevent the tick list from increasing over time.")
 +    @Comment("Use with caution, because world growth is stunted.")
++    @Remap("clearChunksOnTick")
 +    public boolean clearTickList = false;
 +
 +    @Override
@@ -4080,10 +4347,10 @@ index 0000000000000000000000000000000000000000..f6168560ed0339fb9755077de375e880
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..01853a21586dd8e1c98020d6e00da792a8447afc
+index 0000000000000000000000000000000000000000..ca445b5de72c8e931071db544f651077c0f49023
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,71 @@
 +package org.mythicprojects.unicornspigot.config;
 +
 +import eu.okaeri.configs.OkaeriConfig;
@@ -4142,11 +4409,7 @@ index 0000000000000000000000000000000000000000..01853a21586dd8e1c98020d6e00da792
 +        return (INSTANCE == null) ? DEFAULT_INSTANCE : INSTANCE;
 +    }
 +
-+    static void log(boolean verbose, Level level, String log, Object... params) {
-+        if (!verbose) {
-+            return;
-+        }
-+
++    static void log(Level level, String log, Object... params) {
 +        Logger logger = Bukkit.getLogger();
 +        if (logger == null) {
 +            return;
@@ -4154,25 +4417,17 @@ index 0000000000000000000000000000000000000000..01853a21586dd8e1c98020d6e00da792
 +        logger.log(level, log, params);
 +    }
 +
-+    static void log(boolean verbose, String log, Object... params) {
-+        log(verbose, Level.INFO, log, params);
-+    }
-+
-+    static void log(Level level, String log, Object... params) {
-+        log(true, level, log, params);
-+    }
-+
 +    static void log(String log, Object... params) {
-+        log(Level.INFO, log, params);
++        log( Level.INFO, log, params);
 +    }
 +
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfigSection.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfigSection.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a141068fc5f88ebcba983cf93551758b462c0322
+index 0000000000000000000000000000000000000000..1099010d1bfc09cb12176c898916a65ed19715e6
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfigSection.java
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,128 @@
 +package org.mythicprojects.unicornspigot.config;
 +
 +import eu.okaeri.configs.OkaeriConfig;
@@ -4180,17 +4435,15 @@ index 0000000000000000000000000000000000000000..a141068fc5f88ebcba983cf93551758b
 +import eu.okaeri.configs.exception.OkaeriException;
 +import java.lang.reflect.Field;
 +import java.util.ArrayList;
-+import java.util.Arrays;
 +import java.util.Collection;
 +import java.util.LinkedHashMap;
-+import java.util.LinkedHashSet;
 +import java.util.List;
 +import java.util.Map;
-+import java.util.Set;
 +import java.util.logging.Level;
 +import org.bukkit.Bukkit;
 +import org.bukkit.ChatColor;
 +import org.jetbrains.annotations.NotNull;
++import org.mythicprojects.unicornspigot.util.ReflectionHelper;
 +
 +public abstract class UnicornConfigSection extends OkaeriConfig {
 +
@@ -4207,7 +4460,7 @@ index 0000000000000000000000000000000000000000..a141068fc5f88ebcba983cf93551758b
 +    private void loadPropertiesInternal() {
 +        this.loadProperties();
 +
-+        for (Field field : getFields(this.getClass())) {
++        for (Field field : ReflectionHelper.getFields(this.getClass())) {
 +            if (field.getAnnotation(Exclude.class) != null) {
 +                continue;
 +            }
@@ -4302,15 +4555,6 @@ index 0000000000000000000000000000000000000000..a141068fc5f88ebcba983cf93551758b
 +        return ChatColor.translateAlternateColorCodes(input);
 +    }
 +
-+    private static @NotNull Set<Field> getFields(@NotNull Class<?> clazz) {
-+        Set<Field> fields = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
-+        Class<?> superClass = clazz.getSuperclass();
-+        if (superClass != null) {
-+            fields.addAll(getFields(superClass));
-+        }
-+        return fields;
-+    }
-+
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 new file mode 100644
@@ -4326,6 +4570,127 @@ index 0000000000000000000000000000000000000000..9a8779852d17e0730f5625243b09b1f0
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
 +public class UnicornWorldConfig extends EngineConfig.WorldConfig {
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/legacy/LegacyRemapper.java b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/LegacyRemapper.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f98ea6e333fa4ed10a40998c0eb1e2d907cdf552
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/LegacyRemapper.java
+@@ -0,0 +1,77 @@
++package org.mythicprojects.unicornspigot.config.legacy;
++
++import eu.okaeri.configs.annotation.Exclude;
++import java.lang.reflect.Field;
++import java.lang.reflect.Modifier;
++import java.util.logging.Level;
++import org.bukkit.Bukkit;
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++import org.mythicprojects.unicornspigot.config.UnicornConfigSection;
++import org.mythicprojects.unicornspigot.util.PropertyHelper;
++import org.mythicprojects.unicornspigot.util.ReflectionHelper;
++
++public final class LegacyRemapper {
++
++    private static final boolean DISABLE_CONFIG_REMAPPING = PropertyHelper.getBoolean("Unicorn.disableLegacyConfigRemapping", false);
++
++    private LegacyRemapper() {
++    }
++
++    public static void map(@NotNull Object toMap, @Nullable Object target) {
++        if (DISABLE_CONFIG_REMAPPING) {
++            return;
++        }
++
++        Class<?> clazz = toMap.getClass();
++        RemapTarget staticTarget = clazz.getAnnotation(RemapTarget.class);
++        if (staticTarget == null) {
++            return;
++        }
++        Class<?> targetClazz = staticTarget.target();
++        map(toMap, target, targetClazz);
++    }
++
++    private static void map(@NotNull Object toMap, @Nullable Object target, @NotNull Class<?> targetClazz) {
++        for (Field field : ReflectionHelper.getFields(toMap.getClass())) {
++            String sourceName = field.getName();
++            String targetName = "UNKNOWN";
++            try {
++                field.setAccessible(true);
++                Object value = field.get(Modifier.isStatic(field.getModifiers()) ? null : toMap);
++                if (value == null) {
++                    continue;
++                }
++
++                Remap mapping = field.getAnnotation(Remap.class);
++                if (mapping == null) {
++                    if (toMap.equals(value)
++                            || !UnicornConfigSection.class.isAssignableFrom(value.getClass())
++                            || field.getAnnotation(Exclude.class) != null) {
++                        continue;
++                    }
++                    map(value, target, targetClazz);
++                    continue;
++                }
++                String legacyKey = mapping.value();
++                targetName = legacyKey;
++
++                try {
++                    Field targetField = targetClazz.getDeclaredField(legacyKey);
++                    targetField.setAccessible(true);
++                    if (target == null && !Modifier.isStatic(targetField.getModifiers())) {
++                        Bukkit.getLogger().log(Level.SEVERE, String.format("%s's field '%s' couldn't been mapped to %s's field '%s', because it's not static and target is null", toMap.getClass().getName(), sourceName, targetClazz.getName(), targetName));
++                        continue;
++                    }
++                    targetField.set(target, value);
++                } catch (NoSuchFieldException ex) {
++                    Bukkit.getLogger().log(Level.SEVERE, String.format("%s's field '%s' couldn't been mapped to %s's field '%s', because it doesn't exist", toMap.getClass().getName(), sourceName, targetClazz.getName(), targetName), ex);
++
++                }
++            } catch (IllegalAccessException | IllegalArgumentException ex) {
++                Bukkit.getLogger().log(Level.SEVERE, String.format("%s's field '%s' couldn't been mapped to %s's field '%s'", toMap.getClass().getName(), sourceName, targetClazz.getName(), targetName), ex);
++            }
++        }
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/legacy/Remap.java b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/Remap.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b4e5c0176fb8efda01cb7d7ecf86246e9a6f0299
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/Remap.java
+@@ -0,0 +1,13 @@
++package org.mythicprojects.unicornspigot.config.legacy;
++
++import java.lang.annotation.ElementType;
++import java.lang.annotation.Retention;
++import java.lang.annotation.RetentionPolicy;
++import java.lang.annotation.Target;
++import org.jetbrains.annotations.NotNull;
++
++@Target(ElementType.FIELD)
++@Retention(RetentionPolicy.RUNTIME)
++public @interface Remap {
++    @NotNull String value();
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/legacy/RemapTarget.java b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/RemapTarget.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..872de0781d8a5e6f5810d2d0027d7733c7f07395
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/RemapTarget.java
+@@ -0,0 +1,13 @@
++package org.mythicprojects.unicornspigot.config.legacy;
++
++import java.lang.annotation.ElementType;
++import java.lang.annotation.Retention;
++import java.lang.annotation.RetentionPolicy;
++import java.lang.annotation.Target;
++import org.jetbrains.annotations.NotNull;
++
++@Target(ElementType.TYPE)
++@Retention(RetentionPolicy.RUNTIME)
++public @interface RemapTarget {
++    @NotNull Class<?> target();
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/serdes/DecolorTransformer.java b/src/main/java/org/mythicprojects/unicornspigot/config/serdes/DecolorTransformer.java
 new file mode 100644
@@ -4451,6 +4816,60 @@ index 0000000000000000000000000000000000000000..014e5afdc6485ac99235ee44f5e64f63
 +
 +    public static <L, R> Pair<L, R> of(L left, R right) {
 +        return new Pair<>(left, right);
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/util/PropertyHelper.java b/src/main/java/org/mythicprojects/unicornspigot/util/PropertyHelper.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f70c5babb3122b423d414fbc7dcb1959e23f3a2c
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/util/PropertyHelper.java
+@@ -0,0 +1,19 @@
++package org.mythicprojects.unicornspigot.util;
++
++import static java.lang.Boolean.parseBoolean;
++
++public final class PropertyHelper {
++
++    private PropertyHelper() {
++    }
++
++    public static boolean getBoolean(String name, boolean def) {
++        boolean result = def;
++        try {
++            result = parseBoolean(System.getProperty(name));
++        } catch (IllegalArgumentException | NullPointerException ignored) {
++        }
++        return result;
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/util/ReflectionHelper.java b/src/main/java/org/mythicprojects/unicornspigot/util/ReflectionHelper.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c0be76c8d0e0729775889d0aa923ccced81cbc9a
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/util/ReflectionHelper.java
+@@ -0,0 +1,23 @@
++package org.mythicprojects.unicornspigot.util;
++
++import java.lang.reflect.Field;
++import java.util.Arrays;
++import java.util.LinkedHashSet;
++import java.util.Set;
++import org.jetbrains.annotations.NotNull;
++
++public final class ReflectionHelper {
++
++    private ReflectionHelper() {
++    }
++
++    public static @NotNull Set<Field> getFields(@NotNull Class<?> clazz) {
++        Set<Field> fields = new LinkedHashSet<>(Arrays.asList(clazz.getDeclaredFields()));
++        Class<?> superClass = clazz.getSuperclass();
++        if (superClass != null) {
++            fields.addAll(getFields(superClass));
++        }
++        return fields;
 +    }
 +
 +}
@@ -4634,7 +5053,7 @@ index 429c25804654b6590c1ae1bc61af66fa1808214c..ad42b23eca323b774d24d5b82adbc3e0
              System.exit( 0 );
          } catch ( Exception ex )
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
-index b9d185d99f6432e8636eb573a28f19eccf16258a..77b1a6382ef85c70957d9202ea7b105c9b277f5c 100644
+index b9d185d99f6432e8636eb573a28f19eccf16258a..b5de410804f40bba29398dcff946477d67fa8926 100644
 --- a/src/main/java/org/spigotmc/SpigotConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotConfig.java
 @@ -31,6 +31,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
@@ -4645,8 +5064,17 @@ index b9d185d99f6432e8636eb573a28f19eccf16258a..77b1a6382ef85c70957d9202ea7b105c
  public class SpigotConfig
  {
  
+@@ -282,7 +283,7 @@ public class SpigotConfig
+     }
+ 
+     public static boolean disableStatSaving;
+-    public static TObjectIntHashMap<String> forcedStats = new TObjectIntHashMap<String>();
++    public static Map<String, Integer> forcedStats = new HashMap<String, Integer>(); // Unicorn - use java map, if ever needed bring back TObjectIntHashMap for compatibility
+     private static void stats()
+     {
+         disableStatSaving = getBoolean( "stats.disable-saving", false );
 diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
-index 8e86212aa5deae00c55cacc7207525df67a1868e..8276417da2e65379d002f2f0f6c76a9e0433a46b 100644
+index 8e86212aa5deae00c55cacc7207525df67a1868e..99dbd2654d3da2ad7cc59fa1bba74e7f3c0fa57e 100644
 --- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
 @@ -5,6 +5,7 @@ import java.util.List;
@@ -4657,14 +5085,15 @@ index 8e86212aa5deae00c55cacc7207525df67a1868e..8276417da2e65379d002f2f0f6c76a9e
  public class SpigotWorldConfig
  {
  
-@@ -21,6 +22,7 @@ public class SpigotWorldConfig
+@@ -16,7 +17,7 @@ public class SpigotWorldConfig
+     {
+         this.worldName = worldName;
+         this.config = SpigotConfig.config;
+-        init();
++        //init(); // Unicorn
+     }
  
      public void init()
-     {
-+
-         this.verbose = getBoolean( "verbose", true );
- 
-         log( "-------- World Settings For [" + worldName + "] --------" );
 diff --git a/src/main/java/org/spigotmc/TicksPerSecondCommand.java b/src/main/java/org/spigotmc/TicksPerSecondCommand.java
 index 21fd7efc5248b34b9c1336c180689fb59dc4636e..fcaea7e2500448c02513cee51015072af7d814c7 100644
 --- a/src/main/java/org/spigotmc/TicksPerSecondCommand.java

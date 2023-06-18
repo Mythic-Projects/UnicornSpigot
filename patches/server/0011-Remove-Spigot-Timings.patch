@@ -282,10 +282,10 @@ index 7a552d04cb5a3bba7ce89d6d80f0fe91d0dcb5f7..339430411f7efe022d0a1601599ba4eb
          // CraftBukkit end
      }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992fae10302 100644
+index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f69fae19d2 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1409,7 +1409,6 @@ public abstract class World implements IBlockAccess {
+@@ -1411,7 +1411,6 @@ public abstract class World implements IBlockAccess {
              }
          }
  
@@ -293,7 +293,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
          this.entityList.removeAll(this.g);
  
          int j;
-@@ -1430,10 +1429,8 @@ public abstract class World implements IBlockAccess {
+@@ -1432,10 +1431,8 @@ public abstract class World implements IBlockAccess {
          // Paper end
  
          this.g.clear();
@@ -304,7 +304,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
          guardEntityList = true; // Spigot
          // CraftBukkit start - Use field for loop variable
          co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
-@@ -1456,12 +1453,9 @@ public abstract class World implements IBlockAccess {
+@@ -1458,12 +1455,9 @@ public abstract class World implements IBlockAccess {
  
              if (!entity.dead) {
                  try {
@@ -317,7 +317,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
                      String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
                      System.err.println(msg);
                      throwable1.printStackTrace();
-@@ -1487,8 +1481,6 @@ public abstract class World implements IBlockAccess {
+@@ -1489,8 +1483,6 @@ public abstract class World implements IBlockAccess {
          }
          guardEntityList = false; // Spigot
  
@@ -326,7 +326,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
          this.M = true;
          // CraftBukkit start - From below, clean up tile entities before ticking them
          if (!this.c.isEmpty()) {
-@@ -1517,11 +1509,9 @@ public abstract class World implements IBlockAccess {
+@@ -1519,11 +1511,9 @@ public abstract class World implements IBlockAccess {
  
                  if (this.isLoaded(blockposition) && this.N.a(blockposition)) {
                      try {
@@ -338,7 +338,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
                          String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
                          System.err.println(msg);
                          throwable2.printStackTrace();
-@@ -1533,7 +1523,7 @@ public abstract class World implements IBlockAccess {
+@@ -1535,7 +1525,7 @@ public abstract class World implements IBlockAccess {
                      }
                      // Spigot start
                      finally {
@@ -347,7 +347,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
                      }
                      // Spigot end
                  }
-@@ -1549,8 +1539,6 @@ public abstract class World implements IBlockAccess {
+@@ -1551,8 +1541,6 @@ public abstract class World implements IBlockAccess {
              }
          }
  
@@ -356,7 +356,7 @@ index 5df469f351654d8cb15bd5653d185c04017a45fe..38f2f8f946341e2e2beba078c5af6992
          this.M = false;
          /* CraftBukkit start - Moved up
          if (!this.c.isEmpty()) {
-@@ -1582,7 +1570,6 @@ public abstract class World implements IBlockAccess {
+@@ -1584,7 +1572,6 @@ public abstract class World implements IBlockAccess {
              this.b.clear();
          }
  
@@ -589,7 +589,7 @@ index 5b15f0730293abfdbe6c82fddd8e1304c99c544a..443469912e738c278acefbc590825018
      }
  
 diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
-index 77b1a6382ef85c70957d9202ea7b105c9b277f5c..9c4cca4cb44bacf01b8c3fd461c7fb67fe37dd24 100644
+index b5de410804f40bba29398dcff946477d67fa8926..9d7c78457fc516d1706080ac37fe674b7a84b73c 100644
 --- a/src/main/java/org/spigotmc/SpigotConfig.java
 +++ b/src/main/java/org/spigotmc/SpigotConfig.java
 @@ -28,8 +28,6 @@ import org.bukkit.command.Command;
