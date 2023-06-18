@@ -13,7 +13,7 @@ cd "$basedir"
 if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
     ./base/Paper/paper setup
 fi
-./scripts/applyPatches.sh "$basedir" "$2"
+./scripts/applyPatches.sh "$basedir"
 
 if [ "$2" == "--jar" ]; then
     ./gradlew build

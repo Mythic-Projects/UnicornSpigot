@@ -66,13 +66,6 @@ case "$1" in
         scripts/build.sh "$basedir" "--jar" || exit 1
     ) || failed=1
     ;;
-    "pc" | "paperclip")
-    (
-        set -e
-        cd "$basedir"
-        scripts/paperclip.sh "$basedir" || exit 1
-    ) || failed=1
-    ;;
     "r" | "root")
         cd "$basedir"
     ;;
@@ -162,7 +155,7 @@ case "$1" in
         echo "  * rb, rebuild         | Rebuild patches, can be called from anywhere."
         echo "  * setup               | Remap, decompile, and patch Minecraft. Can be run from anywhere."
         echo "  * p, patch            | Apply all patches to the project without building it. Can be run from anywhere."
-        echo "  * j, jar              | Apply all patches and build the project, paperclip.jar will be output. Can be run from anywhere."
+        echo "  * j, jar              | Apply all patches and build the project. Can be run from anywhere."
         echo "  * c, clean            | Removes all generated files, UnicornSpigot-API, UnicornSpigot-Server, and work."
         echo "  * con, continue       | Shortcut command for running git am --continue, or git rebase --continue."
         echo ""

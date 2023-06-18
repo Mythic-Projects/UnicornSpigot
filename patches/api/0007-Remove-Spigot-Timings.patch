@@ -164,10 +164,10 @@ index f35bc0921e1f65c8f35cca28b081d3223c2f417b..e0f1fedfb5f39e0fd686a2775d91f116
              server.getPluginManager().callEvent(new ServerExceptionEvent(new ServerCommandException(ex, target, sender, args))); // Paper
              throw new CommandException(msg, ex);
 diff --git a/src/main/java/org/spigotmc/CustomTimingsHandler.java b/src/main/java/org/spigotmc/CustomTimingsHandler.java
-index 709b62e07e2a704363a96c699ce61e4bba4700d3..f3d3f2cbe74a740ab1064df9312b84e2518e625d 100644
+index 6164aaa0daf0e62f2b9622508eba49db5921f5f0..dd574c026578a88832e1726065ae636f66588218 100644
 --- a/src/main/java/org/spigotmc/CustomTimingsHandler.java
 +++ b/src/main/java/org/spigotmc/CustomTimingsHandler.java
-@@ -69,7 +69,9 @@ public final class CustomTimingsHandler {
+@@ -70,7 +70,9 @@ public final class CustomTimingsHandler {
          handler = timing;
      }
  
