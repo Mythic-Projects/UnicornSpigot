@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [Nacho-0024] Do not create new BlockPosition when
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 1f46a6e3488dda686852111d44f8e80c41622409..9a30b0169ea2fd956ae229472de5e74323978299 100644
+index 1f46a6e3488dda686852111d44f8e80c41622409..76aadf54c66b8e65a222afa9c80ca83a6173e78f 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -225,9 +225,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -21,15 +21,25 @@ index 1f46a6e3488dda686852111d44f8e80c41622409..9a30b0169ea2fd956ae229472de5e743
  
              Chunk chunk;
  
-@@ -235,7 +235,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -235,14 +235,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator1.next();
  
                  if (chunkcoordintpair != null) {
 -                    if (this.world.isLoaded(new BlockPosition(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4))) {
-+                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {// Nacho - Do not create new BlockPosition when loading chunk
-                         chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
-                         if (chunk.isReady()) {
+-                        chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
+-                        if (chunk.isReady()) {
++                    // Nacho start
++                    chunk = this.world.getChunkIfLoaded(chunkcoordintpair.x, chunkcoordintpair.z);
++                    if (chunk != null && chunk.isReady()) {
                              arraylist.add(chunk);
+                             arraylist1.addAll(chunk.tileEntities.values()); // CraftBukkit - Get tile entities directly from the chunk instead of the world
+                             iterator1.remove();
+-                        }
+                     }
++                    // Nacho end
+                 } else {
+                     iterator1.remove();
+                 }
 @@ -250,23 +250,24 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
              if (!arraylist.isEmpty()) {

@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Tue, 20 Jun 2023 01:02:33 +0200
+Subject: [PATCH] Implement [PandaSpigot-0033] Configurable arrow trajectory by
+ hpfxd
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index e146aff133c3d840affdb52887d8368ba7ab32c0..10523f0523084a756e07ead6aa8f7e873d96206a 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -6,6 +6,7 @@ import java.util.List;
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.event.entity.EntityCombustByEntityEvent;
+ import org.bukkit.event.player.PlayerPickupItemEvent;
++import org.mythicprojects.unicornspigot.config.PaperConfig;
+ // CraftBukkit end
+ 
+ public class EntityArrow extends Entity implements IProjectile {
+@@ -95,7 +96,7 @@ public class EntityArrow extends Entity implements IProjectile {
+         this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F));
+         this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F));
+         this.motY = (double) (-MathHelper.sin(this.pitch / 180.0F * 3.1415927F));
+-        this.shoot(this.motX, this.motY, this.motZ, f * 1.5F, 1.0F);
++        this.shoot(this.motX, this.motY, this.motZ, f * 1.5F, PaperConfig.get().settings.includeRandomnessInArrowTrajectory ? 1.0F : 0.0F); // PandaSpigot -
+     }
+ 
+     protected void h() {
+@@ -108,9 +109,11 @@ public class EntityArrow extends Entity implements IProjectile {
+         d0 /= (double) f2;
+         d1 /= (double) f2;
+         d2 /= (double) f2;
++        if (f1 != 0) { // PandaSpigot - Configurable random arrow trajectory
+         d0 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
+         d1 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
+         d2 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
++        } // PandaSpigot - closing bracket
+         d0 *= (double) f;
+         d1 *= (double) f;
+         d2 *= (double) f;
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+index 221890b9f99d2b5c846dc9ce633239edddc7a06d..e07e561ebee5a081da26fbc9608b23f86f7f0af1 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+@@ -46,6 +46,9 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+         @Remap("babyZombieMovementSpeed")
+         public double babyZombieMovementSpeed = 0.5;
+ 
++        @Comment("Whether arrow projectiles should have a random factor (like in vanilla minecraft).")
++        public boolean includeRandomnessInArrowTrajectory = true;
++
+         @Override
+         public void loadProperties() {
+             if (!this.limitPlayerInteractions) {

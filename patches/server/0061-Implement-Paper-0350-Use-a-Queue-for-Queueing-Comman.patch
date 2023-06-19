@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Tue, 20 Jun 2023 01:12:05 +0200
+Subject: [PATCH] Implement [Paper-0350] Use a Queue for Queueing Commands
+
+
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 7581a652fee066cbfe1b6073941849d0230c71e7..ac7ba478b8cb9b7339060ee9bd4c10a318dd7925 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -30,7 +30,7 @@ import org.bukkit.event.server.RemoteServerCommandEvent;
+ public class DedicatedServer extends MinecraftServer implements IMinecraftServer {
+ 
+     private static final Logger LOGGER = LogManager.getLogger();
+-    private final List<ServerCommand> l = Collections.synchronizedList(Lists.<ServerCommand>newArrayList()); // CraftBukkit - fix decompile error
++    private final java.util.Queue<ServerCommand> l = new java.util.concurrent.ConcurrentLinkedQueue<>(); // Paper - use a proper queue
+     private RemoteStatusListener m;
+     private RemoteControlListener n;
+     public PropertyManager propertyManager;
+@@ -411,8 +411,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+     }
+ 
+     public void aO() {
+-        while (!this.l.isEmpty()) {
+-            ServerCommand servercommand = (ServerCommand) this.l.remove(0);
++        // Paper start - use a Queue for Queueing Commands
++        ServerCommand servercommand;
++        while ((servercommand = this.l.poll()) != null) {
++            // Paper end
+ 
+             // CraftBukkit start - ServerCommand for preprocessing
+             ServerCommandEvent event = new ServerCommandEvent(console, servercommand.command);

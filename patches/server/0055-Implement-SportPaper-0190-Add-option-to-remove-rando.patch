@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Tue, 20 Jun 2023 01:03:56 +0200
+Subject: [PATCH] Implement [SportPaper-0190] Add option to remove randomness
+ in arrow damage by Indicado
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index 10523f0523084a756e07ead6aa8f7e873d96206a..867791ecb9aea68c8b47b77a96e4feabd519b370 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -237,7 +237,7 @@ public class EntityArrow extends Entity implements IProjectile {
+                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);
+                     int k = MathHelper.f((double) f2 * this.damage);
+ 
+-                    if (this.isCritical()) {
++                    if (this.isCritical() && PaperConfig.get().settings.includeRandomnessInArrowDamage) { // SportPaper
+                         k += this.random.nextInt(k / 2 + 2);
+                     }
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+index e07e561ebee5a081da26fbc9608b23f86f7f0af1..808dbced8e2091f76d91fedb514cca625d2fe357 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+@@ -49,6 +49,9 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+         @Comment("Whether arrow projectiles should have a random factor (like in vanilla minecraft).")
+         public boolean includeRandomnessInArrowTrajectory = true;
+ 
++        @Comment("Whether arrow projectiles should have chance to deal extra damage on critical hit.")
++        public boolean includeRandomnessInArrowDamage = true;
++
+         @Override
+         public void loadProperties() {
+             if (!this.limitPlayerInteractions) {

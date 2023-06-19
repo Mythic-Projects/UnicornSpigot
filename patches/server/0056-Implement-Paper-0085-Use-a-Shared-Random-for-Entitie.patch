@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 23 May 2022 21:46:28 +0200
+Subject: [PATCH] Implement [Paper-0085] Use a Shared Random for Entities
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 3d2082d36779e40a6bc4e38215040766e4b14361..d4a7ada63abc8d27a89b4dd30b4bb4b25b36f7ec 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
+ 
+ import com.eatthepath.uuid.FastUUID;
+ // CraftBukkit start
++import org.apache.logging.log4j.LogManager;
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.Server;
+@@ -133,6 +134,21 @@ public abstract class Entity implements ICommandListener {
+     public boolean inUnloadedChunk = false; // PaperSpigot - Remove entities in unloaded chunks
+     public boolean loadChunks = false; // PaperSpigot - Entities can load chunks they move through and keep them loaded
+ 
++    // Paper start
++    public static Random SHARED_RANDOM = new Random() {
++        private boolean locked = false;
++        @Override
++        public synchronized void setSeed(long seed) {
++            if (locked) {
++                LogManager.getLogger().error("Ignoring setSeed on Entity.SHARED_RANDOM", new Throwable());
++            } else {
++                super.setSeed(seed);
++                locked = true;
++            }
++        }
++    };
++    // Paper end
++
+     // Spigot start
+     public Timing tickTimer = SpigotTimings.getEntityTimings(this); // Spigot
+     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
+@@ -161,7 +177,7 @@ public abstract class Entity implements ICommandListener {
+         this.width = 0.6F;
+         this.length = 1.8F;
+         this.h = 1;
+-        this.random = new Random();
++        this.random = SHARED_RANDOM; // Paper
+         this.maxFireTicks = 1;
+         this.justCreated = true;
+         this.uniqueID = MathHelper.a(this.random);
+diff --git a/src/main/java/net/minecraft/server/EntitySquid.java b/src/main/java/net/minecraft/server/EntitySquid.java
+index e624b648359693bc3350774080b5f24cecb60f76..fa01e1c2af3982d81c13c82d70ca3c9b881ec4c7 100644
+--- a/src/main/java/net/minecraft/server/EntitySquid.java
++++ b/src/main/java/net/minecraft/server/EntitySquid.java
+@@ -20,7 +20,7 @@ public class EntitySquid extends EntityWaterAnimal {
+     public EntitySquid(World world) {
+         super(world);
+         this.setSize(0.95F, 0.95F);
+-        this.random.setSeed((long) (1 + this.getId()));
++        //this.random.setSeed((long) (1 + this.getId())); //Paper - shared random
+         this.bq = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
+         this.goalSelector.a(0, new EntitySquid.PathfinderGoalSquid(this));
+     }

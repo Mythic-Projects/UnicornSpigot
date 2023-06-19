@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [Nacho-0023] Optimize EntityTracker for the chunk
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 9a30b0169ea2fd956ae229472de5e74323978299..3d4749490ff291a292cdc06e33b80332f1e5147a 100644
+index 76aadf54c66b8e65a222afa9c80ca83a6173e78f..96a930a7f8f3aa0625d6ed2bcfedbc6f746b3519 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -187,6 +187,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -42,7 +42,7 @@ index 9a30b0169ea2fd956ae229472de5e74323978299..3d4749490ff291a292cdc06e33b80332
                  }
 +                */
 +
-+                LongOpenHashSet chunkPosSet = new LongOpenHashSet(arraylist.size());
++                it.unimi.dsi.fastutil.longs.LongSet chunkPosSet = new it.unimi.dsi.fastutil.longs.LongOpenHashSet(arraylist.size());
 +                for (Chunk newChunk : arraylist) {
 +                    chunkPosSet.add(this.chunkToLong(newChunk.locX, newChunk.locZ));
 +                }

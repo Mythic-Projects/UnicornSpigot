@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zach Brown <zach.brown@destroystokyo.com>
+Date: Fri, 16 Dec 2016 16:03:19 -0600
+Subject: [PATCH] Implement [Paper-0175] Don't let fishinghooks use portals by
+ Zach Brown
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index d4a7ada63abc8d27a89b4dd30b4bb4b25b36f7ec..7c4630b762636ec4fe7ced9800a09c244e2443c7 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -119,7 +119,7 @@ public abstract class Entity implements ICommandListener {
+     public boolean ah;
+     public boolean ai;
+     public int portalCooldown;
+-    protected boolean ak;
++    protected boolean ak; public boolean inPortal() { return ak; } // Paper - OBFHELPER
+     protected int al;
+     public int dimension;
+     protected BlockPosition an;
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index 1923136a76a6fe4c17513dd753a2138cdc6c165c..8ab102b2c9e713a8f1670b9e2cddd61429adcd35 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -360,6 +360,11 @@ public class EntityFishingHook extends Entity {
+                 this.motY *= (double) f2;
+                 this.motZ *= (double) f2;
+                 this.setPosition(this.locX, this.locY, this.locZ);
++                // Paper start - These shouldn't be going through portals
++                if (this.inPortal()) {
++                    this.die();
++                 }
++                // Paper end
+             }
+         }
+     }
