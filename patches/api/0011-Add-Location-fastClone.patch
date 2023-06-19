@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 20:09:02 +0200
+Subject: [PATCH] Add Location#fastClone
+
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index 7413d412051e2a395ff91f8617d3fa5f54532370..13acd2141b104c3434f67a4d73aaee256ccee0ee 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -59,6 +59,17 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         this.yaw = yaw;
+     }
+ 
++    // Unicorn start - fast clone
++    private Location(@NotNull Reference<World> world, double x, double y, double z, float yaw, float pitch) {
++        this.world = world;
++        this.x = x;
++        this.y = y;
++        this.z = z;
++        this.pitch = pitch;
++        this.yaw = yaw;
++    }
++    // Unicorn end
++
+     /**
+      * Sets the world that this location resides in
+      *
+@@ -328,7 +339,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+     /**
+      * Sets the {@link #getYaw() yaw} and {@link #getPitch() pitch} to point
+      * in the direction of the vector.
+-     * 
++     *
+      * @param vector the direction vector
+      * @return the same location
+      */
+@@ -630,6 +641,18 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         }
+     }
+ 
++    // Unicorn start - fast clone
++    /**
++     * Constructs a new {@link Location} based on this Location.
++     * Should be faster than {@link #clone()}.
++     *
++     * @return New Location containing the data represented by this Location
++     */
++    public @NotNull Location fastClone() {
++        return new Location(this.world, this.x, this.y, this.z, this.yaw, this.pitch);
++    }
++    // Unicorn end
++
+     // Unicorn start - use reference to prevent memory leak
+     @Contract("null -> null")
+     private Reference<World> wrapWorld(@Nullable World world) {
