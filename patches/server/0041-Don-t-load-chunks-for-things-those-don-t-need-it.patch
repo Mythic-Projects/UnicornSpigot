@@ -1,0 +1,404 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 9 Apr 2021 15:56:09 +0200
+Subject: [PATCH] Don't load chunks for things those don't need it
+
+Unicorn:
+- Fire
+- Grass Growing
+
+Paper:
+- Light checks
+- Villager door checks
+- Spawners
+- Pathfinding
+
+PandaSpigot:
+- Leaves
+- Endermans
+- Villages
+- Collisions
+- Raytracing
+
+Nacho:
+- Physics
+
+FlamePaper:
+- Chests
+
+diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
+index 1b71176f99f4cefaafc1d5b5a57c10e715685888..66c91744a9d35ae5bc005ebc7c235c1975e2b96b 100644
+--- a/src/main/java/net/minecraft/server/BlockChest.java
++++ b/src/main/java/net/minecraft/server/BlockChest.java
+@@ -50,7 +50,12 @@ public class BlockChest extends BlockContainer {
+         while (iterator.hasNext()) {
+             EnumDirection enumdirection = (EnumDirection) iterator.next();
+             BlockPosition blockposition1 = blockposition.shift(enumdirection);
+-            IBlockData iblockdata1 = world.getType(blockposition1);
++            // FlamePaper start - Dont load chunks for chests
++            IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
++            if (iblockdata1 == null) {
++                continue;
++            }
++            // FlamePaper end
+ 
+             if (iblockdata1.getBlock() == this) {
+                 this.e(world, blockposition1, iblockdata1);
+diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
+index 76cd512964ce86c8488e0985fd43afc0050bb4a2..8b5a42e5af8b085cf2de77be1c858e0c6772e0f1 100644
+--- a/src/main/java/net/minecraft/server/BlockFire.java
++++ b/src/main/java/net/minecraft/server/BlockFire.java
+@@ -176,6 +176,7 @@ public class BlockFire extends Block {
+                                 }
+ 
+                                 BlockPosition blockposition1 = blockposition.a(j, l, k);
++                                if (!world.isLoaded(blockposition1)) continue; // Paper
+                                 int j1 = this.m(world, blockposition1);
+ 
+                                 if (j1 > 0) {
+@@ -244,10 +245,13 @@ public class BlockFire extends Block {
+     }
+ 
+     private void a(World world, BlockPosition blockposition, int i, Random random, int j) {
++         // Paper start
++        final IBlockData iblockdata = world.getTypeIfLoaded(blockposition);
++        if (iblockdata == null) return;
+         int k = this.c(world.getType(blockposition).getBlock());
+ 
+         if (random.nextInt(i) < k) {
+-            IBlockData iblockdata = world.getType(blockposition);
++            //IBlockData iblockdata = world.getType(blockposition); // Paper
+ 
+             // CraftBukkit start
+             org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+@@ -305,7 +309,11 @@ public class BlockFire extends Block {
+             for (int k = 0; k < j; ++k) {
+                 EnumDirection enumdirection = aenumdirection[k];
+ 
+-                i = Math.max(this.d(world.getType(blockposition.shift(enumdirection)).getBlock()), i);
++                // Paper start
++                final IBlockData type = world.getTypeIfLoaded(blockposition.shift(enumdirection));
++                if (type == null) continue;
++                i = Math.max(this.d(type.getBlock()), i);
++                // Paper end
+             }
+ 
+             return i;
+diff --git a/src/main/java/net/minecraft/server/BlockFluids.java b/src/main/java/net/minecraft/server/BlockFluids.java
+index db73f5d9cc85579037c3d95509a1227946cb08d6..000849f2b9c00280f86c077048beab5dbef49e55 100644
+--- a/src/main/java/net/minecraft/server/BlockFluids.java
++++ b/src/main/java/net/minecraft/server/BlockFluids.java
+@@ -85,7 +85,13 @@ public abstract class BlockFluids extends Block {
+             int k;
+ 
+             if (j < 0) {
+-                if (!iblockaccess.getType(blockposition1).getBlock().getMaterial().isSolid()) {
++                // Paper start
++                IBlockData iblockdata = iblockaccess.getTypeIfLoaded(blockposition1);
++                if (iblockdata == null) {
++                    continue;
++                }
++                if (!iblockdata.getBlock().getMaterial().isSolid()) {
++                    // Paper end
+                     j = this.f(iblockaccess, blockposition1.down());
+                     if (j >= 0) {
+                         k = j - (i - 8);
+@@ -139,7 +145,13 @@ public abstract class BlockFluids extends Block {
+             for (int j = 0; j < i; ++j) {
+                 EnumDirection enumdirection = aenumdirection[j];
+ 
+-                if (enumdirection != EnumDirection.DOWN && world.getType(blockposition.shift(enumdirection)).getBlock().getMaterial() == Material.WATER) {
++                // Paper start
++                IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition.shift(enumdirection));
++                if (iblockdata1 == null) {
++                    continue;
++                }
++                if (enumdirection != EnumDirection.DOWN && iblockdata1.getBlock().getMaterial() == Material.WATER) {
++                    // Paper end
+                     flag = true;
+                     break;
+                 }
+@@ -148,14 +160,14 @@ public abstract class BlockFluids extends Block {
+             if (flag) {
+                 Integer integer = (Integer) iblockdata.get(BlockFluids.LEVEL);
+ 
+-                if (integer.intValue() == 0) {
+-                    world.setTypeUpdate(blockposition, Blocks.OBSIDIAN.getBlockData());
++                if (integer == 0) {
++                    if (world.setTypeUpdateIfLoaded(blockposition, Blocks.OBSIDIAN.getBlockData())) // Paper
+                     this.fizz(world, blockposition);
+                     return true;
+                 }
+ 
+-                if (integer.intValue() > 0) { // PaperSpigot
+-                    world.setTypeUpdate(blockposition, Blocks.COBBLESTONE.getBlockData());
++                if (integer > 0) { // PaperSpigot
++                    if (world.setTypeUpdateIfLoaded(blockposition, Blocks.COBBLESTONE.getBlockData())) // Paper
+                     this.fizz(world, blockposition);
+                     return true;
+                 }
+diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..f2fd4cbeecd9bbf8ee0cc5ce89874a31542ef38d 100644
+--- a/src/main/java/net/minecraft/server/BlockGrass.java
++++ b/src/main/java/net/minecraft/server/BlockGrass.java
+@@ -48,7 +48,12 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+                     for (int i = 0; i < Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); ++i) { // Spigot
+                         BlockPosition blockposition1 = blockposition.a(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
+                         Block block = world.getType(blockposition1.up()).getBlock();
+-                        IBlockData iblockdata1 = world.getType(blockposition1);
++                        // Unicorn start
++                        IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
++                        if (iblockdata1 == null) {
++                            continue;
++                        }
++                        // Unicorn end
+ 
+                         if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && world.getLightLevel(blockposition1.up()) >= 4 && block.p() <= 2) {
+                             // CraftBukkit start
+diff --git a/src/main/java/net/minecraft/server/BlockLeaves.java b/src/main/java/net/minecraft/server/BlockLeaves.java
+index 7bf9018bae77e97ce5d2991897edf186ef1ed741..2b122122d6c51ef1e3c2c8291dacbef9f3be1998 100644
+--- a/src/main/java/net/minecraft/server/BlockLeaves.java
++++ b/src/main/java/net/minecraft/server/BlockLeaves.java
+@@ -69,7 +69,11 @@ public abstract class BlockLeaves extends BlockTransparent {
+                     for (k1 = -b0; k1 <= b0; ++k1) {
+                         for (l1 = -b0; l1 <= b0; ++l1) {
+                             for (i2 = -b0; i2 <= b0; ++i2) {
+-                                Block block = world.getType(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2)).getBlock();
++                                // PandaSpigot start
++                                IBlockData blockdata = world.getTypeIfLoaded(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2));
++                                if (blockdata == null) continue; // Unicorn - add null check
++                                Block block = blockdata.getBlock();
++                                // PandaSpigot end
+ 
+                                 if (block != Blocks.LOG && block != Blocks.LOG2) {
+                                     if (block.getMaterial() == Material.LEAVES) {
+diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
+index 45d385d31296eda75aa30500118c21406df5fe43..15e73525298596832912905c20e7d6a939e0cb37 100644
+--- a/src/main/java/net/minecraft/server/ChunkCache.java
++++ b/src/main/java/net/minecraft/server/ChunkCache.java
+@@ -23,7 +23,7 @@ public class ChunkCache implements IBlockAccess {
+ 
+         for (l = this.a; l <= j; ++l) {
+             for (i1 = this.b; i1 <= k; ++i1) {
+-                this.c[l - this.a][i1 - this.b] = world.getChunkAt(l, i1);
++                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // Paper
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
+index 41a7a0c16110394b11b080dcdcdcdb797f98922f..4e7d5d686ea38468da05802b2b1857ffbde2a0ec 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderman.java
++++ b/src/main/java/net/minecraft/server/EntityEnderman.java
+@@ -353,7 +353,10 @@ public class EntityEnderman extends EntityMonster {
+             int j = MathHelper.floor(this.enderman.locY + random.nextDouble() * 3.0D);
+             int k = MathHelper.floor(this.enderman.locZ - 2.0D + random.nextDouble() * 4.0D);
+             BlockPosition blockposition = new BlockPosition(i, j, k);
+-            IBlockData iblockdata = world.getType(blockposition);
++            // PandaSpigot start
++            IBlockData iblockdata = world.getTypeIfLoaded(blockposition);
++            if (iblockdata == null) return;
++            // PandaSpigot end
+             Block block = iblockdata.getBlock();
+ 
+             if (EntityEnderman.c.contains(block)) {
+@@ -387,10 +390,13 @@ public class EntityEnderman extends EntityMonster {
+             int j = MathHelper.floor(this.a.locY + random.nextDouble() * 2.0D);
+             int k = MathHelper.floor(this.a.locZ - 1.0D + random.nextDouble() * 2.0D);
+             BlockPosition blockposition = new BlockPosition(i, j, k);
+-            Block block = world.getType(blockposition).getBlock();
++            // PandaSpigot start
++            IBlockData iblockdata = world.getTypeIfLoaded(blockposition);
++            if (iblockdata == null) return;
+             Block block1 = world.getType(blockposition.down()).getBlock();
+ 
+-            if (this.a(world, blockposition, this.a.getCarried().getBlock(), block, block1)) {
++            if (this.a(world, blockposition, this.a.getCarried().getBlock(), iblockdata.getBlock(), block1)) {
++            // PandaSpigot end
+                 // CraftBukkit start - Place event
+                 if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
+                 world.setTypeAndData(blockposition, this.a.getCarried(), 3);
+diff --git a/src/main/java/net/minecraft/server/IBlockAccess.java b/src/main/java/net/minecraft/server/IBlockAccess.java
+index 304e82754e7f0d3cec6bbd97d1e563f7421090cc..dbffce329559a49f174b57af15513ae9c9401042 100644
+--- a/src/main/java/net/minecraft/server/IBlockAccess.java
++++ b/src/main/java/net/minecraft/server/IBlockAccess.java
+@@ -1,11 +1,19 @@
+ package net.minecraft.server;
+ 
++import org.jetbrains.annotations.Nullable;
++
+ public interface IBlockAccess {
+ 
+     TileEntity getTileEntity(BlockPosition blockposition);
+ 
+     IBlockData getType(BlockPosition blockposition);
+ 
++    // Unicorn start
++    default @Nullable IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        return this.getType(blockposition);
++    }
++    // Unicorn end
++
+     boolean isEmpty(BlockPosition blockposition);
+ 
+     int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection);
+diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
+index 0b4343e1132c666e88006c691140e043cd8d26f3..f181034c59168385663387c8cb6fc47ac2c46a7c 100644
+--- a/src/main/java/net/minecraft/server/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -132,9 +132,9 @@ public final class SpawnerCreature {
+                             int i2 = blockposition1.getX();
+                             int j2 = blockposition1.getY();
+                             int k2 = blockposition1.getZ();
+-                            Block block = worldserver.getType(blockposition1).getBlock();
++                            IBlockData blockData = worldserver.getTypeIfLoaded(blockposition1); // Paper
+ 
+-                            if (!block.isOccluding()) {
++                            if (blockData != null && !blockData.getBlock().isOccluding()) { // Paper
+                                 int l2 = 0;
+                                 int i3 = 0;
+ 
+@@ -151,13 +151,13 @@ public final class SpawnerCreature {
+                                         if (i4 < 4) {
+                                             label108: {
+                                                 j3 += worldserver.random.nextInt(b1) - worldserver.random.nextInt(b1);
+-                                                k3 += worldserver.random.nextInt(1) - worldserver.random.nextInt(1);
++                                                //k3 += worldserver.random.nextInt(1) - worldserver.random.nextInt(1); // Unicorn - unnecessary (always 0)
+                                                 l3 += worldserver.random.nextInt(b1) - worldserver.random.nextInt(b1);
+                                                 BlockPosition blockposition2 = new BlockPosition(j3, k3, l3);
+                                                 float f = (float) j3 + 0.5F;
+                                                 float f1 = (float) l3 + 0.5F;
+ 
+-                                                if (!worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API
++                                                if (worldserver.getWorldBorder().isInBounds(blockposition2) && worldserver.getChunkIfLoaded(blockposition2) != null && !worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API // Paper - Don't load chunks for mob spawning
+                                                     if (biomebase_biomemeta == null) {
+                                                         biomebase_biomemeta = worldserver.a(enumcreaturetype, blockposition2);
+                                                         if (biomebase_biomemeta == null) {
+diff --git a/src/main/java/net/minecraft/server/Village.java b/src/main/java/net/minecraft/server/Village.java
+index 1e1d08b547884241811ad4eb6d730930e7e3d8be..66690e688ce470dba4c28d902daf8afab37aca1c 100644
+--- a/src/main/java/net/minecraft/server/Village.java
++++ b/src/main/java/net/minecraft/server/Village.java
+@@ -38,11 +38,35 @@ public class Village {
+         this.a = world;
+     }
+ 
++    // PandaSpigot start
++    private BlockPosition[] positions = null;
++    private void calculateNewCheckPositions() {
++        if(this.d == null || this.d.equals(BlockPosition.ZERO)) {
++            this.positions = null;
++        } else {
++            this.positions = new BlockPosition[] { this.d.a(-this.e, 0, -this.e),
++                    this.d.a(-this.e, 0, this.e),
++                    this.d.a(this.e, 0, -this.e),
++                    this.d.a(this.e, 0, this.e),
++                    this.d};
++        }
++    }
++    public boolean isVillageAreaLoaded() {
++        for(int i = 0; this.positions != null && i < this.positions.length; i++) {
++            if(this.a.isLoaded(this.positions[i])) {
++                return true;
++            }
++        }
++        return false;
++    }
++    // PandaSpigot end
++
+     public void a(World world) {
+         this.a = world;
+     }
+ 
+     public void a(int i) {
++        if(!this.isVillageAreaLoaded()) return; // PandaSpigot - avoid loading chunks
+         this.g = i;
+         this.m();
+         this.l();
+@@ -319,7 +343,12 @@ public class Village {
+     }
+ 
+     private boolean f(BlockPosition blockposition) {
+-        Block block = this.a.getType(blockposition).getBlock();
++        // Paper start
++        IBlockData iblockdata = this.a.getTypeIfLoaded(blockposition);
++        if (iblockdata == null)
++            return false;
++        Block block = iblockdata.getBlock();
++        // Paper end
+ 
+         return block instanceof BlockDoor ? block.getMaterial() == Material.WOOD : false;
+     }
+@@ -342,6 +371,7 @@ public class Village {
+ 
+             this.e = Math.max(32, (int) Math.sqrt((double) j) + 1);
+         }
++        this.calculateNewCheckPositions(); // PandaSpigot
+     }
+ 
+     public int a(String s) {
+@@ -396,7 +426,7 @@ public class Village {
+                 this.j.put(nbttagcompound2.getString("Name"), Integer.valueOf(nbttagcompound2.getInt("S")));
+             }
+         }
+-
++        this.calculateNewCheckPositions(); // PandaSpigot
+     }
+ 
+     public void b(NBTTagCompound nbttagcompound) {
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index ea15d84248a28bc3207a4523c5a92c6c94b18b5e..70e4350f123e9cfd30ad15aa04a10310c8fe7e38 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -685,7 +685,8 @@ public abstract class World implements IBlockAccess {
+ 
+     public void d(BlockPosition blockposition, final Block block) {
+         if (!this.isClientSide) {
+-            IBlockData iblockdata = this.getType(blockposition);
++            IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // Nacho-0012 :: Don't load chunks for physics
++            if (iblockdata == null) return; // Nacho-0012 :: Don't load chunks for physics
+ 
+             try {
+                 // CraftBukkit start
+@@ -763,6 +764,7 @@ public abstract class World implements IBlockAccess {
+             if (blockposition.getY() >= 256) {
+                 blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
+             }
++            if (!this.isLoaded(blockposition)) return 0; // Paper
+ 
+             return this.getChunkAtWorldCoords(blockposition).a(blockposition, 0);
+         }
+@@ -969,7 +971,8 @@ public abstract class World implements IBlockAccess {
+                 int i1 = MathHelper.floor(vec3d.b);
+                 int j1 = MathHelper.floor(vec3d.c);
+                 BlockPosition blockposition = new BlockPosition(l, i1, j1);
+-                IBlockData iblockdata = this.getType(blockposition);
++                IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // Paper
++                if (iblockdata == null) return null; // Paper
+                 Block block = iblockdata.getBlock();
+ 
+                 if ((!flag1 || block.a(this, blockposition, iblockdata) != null) && block.a(iblockdata, flag)) {
+@@ -1071,7 +1074,10 @@ public abstract class World implements IBlockAccess {
+                     i1 = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0);
+                     j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
+                     blockposition = new BlockPosition(l, i1, j1);
+-                    IBlockData iblockdata1 = this.getType(blockposition);
++                    // PandaSpigot start - ray tracing into an unloaded chunk should be treated as a miss, this saves a ton of lag for when AI tries to raytrace near unloaded chunks.
++                    IBlockData iblockdata1 = this.getTypeIfLoaded(blockposition);
++                    if (iblockdata1 == null) return null;
++                    // PandaSpigot end
+                     Block block1 = iblockdata1.getBlock();
+ 
+                     if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
+@@ -2732,8 +2738,11 @@ public abstract class World implements IBlockAccess {
+ 
+         for (int i1 = i; i1 <= j; ++i1) {
+             for (int j1 = k; j1 <= l; ++j1) {
+-                if (this.isChunkLoaded(i1, j1, true)) {
+-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, predicate);
++               // PandaSpigot start - Use getChunkIfLoaded
++                Chunk chunk = this.getChunkIfLoaded(i1, j1);
++                if (chunk != null) {
++                    chunk.a(entity, axisalignedbb, arraylist, predicate);
++                // PandaSpigot end
+                 }
+             }
+         }

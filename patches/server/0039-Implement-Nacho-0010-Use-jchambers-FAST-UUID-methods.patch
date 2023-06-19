@@ -460,7 +460,7 @@ index 84849186b6bb3cf7bdc5a61b9e807169da54fc0c..e5b8dab126b4344edf97a5bf26d4cd57
                              return null;
                          }
 diff --git a/src/main/java/net/minecraft/server/Village.java b/src/main/java/net/minecraft/server/Village.java
-index 072f466a269269b84f8b2870d912e54ebc8aec9e..23ee9b1c2f4cecf94a4137023e5924709c8f7618 100644
+index e67aa0423f6a28b286174662f29ffc32a74992d9..1e1d08b547884241811ad4eb6d730930e7e3d8be 100644
 --- a/src/main/java/net/minecraft/server/Village.java
 +++ b/src/main/java/net/minecraft/server/Village.java
 @@ -1,5 +1,6 @@
@@ -470,7 +470,7 @@ index 072f466a269269b84f8b2870d912e54ebc8aec9e..23ee9b1c2f4cecf94a4137023e592470
  import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfile;
  import java.util.Iterator;
-@@ -391,7 +392,7 @@ public class Village {
+@@ -386,7 +387,7 @@ public class Village {
  
              if (nbttagcompound2.hasKey("UUID")) {
                  UserCache usercache = MinecraftServer.getServer().getUserCache();
