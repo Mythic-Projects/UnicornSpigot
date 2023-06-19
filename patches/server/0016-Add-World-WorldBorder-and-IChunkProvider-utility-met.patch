@@ -1,0 +1,317 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 22:27:48 +0200
+Subject: [PATCH] Add World, WorldBorder and IChunkProvider utility methods
+
+
+diff --git a/src/main/java/net/minecraft/server/IChunkProvider.java b/src/main/java/net/minecraft/server/IChunkProvider.java
+index c68ffe0e040f239f093a4543bc07463b27f96228..4c8e6a9f69b3696fb0198d792c8a82667ec21cf5 100644
+--- a/src/main/java/net/minecraft/server/IChunkProvider.java
++++ b/src/main/java/net/minecraft/server/IChunkProvider.java
+@@ -1,5 +1,7 @@
+ package net.minecraft.server;
+ 
++import org.jetbrains.annotations.Nullable;
++
+ import java.util.List;
+ 
+ public interface IChunkProvider {
+@@ -10,6 +12,15 @@ public interface IChunkProvider {
+ 
+     Chunk getChunkAt(BlockPosition blockposition);
+ 
++    // Unicorn start
++    default @Nullable Chunk getChunkIfLoaded(int i, int j) {
++        if (!this.isChunkLoaded(i, j)) {
++            return null;
++        }
++        return this.getOrCreateChunk(i, j);
++    }
++    // Unicorn end
++
+     void getChunkAt(IChunkProvider ichunkprovider, int i, int j);
+ 
+     boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 41f7df5da651d1fc47366e7bda3229f69fae19d2..19e140f43e591888357505e4e51aa60ebf3d490a 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -184,7 +184,7 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public Chunk getChunkIfLoaded(int x, int z) {
+-        return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
++        return this.chunkProvider.getChunkIfLoaded(x, z); // Unicorn
+     }
+ 
+     protected World(IDataManager idatamanager, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
+@@ -306,21 +306,40 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     private boolean isValidLocation(BlockPosition blockposition) {
+-        return blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000 && blockposition.getY() >= 0 && blockposition.getY() < 256;
++    // Unicorn start
++        return isValidLocation(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    private boolean isValidLocation(int x, int y, int z) {
++        return isInWorldBounds(x, z) && y >= 0 && y < 256;
+     }
++    // Unicorn end
+ 
+     public boolean isEmpty(BlockPosition blockposition) {
+         return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
+     }
+ 
+     public boolean isLoaded(BlockPosition blockposition) {
+-        return this.a(blockposition, true);
++    // Unicorn start
++        return this.isLoaded(blockposition.getX(), blockposition.getZ());
++    }
++
++    public boolean isLoaded(int x, int z) {
++        return this.isChunkLoaded(x >> 4, z >> 4);
+     }
+ 
+     public boolean a(BlockPosition blockposition, boolean flag) {
+-        return !this.isValidLocation(blockposition) ? false : this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, flag);
++        return this.isLoadedAndValid(blockposition.getX(), blockposition.getY(), blockposition.getZ(), flag);
+     }
+ 
++    public boolean isLoadedAndValid(int x, int y, int z, boolean allowEmpty) {
++        if (!this.isValidLocation(x, y, z)) {
++            return false;
++        }
++        return this.isChunkLoaded(x >> 4, z >> 4, allowEmpty);
++    }
++    // Unicorn end
++
+     public boolean areChunksLoaded(BlockPosition blockposition, int i) {
+         return this.areChunksLoaded(blockposition, i, true);
+     }
+@@ -367,9 +386,15 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     protected boolean isChunkLoaded(int i, int j, boolean flag) {
+-        return this.chunkProvider.isChunkLoaded(i, j) && (flag || !this.chunkProvider.getOrCreateChunk(i, j).isEmpty());
++    // Unicorn start
++        return this.isChunkLoaded(i, j) && (flag || !this.chunkProvider.getOrCreateChunk(i, j).isEmpty());
+     }
+ 
++    public boolean isChunkLoaded(int i, int j) {
++        return this.getChunkIfLoaded(i, j) != null;
++    }
++    // Unicorn end
++
+     public Chunk getChunkAtWorldCoords(BlockPosition blockposition) {
+         return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+     }
+@@ -378,25 +403,90 @@ public abstract class World implements IBlockAccess {
+         return this.chunkProvider.getOrCreateChunk(i, j);
+     }
+ 
+-    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
++    // Unicorn start
++    private void setCapturedBlockType(BlockPosition blockposition, IBlockData iblockdata, int i) {
++        BlockState blockstate = null;
++        Iterator<BlockState> it = capturedBlockStates.iterator();
++        while (it.hasNext()) {
++            BlockState previous = it.next();
++            if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
++                blockstate = previous;
++                it.remove();
++                break;
++            }
++        }
++        if (blockstate == null) {
++            blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), i);
++        }
++        blockstate.setTypeId(CraftMagicNumbers.getId(iblockdata.getBlock()));
++        blockstate.setRawData((byte) iblockdata.getBlock().toLegacyData(iblockdata));
++        this.capturedBlockStates.add(blockstate);
++    }
++
++    public boolean setTypeAndDataIfLoaded(BlockPosition blockposition, IBlockData iblockdata, int i) {
+         // CraftBukkit start - tree generation
+         if (this.captureTreeGeneration) {
+-            BlockState blockstate = null;
+-            Iterator<BlockState> it = capturedBlockStates.iterator();
+-            while (it.hasNext()) {
+-                BlockState previous = it.next();
+-                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+-                    blockstate = previous;
+-                    it.remove();
+-                    break;
+-                }
+-            }
+-            if (blockstate == null) {
+-                blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), i);
+-            }
+-            blockstate.setTypeId(CraftMagicNumbers.getId(iblockdata.getBlock()));
+-            blockstate.setRawData((byte) iblockdata.getBlock().toLegacyData(iblockdata));
++            this.setCapturedBlockType(blockposition, iblockdata, i);
++            return true;
++        }
++        // CraftBukkit end
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        if (chunk == null) {
++            return false;
++        }
++
++        if (!this.isValidLocation(x, y, z)) {
++            return false;
++        }
++
++        if (!this.isClientSide && this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
++            return false;
++        }
++
++        Block block = iblockdata.getBlock();
++
++        // CraftBukkit start - capture blockstates
++        BlockState blockstate = null;
++        if (this.captureBlockStates) {
++            blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, x, y, z, i);
+             this.capturedBlockStates.add(blockstate);
++        }
++        // CraftBukkit end
++
++        IBlockData iblockdata1 = chunk.a(blockposition, iblockdata);
++
++        if (iblockdata1 == null) {
++            // CraftBukkit start - remove blockstate if failed
++            if (this.captureBlockStates) {
++                this.capturedBlockStates.remove(blockstate);
++            }
++            // CraftBukkit end
++            return false;
++        }
++        Block block1 = iblockdata1.getBlock();
++
++        if (block.p() != block1.p() || block.r() != block1.r()) {
++            this.x(blockposition);
++        }
++
++        // CraftBukkit start
++        if (!this.captureBlockStates) { // Don't notify clients or update physics while capturing blockstates
++            // Modularize client and physic updates
++            notifyAndUpdatePhysics(blockposition, chunk, block1, block, i);
++        }
++        // CraftBukkit end
++
++        return true;
++    }
++
++    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
++        // CraftBukkit start - tree generation
++        if (this.captureTreeGeneration) {
++            this.setCapturedBlockType(blockposition, iblockdata, i);
++        // Unicorn end
+             return true;
+         }
+         // CraftBukkit end
+@@ -492,6 +582,12 @@ public abstract class World implements IBlockAccess {
+         }
+     }
+ 
++    // Unicorn start
++    public boolean setTypeUpdateIfLoaded(BlockPosition blockPosition, IBlockData iblockdata) {
++        return this.setTypeAndDataIfLoaded(blockPosition, iblockdata, 3);
++    }
++    // Unicorn end
++
+     public boolean setTypeUpdate(BlockPosition blockposition, IBlockData iblockdata) {
+         return this.setTypeAndData(blockposition, iblockdata, 3);
+     }
+@@ -671,7 +767,7 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public int c(BlockPosition blockposition, boolean flag) {
+-        if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000) {
++        if (isInWorldBounds(blockposition)) { // Unicorn
+             if (flag && this.getType(blockposition).getBlock().s()) {
+                 int i = this.c(blockposition.up(), false);
+                 int j = this.c(blockposition.east(), false);
+@@ -715,9 +811,15 @@ public abstract class World implements IBlockAccess {
+     public BlockPosition getHighestBlockYAt(BlockPosition blockposition) {
+         int i;
+ 
+-        if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000) {
+-            if (this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, true)) {
+-                i = this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4).b(blockposition.getX() & 15, blockposition.getZ() & 15);
++        // Unicorn start
++        int x = blockposition.getX();
++        int z = blockposition.getZ();
++        if (isInWorldBounds(x, z)) {
++            int chunkX = x >> 4;
++            int chunkZ = z >> 4;
++            if (this.isChunkLoaded(chunkX, chunkZ, true)) {
++                i = this.getChunkAt(chunkX, chunkZ).b(x & 15, z & 15);
++        // Unicorn end
+             } else {
+                 i = 0;
+             }
+@@ -725,11 +827,11 @@ public abstract class World implements IBlockAccess {
+             i = this.F() + 1;
+         }
+ 
+-        return new BlockPosition(blockposition.getX(), i, blockposition.getZ());
++        return new BlockPosition(x, i, z); // Unicorn
+     }
+ 
+     public int b(int i, int j) {
+-        if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
++        if (isInWorldBounds(i, j)) { // Unicorn
+             if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
+                 return 0;
+             } else {
+@@ -1307,7 +1409,7 @@ public abstract class World implements IBlockAccess {
+                         blockposition_mutableblockposition.c(k1, i2, l1);
+                         IBlockData iblockdata;
+ 
+-                        if (k1 >= -30000000 && k1 < 30000000 && l1 >= -30000000 && l1 < 30000000) {
++                        if (isInWorldBounds(k1, l1)) { // Unicorn
+                             iblockdata = this.getType(blockposition_mutableblockposition);
+                         } else {
+                             iblockdata = Blocks.BEDROCK.getBlockData();
+@@ -3251,4 +3353,14 @@ public abstract class World implements IBlockAccess {
+ 
+         return k >= -short0 && k <= short0 && l >= -short0 && l <= short0 && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory'
+     }
++
++    // Unicorn start
++    private static boolean isInWorldBounds(int x, int z) {
++        return x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000;
++    }
++
++    private static boolean isInWorldBounds(BlockPosition pos) {
++        return isInWorldBounds(pos.getX(), pos.getZ());
++    }
++    // Unicorn end
+ }
+diff --git a/src/main/java/net/minecraft/server/WorldBorder.java b/src/main/java/net/minecraft/server/WorldBorder.java
+index 7ea40468e93e0026f5c39dc41f9c27d7c59d5fc1..6515af3423e69506f6d1d1833e96d05a59d36559 100644
+--- a/src/main/java/net/minecraft/server/WorldBorder.java
++++ b/src/main/java/net/minecraft/server/WorldBorder.java
+@@ -29,10 +29,17 @@ public class WorldBorder {
+         this.l = 5;
+     }
+ 
++    public boolean isInBounds(BlockPosition blockposition) { return this.a(blockposition); } // Paper - OBFHELPER
+     public boolean a(BlockPosition blockposition) {
+-        return (double) (blockposition.getX() + 1) > this.b() && (double) blockposition.getX() < this.d() && (double) (blockposition.getZ() + 1) > this.c() && (double) blockposition.getZ() < this.e();
++        return this.isInBoundsCords(blockposition.getX(), blockposition.getZ()); // Unicorn
+     }
+ 
++    // Unicorn start
++    public boolean isInBoundsCords(int x, int z) {
++        return (double) (x + 1) > this.b() && (double) x < this.d() && (double) (z + 1) > this.c() && (double) z < this.e();
++    }
++    // Unicorn end
++
+     // CraftBukkit start - split method
+     public boolean isInBounds(ChunkCoordIntPair chunkcoordintpair) {
+         return isInBounds(chunkcoordintpair.x, chunkcoordintpair.z);
