@@ -1,0 +1,220 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheMolkaPL <themolkapl@gmail.com>
+Date: Mon, 19 Jun 2023 17:09:50 +0200
+Subject: [PATCH] Backport Bukkit patch for memory leak in Location
+
+Co-authored-by: Peridot <peridot491@protonmail.com>
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index e7af316d60db4cd8ea3976d7534c7d708f0016bc..aa8919e0c11b9cf903ddf4821136da988bfb2739 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -1,19 +1,26 @@
+ package org.bukkit;
+ 
++import java.lang.ref.Reference;
++import java.lang.ref.WeakReference;
+ import java.util.HashMap;
+ import java.util.Map;
++import java.util.Objects;
+ 
++import org.apache.commons.lang.Validate;
+ import org.bukkit.block.Block;
+ import org.bukkit.configuration.serialization.ConfigurationSerializable;
+ import org.bukkit.util.NumberConversions;
+ import static org.bukkit.util.NumberConversions.checkFinite;
+ import org.bukkit.util.Vector;
++import org.jetbrains.annotations.Contract;
++import org.jetbrains.annotations.Nullable;
++import org.jetbrains.annotations.UnknownNullability;
+ 
+ /**
+  * Represents a 3-dimensional position in a world
+  */
+ public class Location implements Cloneable, ConfigurationSerializable {
+-    private World world;
++    private Reference<World> world; // Unicorn - use reference to prevent memory leak
+     private double x;
+     private double y;
+     private double z;
+@@ -28,7 +35,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param y The y-coordinate of this new location
+      * @param z The z-coordinate of this new location
+      */
+-    public Location(final World world, final double x, final double y, final double z) {
++    public Location(@UnknownNullability final World world, final double x, final double y, final double z) { // Unicorn
+         this(world, x, y, z, 0, 0);
+     }
+ 
+@@ -42,8 +49,8 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param yaw The absolute rotation on the x-plane, in degrees
+      * @param pitch The absolute rotation on the y-plane, in degrees
+      */
+-    public Location(final World world, final double x, final double y, final double z, final float yaw, final float pitch) {
+-        this.world = world;
++    public Location(@UnknownNullability final World world, final double x, final double y, final double z, final float yaw, final float pitch) { // Unicorn
++        this.world = this.wrapWorld(world); // Unicorn - use reference to prevent memory leak
+         this.x = x;
+         this.y = y;
+         this.z = z;
+@@ -56,8 +63,10 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      *
+      * @param world New world that this location resides in
+      */
+-    public void setWorld(World world) {
+-        this.world = world;
++    // Unicorn start - use reference to prevent memory leak
++    public void setWorld(@Nullable World world) {
++        this.world = this.wrapWorld(world);
++    // Unicorn end
+     }
+ 
+     /**
+@@ -65,9 +74,28 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      *
+      * @return World that contains this location
+      */
+-    public World getWorld() {
++    // Unicorn start - use reference to prevent memory leak
++    public @Nullable World getWorld() {
++        if (this.world == null) {
++            return null;
++        }
++        return this.world.get();
++    }
++
++    /**
++     * Gets the world that this location resides in, or null if the world is unloaded
++     *
++     * @return World that contains this location
++     */
++    public @UnknownNullability World getWorldSafe() {
++        if (this.world == null) {
++            return null;
++        }
++        World world = this.world.get();
++        Validate.notNull(world, "World unloaded");
+         return world;
+     }
++    // Unicorn end
+ 
+     /**
+      * Gets the chunk at the represented location
+@@ -75,7 +103,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return Chunk at the represented location
+      */
+     public Chunk getChunk() {
+-        return world.getChunkAt(this);
++        return this.getWorldSafe().getChunkAt(this); // Unicorn - use reference to prevent memory leak
+     }
+ 
+     /**
+@@ -84,7 +112,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return Block at the represented location
+      */
+     public Block getBlock() {
+-        return world.getBlockAt(this);
++        return this.getWorldSafe().getBlockAt(this); // Unicorn - use reference to prevent memory leak
+     }
+ 
+     /**
+@@ -307,7 +335,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @throws IllegalArgumentException for differing worlds
+      */
+     public Location add(Location vec) {
+-        if (vec == null || vec.getWorld() != getWorld()) {
++        if (vec == null || vec.getWorldSafe() != getWorldSafe()) { // Unicorn - use reference to prevent memory leak
+             throw new IllegalArgumentException("Cannot add Locations of differing worlds");
+         }
+ 
+@@ -356,7 +384,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @throws IllegalArgumentException for differing worlds
+      */
+     public Location subtract(Location vec) {
+-        if (vec == null || vec.getWorld() != getWorld()) {
++        if (vec == null || vec.getWorldSafe() != getWorldSafe()) { // Unicorn - use reference to prevent memory leak
+             throw new IllegalArgumentException("Cannot add Locations of differing worlds");
+         }
+ 
+@@ -450,11 +478,16 @@ public class Location implements Cloneable, ConfigurationSerializable {
+     public double distanceSquared(Location o) {
+         if (o == null) {
+             throw new IllegalArgumentException("Cannot measure distance to a null location");
+-        } else if (o.getWorld() == null || getWorld() == null) {
++        // Unicorn start - use reference to prevent memory leak
++        }
++        World world = this.getWorldSafe();
++        World otherWorld = o.getWorldSafe();
++        if (otherWorld == null || world == null) {
+             throw new IllegalArgumentException("Cannot measure distance to a null world");
+-        } else if (o.getWorld() != getWorld()) {
+-            throw new IllegalArgumentException("Cannot measure distance between " + getWorld().getName() + " and " + o.getWorld().getName());
++        } else if (world != otherWorld) {
++            throw new IllegalArgumentException("Cannot measure distance between " + world.getName() + " and " + otherWorld.getName());
+         }
++        // Unicorn end
+ 
+         return NumberConversions.square(x - o.x) + NumberConversions.square(y - o.y) + NumberConversions.square(z - o.z);
+     }
+@@ -497,7 +530,11 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         }
+         final Location other = (Location) obj;
+ 
+-        if (this.world != other.world && (this.world == null || !this.world.equals(other.world))) {
++        // Unicorn start - use reference to prevent memory leak
++        World world = this.getWorld();
++        World otherWorld = this.getWorld();
++        if (!Objects.equals(world, otherWorld)) {
++        // Unicorn end
+             return false;
+         }
+         if (Double.doubleToLongBits(this.x) != Double.doubleToLongBits(other.x)) {
+@@ -522,7 +559,10 @@ public class Location implements Cloneable, ConfigurationSerializable {
+     public int hashCode() {
+         int hash = 3;
+ 
+-        hash = 19 * hash + (this.world != null ? this.world.hashCode() : 0);
++        // Unicorn start - use reference to prevent memory leak
++        World world = this.getWorld();
++        hash = 19 * hash + (world != null ? world.hashCode() : 0);
++        // Unicorn end
+         hash = 19 * hash + (int) (Double.doubleToLongBits(this.x) ^ (Double.doubleToLongBits(this.x) >>> 32));
+         hash = 19 * hash + (int) (Double.doubleToLongBits(this.y) ^ (Double.doubleToLongBits(this.y) >>> 32));
+         hash = 19 * hash + (int) (Double.doubleToLongBits(this.z) ^ (Double.doubleToLongBits(this.z) >>> 32));
+@@ -533,7 +573,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+ 
+     @Override
+     public String toString() {
+-        return "Location{" + "world=" + world + ",x=" + x + ",y=" + y + ",z=" + z + ",pitch=" + pitch + ",yaw=" + yaw + '}';
++        return "Location{" + "world=" + this.getWorld() + ",x=" + x + ",y=" + y + ",z=" + z + ",pitch=" + pitch + ",yaw=" + yaw + '}'; // Unicorn - use reference to prevent memory leak
+     }
+ 
+     /**
+@@ -555,6 +595,13 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         }
+     }
+ 
++    // Unicorn start - use reference to prevent memory leak
++    @Contract("null -> null")
++    private Reference<World> wrapWorld(@Nullable World world) {
++        return world == null ? null : new WeakReference<>(world);
++    }
++    // Unicorn end
++
+     /**
+      * Safely converts a double (location coordinate) to an int (block
+      * coordinate)
+@@ -569,7 +616,12 @@ public class Location implements Cloneable, ConfigurationSerializable {
+ 	@Utility
+ 	public Map<String, Object> serialize() {
+ 		Map<String, Object> data = new HashMap<String, Object>();
+-		data.put("world", this.world.getName());
++
++        // Unicorn start - use reference to prevent memory leak
++        if (this.world != null) {
++            data.put("world", getWorld().getName());
++        }
++        // Unicorn end
+ 
+ 		data.put("x", this.x);
+ 		data.put("y", this.y);
