@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 17:20:48 +0200
+Subject: [PATCH] Add Location#isWorldLoaded and #getChunkX/Z
+
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index 5061c981f5d1281a0d48fcb6c22b274fa387be7e..7413d412051e2a395ff91f8617d3fa5f54532370 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -98,6 +98,22 @@ public class Location implements Cloneable, ConfigurationSerializable {
+     }
+     // Unicorn end
+ 
++    // Unicorn start
++    /**
++     * Checks if world in this location is present and loaded.
++     *
++     * @return true if is loaded, otherwise false
++     */
++    public boolean isWorldLoaded() {
++        if (this.world == null) {
++            return false;
++        }
++
++        World world = this.world.get();
++        return world != null && Bukkit.getWorld(world.getUID()) != null;
++    }
++    // Unicorn end
++
+     /**
+      * Gets the chunk at the represented location
+      *
+@@ -144,6 +160,15 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         return locToBlock(x);
+     }
+ 
++    // Unicorn start
++    /**
++     * Gets the chunk's X component this location is.
++     */
++    public int getChunkX() {
++        return this.getBlockX() >> 4;
++    }
++    // Unicorn end
++
+     /**
+      * Sets the y-coordinate of this location
+      *
+@@ -200,6 +225,15 @@ public class Location implements Cloneable, ConfigurationSerializable {
+         return locToBlock(z);
+     }
+ 
++    // Unicorn start
++    /**
++     * Gets the chunk's Z component this location is.
++     */
++    public int getChunkZ() {
++        return this.getBlockZ() >> 4;
++    }
++    // Unicorn end
++
+     /**
+      * Sets the yaw of this location, measured in degrees.
+      * <ul>

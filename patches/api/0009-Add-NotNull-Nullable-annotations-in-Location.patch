@@ -1,0 +1,177 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 17:31:19 +0200
+Subject: [PATCH] Add @NotNull/@Nullable annotations in Location
+
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index aa8919e0c11b9cf903ddf4821136da988bfb2739..5061c981f5d1281a0d48fcb6c22b274fa387be7e 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -13,6 +13,7 @@ import org.bukkit.util.NumberConversions;
+ import static org.bukkit.util.NumberConversions.checkFinite;
+ import org.bukkit.util.Vector;
+ import org.jetbrains.annotations.Contract;
++import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ import org.jetbrains.annotations.UnknownNullability;
+ 
+@@ -102,7 +103,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      *
+      * @return Chunk at the represented location
+      */
+-    public Chunk getChunk() {
++    public @NotNull Chunk getChunk() { // Unicorn
+         return this.getWorldSafe().getChunkAt(this); // Unicorn - use reference to prevent memory leak
+     }
+ 
+@@ -111,7 +112,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      *
+      * @return Block at the represented location
+      */
+-    public Block getBlock() {
++    public @NotNull Block getBlock() { // Unicorn
+         return this.getWorldSafe().getBlockAt(this); // Unicorn - use reference to prevent memory leak
+     }
+ 
+@@ -274,7 +275,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return a vector pointing the direction of this location's {@link
+      *     #getPitch() pitch} and {@link #getYaw() yaw}
+      */
+-    public Vector getDirection() {
++    public @NotNull Vector getDirection() { // Unicorn
+         Vector vector = new Vector();
+ 
+         double rotX = this.getYaw();
+@@ -297,7 +298,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param vector the direction vector
+      * @return the same location
+      */
+-    public Location setDirection(Vector vector) {
++    public @NotNull Location setDirection(@NotNull Vector vector) { // Unicorn
+         /*
+          * Sin = Opp / Hyp
+          * Cos = Adj / Hyp
+@@ -334,7 +335,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return the same location
+      * @throws IllegalArgumentException for differing worlds
+      */
+-    public Location add(Location vec) {
++    public @NotNull Location add(@NotNull Location vec) { // Unicorn
+         if (vec == null || vec.getWorldSafe() != getWorldSafe()) { // Unicorn - use reference to prevent memory leak
+             throw new IllegalArgumentException("Cannot add Locations of differing worlds");
+         }
+@@ -352,7 +353,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param vec Vector to use
+      * @return the same location
+      */
+-    public Location add(Vector vec) {
++    public @NotNull Location add(@NotNull Vector vec) { // Unicorn
+         this.x += vec.getX();
+         this.y += vec.getY();
+         this.z += vec.getZ();
+@@ -368,7 +369,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param z Z coordinate
+      * @return the same location
+      */
+-    public Location add(double x, double y, double z) {
++    public @NotNull Location add(double x, double y, double z) { // Unicorn
+         this.x += x;
+         this.y += y;
+         this.z += z;
+@@ -383,7 +384,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return the same location
+      * @throws IllegalArgumentException for differing worlds
+      */
+-    public Location subtract(Location vec) {
++    public @NotNull Location subtract(@NotNull Location vec) { // Unicorn
+         if (vec == null || vec.getWorldSafe() != getWorldSafe()) { // Unicorn - use reference to prevent memory leak
+             throw new IllegalArgumentException("Cannot add Locations of differing worlds");
+         }
+@@ -401,7 +402,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param vec The vector to use
+      * @return the same location
+      */
+-    public Location subtract(Vector vec) {
++    public @NotNull Location subtract(@NotNull Vector vec) { // Unicorn
+         this.x -= vec.getX();
+         this.y -= vec.getY();
+         this.z -= vec.getZ();
+@@ -418,7 +419,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @param z Z coordinate
+      * @return the same location
+      */
+-    public Location subtract(double x, double y, double z) {
++    public @NotNull Location subtract(double x, double y, double z) { // Unicorn
+         this.x -= x;
+         this.y -= y;
+         this.z -= z;
+@@ -463,7 +464,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return the distance
+      * @throws IllegalArgumentException for differing worlds
+      */
+-    public double distance(Location o) {
++    public double distance(@NotNull Location o) { // Unicorn
+         return Math.sqrt(distanceSquared(o));
+     }
+ 
+@@ -475,7 +476,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return the distance
+      * @throws IllegalArgumentException for differing worlds
+      */
+-    public double distanceSquared(Location o) {
++    public double distanceSquared(@NotNull Location o) { // Unicorn
+         if (o == null) {
+             throw new IllegalArgumentException("Cannot measure distance to a null location");
+         // Unicorn start - use reference to prevent memory leak
+@@ -500,7 +501,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @see Vector
+      * @return the same location
+      */
+-    public Location multiply(double m) {
++    public @NotNull Location multiply(double m) {
+         x *= m;
+         y *= m;
+         z *= m;
+@@ -513,7 +514,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @see Vector
+      * @return the same location
+      */
+-    public Location zero() {
++    public @NotNull Location zero() {
+         x = 0;
+         y = 0;
+         z = 0;
+@@ -582,12 +583,12 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @return New Vector containing the coordinates represented by this
+      *     Location
+      */
+-    public Vector toVector() {
++    public @NotNull Vector toVector() { // Unicorn
+         return new Vector(x, y, z);
+     }
+ 
+     @Override
+-    public Location clone() {
++    public @NotNull Location clone() { // Unicorn
+         try {
+             return (Location) super.clone();
+         } catch (CloneNotSupportedException e) {
+@@ -614,7 +615,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+     }
+ 
+ 	@Utility
+-	public Map<String, Object> serialize() {
++	public @NotNull Map<String, Object> serialize() { // Unicorn
+ 		Map<String, Object> data = new HashMap<String, Object>();
+ 
+         // Unicorn start - use reference to prevent memory leak
+@@ -641,7 +642,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+      * @throws IllegalArgumentException if the world don't exists
+      * @see ConfigurationSerializable
+      */
+-	public static Location deserialize(Map<String, Object> args) {
++	public static @NotNull Location deserialize(Map<String, Object> args) { // Unicorn
+ 		World world = Bukkit.getWorld((String) args.get("world"));
+ 		if (world == null) {
+ 			throw new IllegalArgumentException("unknown world");
