@@ -1,0 +1,333 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 21:00:28 +0200
+Subject: [PATCH] Use fastutil in some places
+
+Unicorn:
+- EntityTrackerEntry
+- PlayerList
+- SpigotConfig.Stats.forcedStats
+- PlayerChunkMap
+- PortalTravelAgent
+
+Paper:
+- NBTTagCompound
+- HashTreeSet
+
+SportPaper:
+- DataWatcher
+- ChunkProviderServer
+
+IonSpigot:
+- ChunkProviderServer
+
+Nacho:
+- HandshakeListener
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 9ccdf6c4f48296b991c0661536eab2b1b86833a9..8960f208a6a7227e399caf3df322d82dcc645fba 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -31,6 +31,7 @@ dependencies {
+     implementation("eu.okaeri:okaeri-configs-validator-okaeri:$okaeriConfigsVersion")
+ 
+     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
++    implementation("it.unimi.dsi:fastutil:8.5.11")
+     // UnicornSpigot libraries end
+ 
+     testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 8c7815f461e944c46dc8652a29446bf290536026..b5b748c57d547a29782123f0205183a6a0aa914f 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -29,12 +29,12 @@ import org.github.paperspigot.exception.ServerInternalException;
+ public class ChunkProviderServer implements IChunkProvider {
+ 
+     private static final Logger b = LogManager.getLogger();
+-    public LongHashSet unloadQueue = new LongHashSet(); // CraftBukkit - LongHashSet
++    public it.unimi.dsi.fastutil.longs.LongSet unloadQueue = new it.unimi.dsi.fastutil.longs.LongOpenHashSet(20); // IonSpigot - use fastutil set
+     public Chunk emptyChunk;
+     public IChunkProvider chunkProvider;
+     private IChunkLoader chunkLoader;
+     public boolean forceChunkLoad = false; // CraftBukkit - true -> false
+-    public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
++    public it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> chunks = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>(8192, 0.5f); // SportPaper - use fastutil map
+     public WorldServer world;
+ 
+     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
+@@ -373,8 +373,12 @@ public class ChunkProviderServer implements IChunkProvider {
+         if (!this.world.savingDisabled) {
+             // CraftBukkit start
+             Server server = this.world.getServer();
+-            for (int i = 0; i < 100 && !this.unloadQueue.isEmpty(); ++i) {
+-                long chunkcoordinates = this.unloadQueue.popFirst();
++            // SportPaper start
++            it.unimi.dsi.fastutil.longs.LongIterator iterator = unloadQueue.iterator();
++            for (int i = 0; i < 100 && iterator.hasNext(); ++i) {
++                long chunkcoordinates = iterator.nextLong();
++                iterator.remove();
++                // SportPaper end
+                 Chunk chunk = this.chunks.get(chunkcoordinates);
+                 if (chunk == null) continue;
+ 
+diff --git a/src/main/java/net/minecraft/server/DataWatcher.java b/src/main/java/net/minecraft/server/DataWatcher.java
+index dec091e7311056650dd03a980b2c4aa8299fac4b..313db0d35a24662a6da4d1984e9e7b952552e640 100644
+--- a/src/main/java/net/minecraft/server/DataWatcher.java
++++ b/src/main/java/net/minecraft/server/DataWatcher.java
+@@ -10,18 +10,24 @@ import java.util.Map;
+ import java.util.concurrent.locks.ReadWriteLock;
+ import java.util.concurrent.locks.ReentrantReadWriteLock;
+ import org.apache.commons.lang3.ObjectUtils;
++// SportPaper start
++import it.unimi.dsi.fastutil.objects.Object2IntMap;
++import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
++import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
++import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
++// SportPaper end
+ 
+ public class DataWatcher {
+ 
+     private final Entity a;
+     private boolean b = true;
+-    // Spigot Start
+-    private static final gnu.trove.map.TObjectIntMap classToId = new gnu.trove.map.hash.TObjectIntHashMap( 10, 0.5f, -1 );
+-    private final gnu.trove.map.TIntObjectMap dataValues = new gnu.trove.map.hash.TIntObjectHashMap( 10, 0.5f, -1 );
++    // SportPaper start
++    private static final Object2IntMap<Class<?>> classToId = new Object2IntOpenHashMap(10, 0.5f);
++    private final Int2ObjectMap dataValues = new Int2ObjectOpenHashMap(10, 0.5f);
+     // These exist as an attempt at backwards compatability for (broken) NMS plugins
+-    private static final Map<Class<?>, Integer> c = gnu.trove.TDecorators.wrap( classToId );
+-    private final Map<Integer, DataWatcher.WatchableObject> d = gnu.trove.TDecorators.wrap( dataValues );
+-    // Spigot End
++    private static final Map<Class<?>, Integer> c = classToId;
++    private final Map<Integer, DataWatcher.WatchableObject> d = dataValues;
++    // SportPaper end
+     private boolean e;
+     private ReadWriteLock f = new ReentrantReadWriteLock();
+ 
+@@ -144,7 +150,7 @@ public class DataWatcher {
+ 
+         if (this.e) {
+             this.f.readLock().lock();
+-            Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
++            Iterator iterator = this.dataValues.values().iterator(); // SportPaper
+ 
+             while (iterator.hasNext()) {
+                 DataWatcher.WatchableObject datawatcher_watchableobject = (DataWatcher.WatchableObject) iterator.next();
+@@ -179,7 +185,7 @@ public class DataWatcher {
+ 
+     public void a(PacketDataSerializer packetdataserializer) throws IOException {
+         this.f.readLock().lock();
+-        Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
++        Iterator iterator = this.dataValues.values().iterator(); // SportPaper
+ 
+         while (iterator.hasNext()) {
+             DataWatcher.WatchableObject datawatcher_watchableobject = (DataWatcher.WatchableObject) iterator.next();
+@@ -196,7 +202,7 @@ public class DataWatcher {
+ 
+         this.f.readLock().lock();
+ 
+-        arraylist.addAll(this.dataValues.valueCollection()); // Spigot
++        arraylist.addAll(this.dataValues.values()); // SportPaper
+         // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
+         for ( int i = 0; i < arraylist.size(); i++ )
+         {
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 1fc2388eaa178366b92e9f4e2d6b32ed8a83c0dc..21990a1528f129e40c94468a99b1850b4c26b0cb 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -42,7 +42,7 @@ public class EntityTrackerEntry {
+     // PaperSpigot start
+     // Replace trackedPlayers Set with a Map. The value is true until the player receives
+     // their first update (which is forced to have absolute coordinates), false afterward.
+-    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.HashMap<EntityPlayer, Boolean>();
++    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap<>(); // Unicorn - Use fastutil map
+     public Set<EntityPlayer> trackedPlayers = trackedPlayerMap.keySet();
+     // PaperSpigot end
+ 
+diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
+index 2c067acb2bc73913166c355f437998c34a8103f4..5dd2c826ea1eab7ce7274b266b25be37cb43a29b 100644
+--- a/src/main/java/net/minecraft/server/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/HandshakeListener.java
+@@ -10,7 +10,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+ 
+     private static final com.google.gson.Gson gson = new com.google.gson.Gson(); // Spigot
+     // CraftBukkit start - add fields
+-    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
++    private static final java.util.Map<InetAddress, Long> throttleTracker = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>(); // Nacho - Use fastutil map
+     private static int throttleCounter = 0;
+     // CraftBukkit end
+ 
+diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
+index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..28ecd7496c3e8c49fab74f94dbe7df6ca9d216f0 100644
+--- a/src/main/java/net/minecraft/server/NBTTagCompound.java
++++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
+@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
+ 
+ public class NBTTagCompound extends NBTBase {
+ 
+-    private Map<String, NBTBase> map = Maps.newHashMap();
++    private Map<String, NBTBase> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // Paper - reduce memory footprint of NBTTagCompound
+ 
+     public NBTTagCompound() {}
+ 
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..43f47ae6d47e86fc7bfd03cb5c6f09b100c844dc 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -19,8 +19,8 @@ public class PlayerChunkMap {
+ 
+     private static final Logger a = LogManager.getLogger();
+     private final WorldServer world;
+-    private final List<EntityPlayer> managedPlayers = Lists.newArrayList();
+-    private final LongHashMap<PlayerChunkMap.PlayerChunk> d = new LongHashMap();
++    private final List<EntityPlayer> managedPlayers = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // Unicorn - use fastutil list
++    private final it.unimi.dsi.fastutil.longs.Long2ObjectMap<PlayerChunkMap.PlayerChunk> d = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>(3072, 0.75F); // Unicorn - use fastutil map
+     private final Queue<PlayerChunkMap.PlayerChunk> e = new java.util.concurrent.ConcurrentLinkedQueue<PlayerChunkMap.PlayerChunk>(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
+     private final Queue<PlayerChunkMap.PlayerChunk> f = new java.util.concurrent.ConcurrentLinkedQueue<PlayerChunkMap.PlayerChunk>(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
+     private int g;
+@@ -82,12 +82,12 @@ public class PlayerChunkMap {
+     public boolean a(int i, int j) {
+         long k = (long) i + 2147483647L | (long) j + 2147483647L << 32;
+ 
+-        return this.d.getEntry(k) != null;
++        return this.d.get(k) != null; // Unicorn
+     }
+ 
+     private PlayerChunkMap.PlayerChunk a(int i, int j, boolean flag) {
+         long k = (long) i + 2147483647L | (long) j + 2147483647L << 32;
+-        PlayerChunkMap.PlayerChunk playerchunkmap_playerchunk = (PlayerChunkMap.PlayerChunk) this.d.getEntry(k);
++        PlayerChunkMap.PlayerChunk playerchunkmap_playerchunk = this.d.get(k); // Unicorn
+ 
+         if (playerchunkmap_playerchunk == null && flag) {
+             playerchunkmap_playerchunk = new PlayerChunkMap.PlayerChunk(i, j);
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 0358cb5fc62a67ed99a006a3d44db11670360f6c..1394269b53d6d081a694a3834fce74805090169a 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -50,7 +50,7 @@ public abstract class PlayerList {
+     private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
+     private final MinecraftServer server;
+     public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
+-    private final Map<UUID, EntityPlayer> j = Maps.newHashMap();
++    private final Map<UUID, EntityPlayer> j = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Unicorn - use fastutil map
+     private final GameProfileBanList k;
+     private final IpBanList l;
+     private final OpList operators;
+diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+index 72f3735b196cbd7d420c6338eb7aba01b40c7804..f37202aedb203bae77276ae0502be6770a970db4 100644
+--- a/src/main/java/net/minecraft/server/PortalTravelAgent.java
++++ b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+@@ -15,7 +15,7 @@ public class PortalTravelAgent {
+ 
+     private final WorldServer a;
+     private final Random b;
+-    private final LongHashMap<PortalTravelAgent.ChunkCoordinatesPortal> c = new LongHashMap();
++    private final it.unimi.dsi.fastutil.longs.Long2ObjectMap<PortalTravelAgent.ChunkCoordinatesPortal> c = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap(3072, 0.75F); // Unicorn - use fastutil map
+     private final List<Long> d = Lists.newArrayList();
+ 
+     public PortalTravelAgent(WorldServer worldserver) {
+@@ -123,8 +123,8 @@ public class PortalTravelAgent {
+         Object object = BlockPosition.ZERO;
+         long k = ChunkCoordIntPair.a(i, j);
+ 
+-        if (this.c.contains(k)) {
+-            PortalTravelAgent.ChunkCoordinatesPortal portaltravelagent_chunkcoordinatesportal = (PortalTravelAgent.ChunkCoordinatesPortal) this.c.getEntry(k);
++        if (this.c.containsKey(k)) { // Unicorn
++            PortalTravelAgent.ChunkCoordinatesPortal portaltravelagent_chunkcoordinatesportal = this.c.get(k); // Unicorn
+ 
+             d0 = 0.0D;
+             object = portaltravelagent_chunkcoordinatesportal;
+@@ -461,7 +461,7 @@ public class PortalTravelAgent {
+ 
+             while (iterator.hasNext()) {
+                 Long olong = (Long) iterator.next();
+-                PortalTravelAgent.ChunkCoordinatesPortal portaltravelagent_chunkcoordinatesportal = (PortalTravelAgent.ChunkCoordinatesPortal) this.c.getEntry(olong.longValue());
++                PortalTravelAgent.ChunkCoordinatesPortal portaltravelagent_chunkcoordinatesportal = this.c.get(olong.longValue()); // Unicorn
+ 
+                 if (portaltravelagent_chunkcoordinatesportal == null || portaltravelagent_chunkcoordinatesportal.c < j) {
+                     iterator.remove();
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 469545559f9eb0fc6b50c30d93ad86bfa2a35122..7b542969577b543668ac6e6731263923ca06d0bd 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -382,7 +382,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 int chunkX = World.keyToX( chunkCoord );
+                 int chunkZ = World.keyToZ( chunkCoord );
+                 // If unloaded, or in procedd of being unloaded, drop it
+-                if ( ( !this.chunkProvider.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
++                if ( ( !this.chunkProvider.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( LongHash.toLong(chunkX, chunkZ) ) ) )
+                 {
+                     iter.remove();
+                     continue;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 34427798737679318961ea25919170a5266ac994..b7a2ed1ddb9459d05b702de8b66df51e31dfda31 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -219,7 +219,7 @@ public class CraftWorld implements World {
+             world.chunkProviderServer.saveChunkNOP(chunk);
+         }
+ 
+-        world.chunkProviderServer.unloadQueue.remove(x, z);
++        world.chunkProviderServer.unloadQueue.remove(LongHash.toLong(x, z)); // SportPaper
+         world.chunkProviderServer.chunks.remove(LongHash.toLong(x, z));
+ 
+         return true;
+@@ -228,7 +228,7 @@ public class CraftWorld implements World {
+     public boolean regenerateChunk(int x, int z) {
+         unloadChunk(x, z, false, false);
+ 
+-        world.chunkProviderServer.unloadQueue.remove(x, z);
++        world.chunkProviderServer.unloadQueue.remove(LongHash.toLong(x, z)); // SportPaper
+ 
+         net.minecraft.server.Chunk chunk = null;
+ 
+@@ -277,8 +277,11 @@ public class CraftWorld implements World {
+             return world.chunkProviderServer.getChunkAt(x, z) != null;
+         }
+ 
+-        world.chunkProviderServer.unloadQueue.remove(x, z);
+-        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z));
++        // Unicorn start
++        long key = LongHash.toLong(x, z);
++        world.chunkProviderServer.unloadQueue.remove(key); // SportPaper
++        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(key);
++        // Unicorn end
+ 
+         if (chunk == null) {
+             chunk = world.chunkProviderServer.loadChunk(x, z);
+@@ -1407,7 +1410,7 @@ public class CraftWorld implements World {
+             }
+ 
+             // Already unloading?
+-            if (cps.unloadQueue.contains(chunk.locX, chunk.locZ)) {
++            if (cps.unloadQueue.contains(LongHash.toLong(chunk.locX, chunk.locZ))) { // SportPaper
+                 continue;
+             }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java b/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
+index 80a5c29f3b9f0e6ccb2acb01a6be3726d6b368b3..14b6924d490a7efc016444e06d155a8a4845e64b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
+@@ -8,7 +8,7 @@ import java.util.TreeSet;
+ 
+ public class HashTreeSet<V> implements Set<V> {
+ 
+-    private HashSet<V> hash = new HashSet<V>();
++    private Set<V> hash = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>(); // Paper - Use fastutil set
+     private TreeSet<V> tree = new TreeSet<V>();
+ 
+     public HashTreeSet() {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
+index 751fd5863bbfaa6d718e4cfa832139f79cff8baf..5ed3987428463140ff445c598e4363a471eb8c96 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
+@@ -233,7 +233,7 @@ public class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
+ 
+         @Exclude
+         @Remap("forcedStats")
+-        public Map<String, Integer> forcedStats = new HashMap<>();
++        public Map<String, Integer> forcedStats = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(); // Unicorn - Use fastutil map
+ 
+         @Override
+         public void loadProperties() {
