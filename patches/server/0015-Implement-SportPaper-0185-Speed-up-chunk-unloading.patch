@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 21:45:51 +0200
+Subject: [PATCH] Implement [SportPaper-0185] Speed up chunk unloading
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index b5b748c57d547a29782123f0205183a6a0aa914f..b9d2e7b524d2f1111c489d3ccfbc96896c1e6018 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -121,7 +121,6 @@ public class ChunkProviderServer implements IChunkProvider {
+     public Chunk getChunkAt(int i, int j, Runnable runnable) {
+         // IonSpigot start - Only create key once
+         long key = LongHash.toLong(i, j);
+-        unloadQueue.remove(key);
+         Chunk chunk = chunks.get(key);
+         // IonSpigot end
+         ChunkRegionLoader loader = null;
+@@ -142,6 +141,7 @@ public class ChunkProviderServer implements IChunkProvider {
+             chunk = originalGetChunkAt(i, j);
+         }
+ 
++        unloadQueue.remove(key); // SportPaper
+         // If we didn't load the chunk async and have a callback run it now
+         if (runnable != null) {
+             runnable.run();
+@@ -152,7 +152,6 @@ public class ChunkProviderServer implements IChunkProvider {
+     public Chunk originalGetChunkAt(int i, int j) {
+         // IonSpigot start - Only create key once
+         long key = LongHash.toLong(i, j);
+-        this.unloadQueue.remove(key);
+         Chunk chunk = (Chunk) this.chunks.get(key);
+         // IonSpigot end
+         boolean newChunk = false;
+@@ -212,6 +211,7 @@ public class ChunkProviderServer implements IChunkProvider {
+             chunk.loadNearby(this, this, i, j);
+         }
+ 
++        unloadQueue.remove(key); // SportPaper
+         return chunk;
+     }
+ 
