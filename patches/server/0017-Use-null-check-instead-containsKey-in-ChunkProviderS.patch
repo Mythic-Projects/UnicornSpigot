@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 22:31:46 +0200
+Subject: [PATCH] Use null check instead containsKey in ChunkProviderServer
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index b9d2e7b524d2f1111c489d3ccfbc96896c1e6018..c3c9d43283a9abfddd6d85b0a4c59069ec92f9ab 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -45,7 +45,7 @@ public class ChunkProviderServer implements IChunkProvider {
+     }
+ 
+     public boolean isChunkLoaded(int i, int j) {
+-        return this.chunks.containsKey(LongHash.toLong(i, j)); // CraftBukkit
++        return this.getChunkIfLoaded(i, j) != null; // Unicorn
+     }
+ 
+     // CraftBukkit start - Change return type to Collection and return the values of our chunk map
