@@ -40,3 +40,23 @@ index b5b748c57d547a29782123f0205183a6a0aa914f..b9d2e7b524d2f1111c489d3ccfbc9689
          return chunk;
      }
  
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index b7a2ed1ddb9459d05b702de8b66df51e31dfda31..e9e1947ec8536bffa74d4245f2ec24c2b4323c6f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -279,7 +279,6 @@ public class CraftWorld implements World {
+ 
+         // Unicorn start
+         long key = LongHash.toLong(x, z);
+-        world.chunkProviderServer.unloadQueue.remove(key); // SportPaper
+         net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(key);
+         // Unicorn end
+ 
+@@ -288,6 +287,7 @@ public class CraftWorld implements World {
+ 
+             chunkLoadPostProcess(chunk, x, z);
+         }
++        world.chunkProviderServer.unloadQueue.remove(key); // SportPaper
+         return chunk != null;
+     }
+ 

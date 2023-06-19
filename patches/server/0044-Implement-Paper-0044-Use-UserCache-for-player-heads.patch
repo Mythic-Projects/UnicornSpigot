@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 19 May 2022 19:22:53 +0200
+Subject: [PATCH] Implement [Paper-0044] Use UserCache for player heads
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+index 55bbad76b6ae5dab6f356cfb756e6b434422a241..7c800f6f760757f53daa6dcf8600db64794921c6 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+@@ -11,6 +11,7 @@ import net.minecraft.server.EntityPlayer;
+ import net.minecraft.server.MinecraftServer;
+ // PaperSpigot end
+ 
++import net.minecraft.server.TileEntitySkull;
+ import org.bukkit.Material;
+ import org.bukkit.configuration.serialization.DelegateDeserialization;
+ import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+@@ -139,10 +140,13 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
+         } else {
+             // PaperSpigot start - Check usercache if the player is online
+             EntityPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(name);
+-            profile = player != null ? player.getProfile() : new GameProfile(null, name);
++            if (profile == null && player != null) profile = player.getProfile(); // Paper
+             // PaperSpigot end
+         }
+ 
++        if (profile == null) profile = TileEntitySkull.skinCache.getIfPresent(name.toLowerCase(java.util.Locale.ROOT)); // Paper
++        if (profile == null) profile = new GameProfile(null, name); // Paper
++
+         return true;
+     }
+ 
