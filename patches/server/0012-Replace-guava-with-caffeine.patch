@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 20:24:18 +0200
+Subject: [PATCH] Replace guava with caffeine
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 6165e623ac7dd86a04e8f3c8eef7d4a35c6051b8..9ccdf6c4f48296b991c0661536eab2b1b86833a9 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -29,6 +29,8 @@ dependencies {
+     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:$okaeriConfigsVersion")
+     implementation("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
+     implementation("eu.okaeri:okaeri-configs-validator-okaeri:$okaeriConfigsVersion")
++
++    implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
+     // UnicornSpigot libraries end
+ 
+     testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
+diff --git a/src/main/java/net/minecraft/server/TileEntitySkull.java b/src/main/java/net/minecraft/server/TileEntitySkull.java
+index 58014c5f142abf72fcf6a7164872bbe7d7bb9d18..494bdac42eb159fc7231b5a5946c9654b5003b10 100644
+--- a/src/main/java/net/minecraft/server/TileEntitySkull.java
++++ b/src/main/java/net/minecraft/server/TileEntitySkull.java
+@@ -7,9 +7,6 @@ import java.util.UUID;
+ 
+ // Spigot start
+ import com.google.common.base.Predicate;
+-import com.google.common.cache.LoadingCache;
+-import com.google.common.cache.CacheBuilder;
+-import com.google.common.cache.CacheLoader;
+ import java.util.concurrent.Executor;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.TimeUnit;
+@@ -30,10 +27,10 @@ public class TileEntitySkull extends TileEntity {
+                     .setNameFormat("Head Conversion Thread - %1$d")
+                     .build()
+     );
+-    public static final LoadingCache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
++    public static final com.github.benmanes.caffeine.cache.LoadingCache<String, GameProfile> skinCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder() // Unicorn - use caffeine
+             .maximumSize( 5000 )
+             .expireAfterAccess( 60, TimeUnit.MINUTES )
+-            .build( new CacheLoader<String, GameProfile>()
++            .build( new com.github.benmanes.caffeine.cache.CacheLoader<String, GameProfile>() // Unicorn - use caffeine
+             {
+                 @Override
+                 public GameProfile load(String key) throws Exception
+@@ -169,7 +166,7 @@ public class TileEntitySkull extends TileEntity {
+                     executor.execute(new Runnable() {
+                         @Override
+                         public void run() {
+-                            final GameProfile profile = skinCache.getUnchecked(gameprofile.getName().toLowerCase());                            
++                            final GameProfile profile = skinCache.get(gameprofile.getName().toLowerCase()); // Unicorn - use caffeine
+                             MinecraftServer.getServer().processQueue.add(new Runnable() {
+                                 @Override
+                                 public void run() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index b682fe74e7b9e8dcdee8551bf71095bc9dc1182a..2191155d1c79f055c3023ad8570f407213992217 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -148,7 +148,7 @@ public final class CraftServer implements Server {
+     @Deprecated private YamlConfiguration configuration; // Unicorn - deprecate
+     private YamlConfiguration commandsConfiguration;
+     private final Yaml yaml = new Yaml(new SafeConstructor());
+-    private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap(); // Unicorn - softValues -> weakValues
++    private final com.github.benmanes.caffeine.cache.Cache<UUID, OfflinePlayer> offlinePlayers = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().softValues().build(); // Unicorn - use caffeine
+     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
+     private final PlayerMetadataStore playerMetadata = new PlayerMetadataStore();
+     private final WorldMetadataStore worldMetadata = new WorldMetadataStore();
+@@ -1411,7 +1411,7 @@ public final class CraftServer implements Server {
+                 result = getOfflinePlayer(profile);
+             }
+         } else {
+-            offlinePlayers.remove(result.getUniqueId());
++            offlinePlayers.invalidate(result.getUniqueId()); // Unicorn - use caffeine
+         }
+ 
+         return result;
+@@ -1423,13 +1423,13 @@ public final class CraftServer implements Server {
+ 
+         OfflinePlayer result = getPlayer(id);
+         if (result == null) {
+-            result = offlinePlayers.get(id);
++            result = offlinePlayers.getIfPresent(id); // Unicorn - use caffeine
+             if (result == null) {
+                 result = new CraftOfflinePlayer(this, new GameProfile(id, null));
+                 offlinePlayers.put(id, result);
+             }
+         } else {
+-            offlinePlayers.remove(id);
++            offlinePlayers.invalidate(id); // Unicorn - use caffeine
+         }
+ 
+         return result;
