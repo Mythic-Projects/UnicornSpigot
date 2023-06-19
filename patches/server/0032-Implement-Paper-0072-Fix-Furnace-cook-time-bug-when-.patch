@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 11 May 2022 16:19:25 +0200
+Subject: [PATCH] Implement [Paper-0072] Fix Furnace cook time bug when lagging
+ by Aikar
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+index 0e3f35a6eee539511f996687d36e5bfe160c1751..a284b3cd2e185447c23734111266ddb1696d5a9c 100644
+--- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+@@ -100,7 +100,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+ 
+         if (i == 0 && !flag) {
+             this.cookTimeTotal = this.a(itemstack);
+-            this.cookTime = 0;
++            this.cookTime -= this.cookTimeTotal; // Paper
+             this.update();
+         }
+ 
