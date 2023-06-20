@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 27 Aug 2022 19:51:26 +0200
+Subject: [PATCH] Configurable player data saving
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+index d508977f55d3010a7602a8a5380e29d941da7aa0..cb6b2b58d27ac56152146e86c30bf3ed6699d28b 100644
+--- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
++++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+@@ -11,6 +11,7 @@ import java.io.OutputStream;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
++import org.mythicprojects.unicornspigot.config.PaperConfig;
+ // CraftBukkit start
+ import java.util.UUID;
+ 
+@@ -181,6 +182,11 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+     }
+ 
+     public void save(EntityHuman entityhuman) {
++        // Paper start - configurable player data saving
++        if (!PaperConfig.get().settings.savePlayerData) {
++            return;
++        }
++        // Paper end
+         try {
+             NBTTagCompound nbttagcompound = new NBTTagCompound();
+ 
+@@ -201,6 +207,11 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+     }
+ 
+     public NBTTagCompound load(EntityHuman entityhuman) {
++        // Paper start - configurable player data saving
++        if (!PaperConfig.get().settings.savePlayerData) {
++            return null;
++        }
++        // Paper end
+         NBTTagCompound nbttagcompound = null;
+ 
+         try {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+index 808dbced8e2091f76d91fedb514cca625d2fe357..f4f0e898c3a27576d369b454913bbc3bda4a15fa 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+@@ -14,6 +14,8 @@ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Map;
+ import java.util.Set;
++import java.util.logging.Level;
++
+ import net.minecraft.server.Items;
+ import org.bukkit.Material;
+ import org.github.paperspigot.PaperSpigotConfig;
+@@ -52,11 +54,20 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+         @Comment("Whether arrow projectiles should have chance to deal extra damage on critical hit.")
+         public boolean includeRandomnessInArrowDamage = true;
+ 
++        @Comment("Whether to save player data to disk.")
++        @Comment("Disable this only, if you really don't want to save player data to disk.")
++        public boolean savePlayerData = true;
++
+         @Override
+         public void loadProperties() {
+             if (!this.limitPlayerInteractions) {
+                 UnicornConfig.log("Disabling player interaction limiter, your server may be more vulnerable to malicious users");
+             }
++
++            if (!this.savePlayerData) {
++                UnicornConfig.log(Level.WARNING, "Player Data Saving is currently disabled. Any changes to your players data, " +
++                        "such as inventories, experience points, advancements and the like will not be saved when they log out.");
++            }
+         }
+ 
+     }

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Tue, 20 Jun 2023 02:10:45 +0200
+Subject: [PATCH] Implement [SportPaper-0219] Make critical hits configurable
+ by halfmaster1
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 491bb14e581258e1310746afdb2ca6f64427552e..1a9fc593be06781cac960baae01bbc58d8a46891 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
+ import org.bukkit.event.player.PlayerItemConsumeEvent;
+ import org.bukkit.event.player.PlayerVelocityEvent;
+ import org.bukkit.util.Vector;
++import org.mythicprojects.unicornspigot.config.PaperConfig;
+ // CraftBukkit end
+ 
+ public abstract class EntityHuman extends EntityLiving {
+@@ -990,7 +991,7 @@ public abstract class EntityHuman extends EntityLiving {
+                     boolean flag = !world.paperConfigUnicorn.gameMechanics.disablePlayerCrits && this.fallDistance > 0.0F && !this.onGround && !this.k_() && !this.V() && !this.hasEffect(MobEffectList.BLINDNESS) && this.vehicle == null && entity instanceof EntityLiving; // PaperSpigot
+ 
+                     if (flag && f > 0.0F) {
+-                        f *= 1.5F;
++                        f *= PaperConfig.get().settings.criticalHitMultiplier; // SportPaper - Configurable critical hit multiplier
+                     }
+ 
+                     f += f1;
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+index f4f0e898c3a27576d369b454913bbc3bda4a15fa..84e4d555fef159e40aa7fd546b30d45b0f513fbe 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
+@@ -48,6 +48,9 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+         @Remap("babyZombieMovementSpeed")
+         public double babyZombieMovementSpeed = 0.5;
+ 
++        @Comment("Multiplier for critical hit damage.")
++        public float criticalHitMultiplier = 1.5F;
++
+         @Comment("Whether arrow projectiles should have a random factor (like in vanilla minecraft).")
+         public boolean includeRandomnessInArrowTrajectory = true;
+ 
