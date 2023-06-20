@@ -43,7 +43,7 @@ index 6e652f6bcc3829cea8e14cfec2a35091e7457b62..201488877fdb3a0cb8372e2c60645c2e
                  Iterator iterator = this.trackedPlayers.iterator(); // CraftBukkit
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 5b51dfb0c99be7385d9d7550f98d0d0ff0f20f5f..db8cfe860564d77f87013d0cd17914b6465ea45f 100644
+index 75298e9c089d9239b2d3f95bd2533b797ec7ad7a..8f1c1b00f848b1a6449a20d931600c0e11ed63d4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1298,6 +1298,7 @@ public abstract class World implements IBlockAccess {

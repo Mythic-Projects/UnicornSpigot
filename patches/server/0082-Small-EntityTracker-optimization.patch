@@ -5,7 +5,7 @@ Subject: [PATCH] Small EntityTracker optimization
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-index 201488877fdb3a0cb8372e2c60645c2e2fdea76c..1885644e4df944487db87f263831a8563af2d491 100644
+index 201488877fdb3a0cb8372e2c60645c2e2fdea76c..44e1099710ffc8326d1ce504111fb93188ddebac 100644
 --- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 +++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 @@ -123,10 +123,14 @@ public class EntityTrackerEntry {
@@ -14,10 +14,10 @@ index 201488877fdb3a0cb8372e2c60645c2e2fdea76c..1885644e4df944487db87f263831a856
                  Object object = null;
 -                boolean flag = Math.abs(j1) >= 4 || Math.abs(k1) >= 4 || Math.abs(l1) >= 4 || this.m % 60 == 0;
 -                boolean flag1 = Math.abs(l - this.yRot) >= 4 || Math.abs(i1 - this.xRot) >= 4;
-+                // Titanium start - moved down
++                // Unicorn start - moved down
 +                /*boolean flag = Math.abs(j1) >= 4 || Math.abs(k1) >= 4 || Math.abs(l1) >= 4 || this.m % 60 == 0;
 +                boolean flag1 = Math.abs(l - this.yRot) >= 4 || Math.abs(i1 - this.xRot) >= 4;*/
-+                // Titanium end
++                // Unicorn end
  
                  if (this.m > 0 || this.tracker instanceof EntityArrow) { // PaperSpigot - Moved up
 +                    boolean flag = Math.abs(j1) >= 4 || Math.abs(k1) >= 4 || Math.abs(l1) >= 4 || this.m % 60 == 0;

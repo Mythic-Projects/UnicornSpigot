@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [Paper-0342] Always process chunk removal in
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 70e4350f123e9cfd30ad15aa04a10310c8fe7e38..eeb90309944bab7fe3be24619707ec72685131f0 100644
+index 9037968d1719cb7699a4eb92ae9fa9ecbcd6979f..f5b3dae49db578f4f8dca819e2a0cb4cc18fd22a 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1286,7 +1286,7 @@ public abstract class World implements IBlockAccess {

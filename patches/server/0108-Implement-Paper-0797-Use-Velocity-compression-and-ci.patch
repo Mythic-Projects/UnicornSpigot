@@ -1,0 +1,478 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 21 Jun 2023 01:57:08 +0200
+Subject: [PATCH] Implement [Paper-0797] Use Velocity compression and cipher
+ natives by Elier
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 355c52ffc378b96982e73a0c5df0fa68c5fcbd31..52c079917de909ae33402f22a5439b4141165076 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -30,6 +30,7 @@ dependencies {
+     implementation("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
+     implementation("eu.okaeri:okaeri-configs-validator-okaeri:$okaeriConfigsVersion")
+ 
++    implementation("com.velocitypowered:velocity-native:1.1.9")
+     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
+     implementation("it.unimi.dsi:fastutil:8.5.11")
+     implementation("com.eatthepath:fast-uuid:0.2.0")
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 812d9a94712f359f30a6d74efb49e13503265d65..08746ac8202ca1bdd5a10794a9a68c756dfaac19 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -196,9 +196,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+         if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
+             throw new IllegalStateException("Invalid nonce!");
+         } else {
+-            this.loginKey = packetlogininencryptionbegin.a(privatekey);
+-            this.g = LoginListener.EnumProtocolState.AUTHENTICATING;
+-            this.networkManager.a(this.loginKey);
++             // Paper start
++            try {
++                this.loginKey = packetlogininencryptionbegin.a(privatekey);
++                this.g = LoginListener.EnumProtocolState.AUTHENTICATING;
++                this.networkManager.setupEncryption(this.loginKey);
++            } catch (Exception ex) {
++                throw new IllegalStateException("Protocol error", ex);
++            }
++            // Paper end
+             // Paper - Cache authenticator threads
+             authenticatorPool.execute(new Runnable() {
+                 public void run() {
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 2888fac71c3651641e16be6bbf1f0e4776e01f23..e1a73088438e41b8aa8ebb5f6c56e61c9289ed4c 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -449,11 +449,30 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+         return this.channel instanceof LocalChannel || this.channel instanceof LocalServerChannel;
+     }
+ 
++    // Paper start
++    /*
+     public void a(SecretKey secretkey) {
+         this.o = true;
+         this.channel.pipeline().addBefore("splitter", "decrypt", new PacketDecrypter(MinecraftEncryption.a(2, secretkey)));
+         this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
+     }
++     */
++
++    public void setupEncryption(javax.crypto.SecretKey key) throws CryptException {
++        if (!this.o) {
++            try {
++                com.velocitypowered.natives.encryption.VelocityCipher decryption = com.velocitypowered.natives.util.Natives.cipher.get().forDecryption(key);
++                com.velocitypowered.natives.encryption.VelocityCipher encryption = com.velocitypowered.natives.util.Natives.cipher.get().forEncryption(key);
++
++                this.o = true;
++                this.channel.pipeline().addBefore("splitter", "decrypt", new PacketDecrypter(decryption));
++                this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(encryption));
++            } catch (java.security.GeneralSecurityException e) {
++                throw new org.mythicprojects.unicornspigot.exception.CryptException(e);
++            }
++        }
++    }
++    // Paper end
+ 
+     public boolean isConnected() { return this.g(); } // Unicorn - OBFHELPER
+     public boolean g() {
+@@ -477,17 +496,24 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     public void a(int i) {
+-        if (i >= 0) {
++        // Paper start - OBFHELPER
++        this.setupCompression(i);
++    }
++
++    public void setupCompression(int compressionThreshold) {
++        // Paper end
++        if (compressionThreshold >= 0) { // Paper
++            com.velocitypowered.natives.compression.VelocityCompressor compressor = com.velocitypowered.natives.util.Natives.compress.get().create(-1); // Paper
+             if (this.channel.pipeline().get("decompress") instanceof PacketDecompressor) {
+-                ((PacketDecompressor) this.channel.pipeline().get("decompress")).a(i);
++                ((PacketDecompressor) this.channel.pipeline().get("decompress")).a(compressionThreshold); // Paper
+             } else {
+-                this.channel.pipeline().addBefore("decoder", "decompress", new PacketDecompressor(i));
++                this.channel.pipeline().addBefore("decoder", "decompress", new PacketDecompressor(compressor, compressionThreshold)); // Paper
+             }
+ 
+             if (this.channel.pipeline().get("compress") instanceof PacketCompressor) {
+-                ((PacketCompressor) this.channel.pipeline().get("decompress")).a(i);
++                ((PacketCompressor) this.channel.pipeline().get("decompress")).a(compressionThreshold); // Paper
+             } else {
+-                this.channel.pipeline().addBefore("encoder", "compress", new PacketCompressor(i));
++                this.channel.pipeline().addBefore("encoder", "compress", new PacketCompressor(compressor, compressionThreshold)); // Paper
+             }
+         } else {
+             if (this.channel.pipeline().get("decompress") instanceof PacketDecompressor) {
+diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
+index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..3f0e50a0be233f6db19bf0e35dbbd650d4584d7d 100644
+--- a/src/main/java/net/minecraft/server/PacketCompressor.java
++++ b/src/main/java/net/minecraft/server/PacketCompressor.java
+@@ -7,46 +7,103 @@ import java.util.zip.Deflater;
+ 
+ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+ 
+-    private final byte[] a = new byte[8192];
+-    private final Deflater b;
+-    private int c;
++    // Paper start
++    private final byte[] encodeBuf;
++    private final Deflater deflater;
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor;
++    private int threshold;
++    // Paper end
+ 
+     public PacketCompressor(int i) {
+-        this.c = i;
+-        this.b = new Deflater();
++        // Paper start
++        this(null, i);
++    }
++    public PacketCompressor(com.velocitypowered.natives.compression.VelocityCompressor compressor, int compressionThreshold) {
++        this.threshold = compressionThreshold;
++        if (compressor == null) {
++            this.encodeBuf = new byte[8192];
++            this.deflater = new Deflater();
++        } else {
++            this.encodeBuf = null;
++            this.deflater = null;
++        }
++        this.compressor = compressor;
++        // Paper end
+     }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
++    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception { // Paper
+         int i = bytebuf.readableBytes();
+         PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf1);
+ 
+-        if (i < this.c) {
++        if (i < this.threshold) { // Paper
+             packetdataserializer.b(0);
+             packetdataserializer.writeBytes(bytebuf);
+         } else {
+-            byte[] abyte = new byte[i];
++            // Paper start
++            if (this.deflater != null) {
++                byte[] abyte = new byte[i];
++
++                bytebuf.readBytes(abyte);
++                packetdataserializer.b(abyte.length);
++                this.deflater.setInput(abyte, 0, i);
++                this.deflater.finish();
+ 
+-            bytebuf.readBytes(abyte);
+-            packetdataserializer.b(abyte.length);
+-            this.b.setInput(abyte, 0, i);
+-            this.b.finish();
++                while (!this.deflater.finished()) {
++                    int j = this.deflater.deflate(this.encodeBuf);
+ 
+-            while (!this.b.finished()) {
+-                int j = this.b.deflate(this.a);
++                    packetdataserializer.writeBytes(this.encodeBuf, 0, j);
++                }
+ 
+-                packetdataserializer.writeBytes(this.a, 0, j);
++                this.deflater.reset();
++                return;
+             }
++            // Paper end
+ 
+-            this.b.reset();
++            // Paper start
++            packetdataserializer.b(i);
++            ByteBuf compatibileIn = com.velocitypowered.natives.util.MoreByteBufUtils.ensureCompatible(channelhandlercontext.alloc(), this.compressor, bytebuf);
++            try {
++                this.compressor.deflate(compatibileIn, bytebuf1);
++            } finally {
++                compatibileIn.release();
++            }
++            // Paper end
+         }
+ 
+     }
+ 
+-    public void a(int i) {
+-        this.c = i;
++    // Paper start
++    @Override
++    protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, ByteBuf msg, boolean preferDirect) throws Exception{
++        if (this.compressor != null) {
++            // We allocate bytes to be compressed plus 1 byte. This covers two cases:
++            //
++            // - Compression
++            //    According to https://github.com/ebiggers/libdeflate/blob/master/libdeflate.h#L103,
++            //    if the data compresses well (and we do not have some pathological case) then the maximum
++            //    size the compressed size will ever be is the input size minus one.
++            // - Uncompressed
++            //    This is fairly obvious - we will then have one more than the uncompressed size.
++            int initialBufferSize = msg.readableBytes() + 1;
++            return com.velocitypowered.natives.util.MoreByteBufUtils.preferredBuffer(ctx.alloc(), this.compressor, initialBufferSize);
++        }
++
++        return super.allocateBuffer(ctx, msg, preferDirect);
++    }
++
++    @Override
++    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
++        if (this.compressor != null) {
++            this.compressor.close();
++        }
+     }
++    // Paper end
+ 
+-    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, object, bytebuf);
++    // Paper start - OBFHELPER
++    public void setThreshold(int threshold) { this.a(threshold); }
++    public void a(int i) {
++        this.threshold = i;
++    // Paper end
+     }
++
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketDecompressor.java b/src/main/java/net/minecraft/server/PacketDecompressor.java
+index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..e8baebddde3741886e10b9c9fd8ab85445c333c6 100644
+--- a/src/main/java/net/minecraft/server/PacketDecompressor.java
++++ b/src/main/java/net/minecraft/server/PacketDecompressor.java
+@@ -10,14 +10,24 @@ import java.util.zip.Inflater;
+ 
+ public class PacketDecompressor extends ByteToMessageDecoder {
+ 
+-    private final Inflater a;
+-    private int b;
++    // Paper start
++    private final Inflater inflater;
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor;
++    private int threshold;
++    // Paper end
+ 
+     public PacketDecompressor(int i) {
+-        this.b = i;
+-        this.a = new Inflater();
++    // Paper start
++        this(null, i);
+     }
+ 
++    public PacketDecompressor(com.velocitypowered.natives.compression.VelocityCompressor compressor, int compressionThreshold) {
++        this.threshold = compressionThreshold;
++        this.inflater = compressor == null ? new Inflater() : null;
++        this.compressor = compressor;
++    }
++    // Paper end
++
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+         if (bytebuf.readableBytes() != 0) {
+             PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf);
+@@ -26,29 +36,57 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+             if (i == 0) {
+                 list.add(packetdataserializer.readBytes(packetdataserializer.readableBytes()));
+             } else {
+-                if (i < this.b) {
+-                    throw new DecoderException("Badly compressed packet - size of " + i + " is below server threshold of " + this.b);
++                // Paper start
++                if (i < this.threshold) {
++                    throw new DecoderException("Badly compressed packet - size of " + i + " is below server threshold of " + this.threshold);
++                // Paper end
+                 }
+ 
+                 if (i > 2097152) {
+                     throw new DecoderException("Badly compressed packet - size of " + i + " is larger than protocol maximum of " + 2097152);
+                 }
+ 
+-                byte[] abyte = new byte[packetdataserializer.readableBytes()];
++                // Paper start
++                if (this.inflater != null) {
++                    byte[] abyte = new byte[packetdataserializer.readableBytes()];
+ 
+-                packetdataserializer.readBytes(abyte);
+-                this.a.setInput(abyte);
+-                byte[] abyte1 = new byte[i];
++                    packetdataserializer.readBytes(abyte);
++                    this.inflater.setInput(abyte);
++                    byte[] abyte1 = new byte[i];
++                    this.inflater.inflate(abyte1);
++                    list.add(Unpooled.wrappedBuffer(abyte1));
++                    this.inflater.reset();
++                    return;
++                }
+ 
+-                this.a.inflate(abyte1);
+-                list.add(Unpooled.wrappedBuffer(abyte1));
+-                this.a.reset();
++                ByteBuf compatibleIn = com.velocitypowered.natives.util.MoreByteBufUtils.ensureCompatible(channelhandlercontext.alloc(), this.compressor, bytebuf);
++                ByteBuf uncompressed = com.velocitypowered.natives.util.MoreByteBufUtils.preferredBuffer(channelhandlercontext.alloc(), this.compressor, i);
++                try {
++                    this.compressor.inflate(compatibleIn, uncompressed, i);
++                    list.add(uncompressed);
++                    bytebuf.clear();
++                } catch (Exception e) {
++                    uncompressed.release();
++                    throw e;
++                } finally {
++                    compatibleIn.release();
++                }
++                // Paper end
+             }
+ 
+         }
+     }
+ 
++    // Paper start
++    @Override
++    public void handlerRemoved0(ChannelHandlerContext ctx) throws Exception {
++        if (this.compressor != null) {
++            this.compressor.close();
++        }
++    }
++    // Paper end
++
+     public void a(int i) {
+-        this.b = i;
++        this.threshold = i; // Paper
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketDecrypter.java b/src/main/java/net/minecraft/server/PacketDecrypter.java
+index 4d02db906ec31f627454fde8c5ca9f268b68e933..5a70b847292b09edd22dacd63653d85e27874488 100644
+--- a/src/main/java/net/minecraft/server/PacketDecrypter.java
++++ b/src/main/java/net/minecraft/server/PacketDecrypter.java
+@@ -8,17 +8,29 @@ import javax.crypto.Cipher;
+ 
+ public class PacketDecrypter extends MessageToMessageDecoder<ByteBuf> {
+ 
+-    private final PacketEncryptionHandler a;
++    private final com.velocitypowered.natives.encryption.VelocityCipher cipher; // Paper
+ 
+-    public PacketDecrypter(Cipher cipher) {
+-        this.a = new PacketEncryptionHandler(cipher);
++    public PacketDecrypter(com.velocitypowered.natives.encryption.VelocityCipher cipher) { // Paper
++        this.cipher = cipher; // Paper
+     }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+-        list.add(this.a.a(channelhandlercontext, bytebuf));
++    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
++        // Paper start
++        ByteBuf compatible = com.velocitypowered.natives.util.MoreByteBufUtils.ensureCompatible(bytebuf.alloc(), this.cipher, bytebuf);
++        try {
++            cipher.process(compatible);
++            list.add(compatible);
++        } catch (Exception e) {
++            compatible.release(); // compatible will never be used if we throw an exception
++            throw e;
++        }
++        // Paper end
+     }
+ 
+-    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf object, List list) throws Exception {
+-        this.a(channelhandlercontext, object, list);
++    // Paper start
++    @Override
++    public void handlerRemoved(ChannelHandlerContext ctx) {
++        cipher.close();
+     }
++    // Paper end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketEncrypter.java b/src/main/java/net/minecraft/server/PacketEncrypter.java
+index b32a7e67666d372cc9f080b60897f28fb59736fd..532538987c98a51ebed11fcbf0847c174e437910 100644
+--- a/src/main/java/net/minecraft/server/PacketEncrypter.java
++++ b/src/main/java/net/minecraft/server/PacketEncrypter.java
+@@ -2,22 +2,35 @@ package net.minecraft.server;
+ 
+ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+-import io.netty.handler.codec.MessageToByteEncoder;
+-import javax.crypto.Cipher;
++import io.netty.handler.codec.MessageToMessageEncoder; // Paper
++import java.util.List; // Paper
+ 
+-public class PacketEncrypter extends MessageToByteEncoder<ByteBuf> {
++public class PacketEncrypter extends MessageToMessageEncoder<ByteBuf> { // Paper - change superclass
+ 
+-    private final PacketEncryptionHandler a;
++    private final com.velocitypowered.natives.encryption.VelocityCipher cipher; // Paper
+ 
+-    public PacketEncrypter(Cipher cipher) {
+-        this.a = new PacketEncryptionHandler(cipher);
++    public PacketEncrypter(com.velocitypowered.natives.encryption.VelocityCipher cipher) { // Paper
++        this.cipher = cipher; // Paper
+     }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+-        this.a.a(bytebuf, bytebuf1);
++    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
++        // Paper start
++        ByteBuf compatible = com.velocitypowered.natives.util.MoreByteBufUtils.ensureCompatible(bytebuf.alloc(), this.cipher, bytebuf);
++        try {
++            cipher.process(compatible);
++            list.add(compatible);
++        } catch (Exception e) {
++            compatible.release(); // compatible will never be used if we throw an exception
++            throw e;
++        }
++        // Paper end
+     }
+ 
+-    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++    // Paper start
++    @Override
++    public void handlerRemoved(ChannelHandlerContext ctx) {
++        cipher.close();
+     }
++    // Paper end
++
+ }
+diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
+index 81ada5e38e9ad94f995219205fefbc59a74d03f0..88ded65654b8f216cda07b0bf7cd796d9802c0e0 100644
+--- a/src/main/java/net/minecraft/server/RegionFile.java
++++ b/src/main/java/net/minecraft/server/RegionFile.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import com.google.common.collect.Lists;
+ import java.io.EOFException;
++import java.nio.Buffer;
+ import java.nio.ByteBuffer;
+ import java.nio.IntBuffer;
+ import org.github.paperspigot.exception.ServerInternalException;
+@@ -76,7 +77,7 @@ public class RegionFile {
+             while (header.hasRemaining())  {
+                 if (this.c.getChannel().read(header) == -1) throw new EOFException();
+             }
+-            header.clear();
++            ((Buffer) header).clear(); // Unicorn - Fix NoSuchMethodError
+             IntBuffer headerAsInts = header.asIntBuffer();
+             // Paper end
+ 
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index 1f41073171bad19eeeb5201d4a62678999691f72..1eb5ca7c9967afaf504d8ed5f588c2947681929f 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -96,6 +96,11 @@ public class ServerConnection {
+                 ServerConnection.e.info("Using default channel type");
+             }
+ 
++            // Paper start - indicate Velocity natives in use
++            e.info("UnicornSpigot: Using " + com.velocitypowered.natives.util.Natives.compress.getLoadedVariant() + " compression from Velocity.");
++            e.info("UnicornSpigot: Using " + com.velocitypowered.natives.util.Natives.cipher.getLoadedVariant() + " cipher from Velocity.");
++            // Paper end
++
+             this.g.add(((ServerBootstrap) ((ServerBootstrap) (new ServerBootstrap()).channel(oclass)).childHandler(new ChannelInitializer() {
+                 protected void initChannel(Channel channel) throws Exception {
+                     try {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/exception/CryptException.java b/src/main/java/org/mythicprojects/unicornspigot/exception/CryptException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7d24f3484bfbf3b3cc55d8046be208ce71215dfc
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/exception/CryptException.java
+@@ -0,0 +1,7 @@
++package org.mythicprojects.unicornspigot.exception;
++
++public class CryptException extends Exception {
++    public CryptException(Throwable throwable) {
++        super(throwable);
++    }
++}
+\ No newline at end of file

@@ -6,7 +6,7 @@ Subject: [PATCH] Improve calculating TileEntityFurnace#fuelTime and some
 
 
 diff --git a/src/main/java/net/minecraft/server/ItemHoe.java b/src/main/java/net/minecraft/server/ItemHoe.java
-index 7c041a01cf34969743dc26f7dda56b2803db1781..4cdfa5cd79a6ff3752429eb657dba18702777009 100644
+index 7c041a01cf34969743dc26f7dda56b2803db1781..3187a2ab685e13d927174bcff1f17ecafe4faad1 100644
 --- a/src/main/java/net/minecraft/server/ItemHoe.java
 +++ b/src/main/java/net/minecraft/server/ItemHoe.java
 @@ -1,6 +1,9 @@
@@ -26,28 +26,28 @@ index 7c041a01cf34969743dc26f7dda56b2803db1781..4cdfa5cd79a6ff3752429eb657dba187
  
 -    public String g() {
 -        return this.a.toString();
-+    // Titanium start
++    // Unicorn start
 +    @Override
 +    public EnumToolMaterial getToolMaterial() {
 +        return this.a;
 +    }
-+    // Titanium end
++    // Unicorn end
 +
 +    public String h() {
-+        return this.getToolMaterialName(); // Titanium
++        return this.getToolMaterialName(); // Unicorn
 +    }
 +
-+    // Titanium start
++    // Unicorn start
 +    @Override
 +    public int getBurnTime() {
 +        return this.a == EnumToolMaterial.WOOD ? 200 : 0;
      }
-+    // Titanium end
++    // Unicorn end
  
      static class SyntheticClass_1 {
  
 diff --git a/src/main/java/net/minecraft/server/ItemSword.java b/src/main/java/net/minecraft/server/ItemSword.java
-index f2efd9f7f9ca60b7fd3f231e1a9522cbb05874da..91774aa18bf4956e219da62bb1b36c87a926d29f 100644
+index f2efd9f7f9ca60b7fd3f231e1a9522cbb05874da..caf2a2142cc416f56f791d5351e0f0365966ff65 100644
 --- a/src/main/java/net/minecraft/server/ItemSword.java
 +++ b/src/main/java/net/minecraft/server/ItemSword.java
 @@ -1,8 +1,10 @@
@@ -66,21 +66,21 @@ index f2efd9f7f9ca60b7fd3f231e1a9522cbb05874da..91774aa18bf4956e219da62bb1b36c87
          return block == Blocks.WEB;
      }
  
-+    // Titanium start
++    // Unicorn start
 +    @Override
 +    public EnumToolMaterial getToolMaterial() {
 +        return this.b;
 +    }
-+    // Titanium end
++    // Unicorn end
 +
      public int b() {
 -        return this.b.e();
-+        return this.getToolMaterial().e(); // Titanium
++        return this.getToolMaterial().e(); // Unicorn
      }
  
      public String h() {
 -        return this.b.toString();
-+        return this.getToolMaterialName(); // Titanium
++        return this.getToolMaterialName(); // Unicorn
      }
  
      public boolean a(ItemStack itemstack, ItemStack itemstack1) {
@@ -96,7 +96,7 @@ index f2efd9f7f9ca60b7fd3f231e1a9522cbb05874da..91774aa18bf4956e219da62bb1b36c87
 +
  }
 diff --git a/src/main/java/net/minecraft/server/ItemTool.java b/src/main/java/net/minecraft/server/ItemTool.java
-index 4e94ea1a71c1d5c14fde5dd651b379dc3e8c9397..08bb01c265ae925d4c14154f5dfb3bd87c34813c 100644
+index 4e94ea1a71c1d5c14fde5dd651b379dc3e8c9397..6814a66cb08d51f20d6de5e0e150129d04d4b318 100644
 --- a/src/main/java/net/minecraft/server/ItemTool.java
 +++ b/src/main/java/net/minecraft/server/ItemTool.java
 @@ -2,8 +2,10 @@ package net.minecraft.server;
@@ -116,25 +116,25 @@ index 4e94ea1a71c1d5c14fde5dd651b379dc3e8c9397..08bb01c265ae925d4c14154f5dfb3bd8
      }
  
 -    public Item.EnumToolMaterial g() {
-+    // Titanium start
++    // Unicorn start
 +    @Override
 +    public EnumToolMaterial getToolMaterial() {
          return this.b;
      }
-+    // Titanium end
++    // Unicorn end
 +
 +    public Item.EnumToolMaterial g() {
-+        return this.getToolMaterial(); // Titanium
++        return this.getToolMaterial(); // Unicorn
 +    }
  
      public int b() {
 -        return this.b.e();
-+        return this.getToolMaterial().e(); // Titanium
++        return this.getToolMaterial().e(); // Unicorn
      }
  
      public String h() {
 -        return this.b.toString();
-+        return this.getToolMaterialName(); // Titanium
++        return this.getToolMaterialName(); // Unicorn
      }
  
      public boolean a(ItemStack itemstack, ItemStack itemstack1) {
@@ -143,16 +143,16 @@ index 4e94ea1a71c1d5c14fde5dd651b379dc3e8c9397..08bb01c265ae925d4c14154f5dfb3bd8
          return multimap;
      }
 +
-+    // Titanium start
++    // Unicorn start
 +    @Override
 +    public int getBurnTime() {
 +        return this.b == EnumToolMaterial.WOOD ? 200 : 0;
 +    }
-+    // Titanium end
++    // Unicorn end
 +
  }
 diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
-index 3096dea34eb8308eab8e5237a42b3762b92d22e5..6bcc9c3fdccf16f8a019872b5d4fe3c35cd3a849 100644
+index 3096dea34eb8308eab8e5237a42b3762b92d22e5..5c405d3108eb8477d6d1c0bc3d2d2b12de2171fd 100644
 --- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
 +++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
 @@ -3,6 +3,7 @@ package net.minecraft.server;
@@ -168,7 +168,7 @@ index 3096dea34eb8308eab8e5237a42b3762b92d22e5..6bcc9c3fdccf16f8a019872b5d4fe3c3
              }
  
 -            return item instanceof ItemTool && ((ItemTool) item).h().equals("WOOD") ? 200 : (item instanceof ItemSword && ((ItemSword) item).h().equals("WOOD") ? 200 : (item instanceof ItemHoe && ((ItemHoe) item).g().equals("WOOD") ? 200 : (item == Items.STICK ? 100 : (item == Items.COAL ? 1600 : (item == Items.LAVA_BUCKET ? 20000 : (item == Item.getItemOf(Blocks.SAPLING) ? 100 : (item == Items.BLAZE_ROD ? 2400 : 0)))))));
-+            // Titanium start
++            // Unicorn start
 +            if (item == Items.COAL) {
 +                return 1600;
 +            } else if (item == Items.STICK) {
@@ -183,9 +183,9 @@ index 3096dea34eb8308eab8e5237a42b3762b92d22e5..6bcc9c3fdccf16f8a019872b5d4fe3c3
 +                return ((Burnable) item).getBurnTime();
 +            }
 +
-+            //return item instanceof ItemTool && ((ItemTool) item).h().equals("WOOD") ? 200 : item instanceof ItemSword && ((ItemSword) item).h().equals("WOOD") ? 200 : item instanceof ItemHoe && ((ItemHoe) item).g().equals("WOOD") ? 200 : item == Items.STICK ? 100 : item == Items.LAVA_BUCKET ? 20000 : item == Item.getItemOf(Blocks.SAPLING) ? 100 : item == Items.BLAZE_ROD ? 2400 : 0; // Titanium
++            //return item instanceof ItemTool && ((ItemTool) item).h().equals("WOOD") ? 200 : item instanceof ItemSword && ((ItemSword) item).h().equals("WOOD") ? 200 : item instanceof ItemHoe && ((ItemHoe) item).g().equals("WOOD") ? 200 : item == Items.STICK ? 100 : item == Items.LAVA_BUCKET ? 20000 : item == Item.getItemOf(Blocks.SAPLING) ? 100 : item == Items.BLAZE_ROD ? 2400 : 0; // Unicorn
 +            return 0;
-+            // Titanium end
++            // Unicorn end
          }
      }
  

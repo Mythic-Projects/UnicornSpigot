@@ -5,18 +5,18 @@ Subject: [PATCH] Prevent killing at the same time
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index de070bf543e9bfa56e1237bf4fe5a3810d4546ca..491bb14e581258e1310746afdb2ca6f64427552e 100644
+index de070bf543e9bfa56e1237bf4fe5a3810d4546ca..6a930eb8bc07934b84cc54370c864f7b2095ebb6 100644
 --- a/src/main/java/net/minecraft/server/EntityHuman.java
 +++ b/src/main/java/net/minecraft/server/EntityHuman.java
 @@ -963,6 +963,11 @@ public abstract class EntityHuman extends EntityLiving {
      }
  
      public void attack(Entity entity) {
-+        // Titanium start
++        // Unicorn start
 +        if (!this.isAlive()) {
 +            return;
 +        }
-+        // Titanium end
++        // Unicorn end
          if (entity.aD()) {
              if (!entity.l(this)) {
                  float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue();

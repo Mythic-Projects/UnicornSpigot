@@ -5,7 +5,7 @@ Subject: [PATCH] Allow render distance from 1, not 3
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 43f47ae6d47e86fc7bfd03cb5c6f09b100c844dc..f32ab4db2036537b94f70067ee6be8a8274e1034 100644
+index 4d86d6e32c570a389e5338cc4b667083dca73054..61a5e7a20d8186e61d44718a088f609147ac7aef 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -275,7 +275,7 @@ public class PlayerChunkMap {

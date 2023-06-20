@@ -18,7 +18,7 @@ index 7cae186e3fd5ca52186da56cdb6b8532264f291b..f72f13d0cdb739542b8214a061658376
                  /* Drop global time updates
                  if (this.ticks % 20 == 0) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a6f20775b9dd06ca418af9732ab0d504ad91e306..5b51dfb0c99be7385d9d7550f98d0d0ff0f20f5f 100644
+index ccf9f1a886845ccb1e7392709e8cd468413d6b1f..75298e9c089d9239b2d3f95bd2533b797ec7ad7a 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -691,7 +691,7 @@ public abstract class World implements IBlockAccess {

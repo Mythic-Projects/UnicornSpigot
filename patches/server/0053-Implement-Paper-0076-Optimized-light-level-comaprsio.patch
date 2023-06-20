@@ -159,7 +159,7 @@ index 663de79af243bff679c9a27f227eac39237a629e..0efed48846065febb3e3fd3e3ba02efc
                          if (!this.world.isPlayerNearby((double) i1, (double) j1, (double) k1, 7.0D) && this.world.a(entityzombie.getBoundingBox(), (Entity) entityzombie) && this.world.getCubes(entityzombie, entityzombie.getBoundingBox()).isEmpty() && !this.world.containsLiquid(entityzombie.getBoundingBox())) {
                              this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 09a2d8e20a971c96244d9301685f514099c655c9..a6f20775b9dd06ca418af9732ab0d504ad91e306 100644
+index bb05ffbe07c7a2add758f3f243710bafc5fab4e4..ccf9f1a886845ccb1e7392709e8cd468413d6b1f 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -770,6 +770,37 @@ public abstract class World implements IBlockAccess {
@@ -167,7 +167,7 @@ index 09a2d8e20a971c96244d9301685f514099c655c9..a6f20775b9dd06ca418af9732ab0d504
      }
  
 +    public boolean isLightLevel(BlockPosition blockposition, int level) {
-+        if (isInWorldBounds(blockposition.getX(), blockposition.getZ())) { // Titanium
++        if (isInWorldBounds(blockposition.getX(), blockposition.getZ())) { // Unicorn
 +            if (this.getType(blockposition).getBlock().s())
 +            {
 +                if (c(blockposition.up(), false) >= level)

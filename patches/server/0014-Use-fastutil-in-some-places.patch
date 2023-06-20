@@ -9,6 +9,8 @@ Unicorn:
 - SpigotConfig.Stats.forcedStats
 - PlayerChunkMap
 - PortalTravelAgent
+- PlayerChunkMap
+- World
 
 Paper:
 - NBTTagCompound
@@ -172,7 +174,7 @@ index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..28ecd7496c3e8c49fab74f94dbe7df6c
      public NBTTagCompound() {}
  
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..43f47ae6d47e86fc7bfd03cb5c6f09b100c844dc 100644
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..4d86d6e32c570a389e5338cc4b667083dca73054 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -19,8 +19,8 @@ public class PlayerChunkMap {
@@ -201,6 +203,31 @@ index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..43f47ae6d47e86fc7bfd03cb5c6f09b1
  
          if (playerchunkmap_playerchunk == null && flag) {
              playerchunkmap_playerchunk = new PlayerChunkMap.PlayerChunk(i, j);
+@@ -351,7 +351,7 @@ public class PlayerChunkMap {
+ 
+     class PlayerChunk {
+ 
+-        private final List<EntityPlayer> b = Lists.newArrayList();
++        private final List<EntityPlayer> b = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // Unicorn - use fastutil list
+         private final ChunkCoordIntPair location;
+         private short[] dirtyBlocks = new short[64];
+         private int dirtyCount;
+@@ -359,13 +359,9 @@ public class PlayerChunkMap {
+         private long g;
+ 
+         // CraftBukkit start - add fields
+-        private final HashMap<EntityPlayer, Runnable> players = new HashMap<EntityPlayer, Runnable>();
++        private final java.util.Map<EntityPlayer, Runnable> players = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Unicorn - use fastutil map
+         private boolean loaded = false;
+-        private Runnable loadedRunnable = new Runnable() {
+-            public void run() {
+-                PlayerChunk.this.loaded = true;
+-            }
+-        };
++        private Runnable loadedRunnable = () -> PlayerChunk.this.loaded = true;
+         // CraftBukkit end
+ 
+         public PlayerChunk(int i, int j) {
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
 index 0358cb5fc62a67ed99a006a3d44db11670360f6c..1394269b53d6d081a694a3834fce74805090169a 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
@@ -247,6 +274,30 @@ index 72f3735b196cbd7d420c6338eb7aba01b40c7804..f37202aedb203bae77276ae0502be677
  
                  if (portaltravelagent_chunkcoordinatesportal == null || portaltravelagent_chunkcoordinatesportal.c < j) {
                      iterator.remove();
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 41f7df5da651d1fc47366e7bda3229f69fae19d2..36be537dfd2656ebdd2db1c17dd9b6b528f6c615 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -39,7 +39,7 @@ public abstract class World implements IBlockAccess {
+     private int a = 63;
+     protected boolean e;
+     // Spigot start - guard entity list from removals
+-    public final List<Entity> entityList = new java.util.ArrayList<Entity>()
++    public final List<Entity> entityList = new it.unimi.dsi.fastutil.objects.ObjectArrayList<Entity>() // Unicorn - use fastutil list
+     {
+         @Override
+         public Entity remove(int index)
+@@ -69,8 +69,8 @@ public abstract class World implements IBlockAccess {
+     public final List<TileEntity> tileEntityList = Lists.newArrayList();
+     private final List<TileEntity> b = Lists.newArrayList();
+     private final Set<TileEntity> c = Sets.newHashSet(); // Paper
+-    public final List<EntityHuman> players = Lists.newArrayList();
+-    public final List<Entity> k = Lists.newArrayList();
++    public final List<EntityHuman> players = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // Unicorn - use fastutil list
++    public final List<Entity> k = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // Unicorn - use fastutil list
+     protected final IntHashMap<Entity> entitiesById = new IntHashMap();
+     private long d = 16777215L;
+     private int I;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
 index 469545559f9eb0fc6b50c30d93ad86bfa2a35122..7b542969577b543668ac6e6731263923ca06d0bd 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java

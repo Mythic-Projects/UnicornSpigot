@@ -1,0 +1,95 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 4 Dec 2022 12:52:38 +0100
+Subject: [PATCH] Implement [Nacho-0013] Use less resources for collisions
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 47b96e1ce435546b83d16481c19724380be6eeb0..2da9929320ffea51b3ec07512bf0cf69aecbcbb2 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -816,7 +816,7 @@ public abstract class Entity implements ICommandListener {
+                 for (int j = blockposition.getY(); j <= blockposition1.getY(); ++j) {
+                     for (int k = blockposition.getZ(); k <= blockposition1.getZ(); ++k) {
+                         BlockPosition blockposition2 = new BlockPosition(i, j, k);
+-                        IBlockData iblockdata = this.world.getType(blockposition2);
++                        IBlockData iblockdata = this.world.getTypeIfLoaded(i, j, k); // Nacho
+ 
+                         try {
+                             iblockdata.getBlock().a(this.world, blockposition2, iblockdata, this);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 8479a2cb9b0db4bfbb57eb033284e6bf81c623a4..bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -402,8 +402,14 @@ public abstract class World implements IBlockAccess {
+     // Unicorn end
+ 
+     public Chunk getChunkAtWorldCoords(BlockPosition blockposition) {
+-        return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
++    // Unicorn start
++        return this.getChunkAtWorldCoords(blockposition.getX(), blockposition.getZ());
++    }
++
++    public Chunk getChunkAtWorldCoords(int x, int z) {
++        return this.getChunkAt(x >> 4, z >> 4);
+     }
++    // Unicorn end
+ 
+     public Chunk getChunkAt(int i, int j) {
+         return this.chunkProvider.getOrCreateChunk(i, j);
+@@ -935,11 +941,13 @@ public abstract class World implements IBlockAccess {
+         return null;
+     }
+ 
++    // Unicorn start
+     public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        return getTypeIfLoaded(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public IBlockData getTypeIfLoaded(int x, int y, int z) {
++    // Unicorn end
+         // CraftBukkit start - tree generation
+-        final int x = blockposition.getX();
+-        final int y = blockposition.getY();
+-        final int z = blockposition.getZ();
+         if (captureTreeGeneration) {
+             IBlockData previous = this.getCapturedBlockType(x, y, z);
+             if (previous != null) return previous;
+@@ -954,16 +962,22 @@ public abstract class World implements IBlockAccess {
+     // Paper end
+ 
+     // Spigot start
+-    public IBlockData getType(BlockPosition blockposition)
+-    {
+-        return getType( blockposition, true );
++    // Unicorn start
++    public IBlockData getType(BlockPosition blockposition) {
++        return getType(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public IBlockData getType(int x, int y, int z) {
++        return getType(x, y, z, true);
++    // Unicorn end
+     }
+-    
++
++    // Unicorn start
+     public IBlockData getType(BlockPosition blockposition, boolean useCaptured) {
++        return getType(blockposition.getX(), blockposition.getY(), blockposition.getZ(), useCaptured);
++    }
++    public IBlockData getType(int x, int y, int z, boolean useCaptured) {
++    // Unicorn end
+         // CraftBukkit start - tree generation
+-        final int x = blockposition.getX();
+-        final int y = blockposition.getY();
+-        final int z = blockposition.getZ();
+         if (captureTreeGeneration && useCaptured) {
+     // Spigot end
+             // Paper start
+@@ -975,7 +989,7 @@ public abstract class World implements IBlockAccess {
+         if (!this.isValidLocation(x, y, z)) { // Unicorn
+             return Blocks.AIR.getBlockData();
+         } else {
+-            Chunk chunk = this.getChunkAtWorldCoords(blockposition);
++            Chunk chunk = this.getChunkAtWorldCoords(x, z); // Unicorn
+ 
+             return chunk.getBlockData(x, y, z); // Unicorn
+         }

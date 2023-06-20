@@ -4,26 +4,10 @@ Date: Thu, 19 May 2022 23:17:47 +0200
 Subject: [PATCH] Implement [Nacho-0023] Optimize EntityTracker for the chunk
  updater
 
-
-diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 76aadf54c66b8e65a222afa9c80ca83a6173e78f..96a930a7f8f3aa0625d6ed2bcfedbc6f746b3519 100644
---- a/src/main/java/net/minecraft/server/EntityPlayer.java
-+++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -187,6 +187,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
-         this.playerConnection.sendPacket(new PacketPlayOutCombatEvent(this.bs(), PacketPlayOutCombatEvent.EnumCombatEventType.END_COMBAT));
-     }
- 
-+    private long chunkToLong(int chunkX, int chunkZ) {
-+        return ((long) chunkX << 32L) + chunkZ - -2147483648L;
-+    }
-+
-     public void t_() {
-         // CraftBukkit start
-         if (this.joining) {
 @@ -263,13 +267,34 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                      this.a(tileentity);
                  }
- 
+
 -                // Nacho start - Add generics
 -                Iterator<Chunk> chunkIterator = arraylist.iterator();
 +                // Nacho start - Optimize EntityTracker for the chunk updater
@@ -44,21 +28,21 @@ index 76aadf54c66b8e65a222afa9c80ca83a6173e78f..96a930a7f8f3aa0625d6ed2bcfedbc6f
 +
 +                it.unimi.dsi.fastutil.longs.LongSet chunkPosSet = new it.unimi.dsi.fastutil.longs.LongOpenHashSet(arraylist.size());
 +                for (Chunk newChunk : arraylist) {
-+                    chunkPosSet.add(this.chunkToLong(newChunk.locX, newChunk.locZ));
++                    chunkPosSet.add(org.bukkit.craftbukkit.util.LongHash.toLong(newChunk.locX, newChunk.locZ));
 +                }
 +
 +                Iterator<EntityTrackerEntry> trackerEntryIterator = this.u().getTracker().getEntityTrackerEntries();
 +                while (trackerEntryIterator.hasNext()) {
 +                    EntityTrackerEntry entitytrackerentry = trackerEntryIterator.next();
 +
-+                    if (entitytrackerentry.tracker != this && chunkPosSet.contains(this.chunkToLong(entitytrackerentry.tracker.ae, entitytrackerentry.tracker.ag))) {
++                    if (entitytrackerentry.tracker != this && chunkPosSet.contains(org.bukkit.craftbukkit.util.LongHash.toLong(entitytrackerentry.tracker.ae, entitytrackerentry.tracker.ag))) {
 +                        entitytrackerentry.updatePlayer(this);
 +                    }
 +                }
 +                // Nacho - end
              }
          }
- 
+
 diff --git a/src/main/java/net/minecraft/server/EntityTracker.java b/src/main/java/net/minecraft/server/EntityTracker.java
 index cb72b36725927272fddfdad929b268a7b06140ac..49969dcd1207241998db9040d59be666babb1952 100644
 --- a/src/main/java/net/minecraft/server/EntityTracker.java

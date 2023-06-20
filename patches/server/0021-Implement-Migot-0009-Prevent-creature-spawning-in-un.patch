@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [Migot-0009] Prevent creature spawning in unloaded
 
 
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 27a80ed1c41785338bc460b1d17642f187d102b1..0b4343e1132c666e88006c691140e043cd8d26f3 100644
+index 27a80ed1c41785338bc460b1d17642f187d102b1..9c2eb99dc1909cebc5a178a580a2b3023ac164c7 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -73,7 +73,7 @@ public final class SpawnerCreature {
@@ -14,7 +14,7 @@ index 27a80ed1c41785338bc460b1d17642f187d102b1..0b4343e1132c666e88006c691140e043
                              if (!this.b.contains(chunkCoords)) {
                                  ++i;
 -                                if (!flag3 && worldserver.getWorldBorder().isInBounds(i1 + l, k + j)) {
-+                                if (!flag3 && worldserver.isChunkLoaded(i1 + l, k + j, true) && worldserver.getWorldBorder().isInBounds(i1 + l, k + j)) { // Migot
++                                if (!flag3 && worldserver.getWorldBorder().isInBounds(i1 + l, k + j) && worldserver.isChunkLoaded(i1 + l, k + j, true)) { // Migot
                                      this.b.add(chunkCoords);
                                  }
                              }

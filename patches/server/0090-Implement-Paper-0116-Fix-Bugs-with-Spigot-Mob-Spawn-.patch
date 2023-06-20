@@ -19,7 +19,7 @@ index 888211f043a60a0c595589ea1489274a4f0a69e5..d2e396fc9a9c862052392dc16809915e
          if (entity instanceof EntityItem) {
              itemCounts[i]--;
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index f181034c59168385663387c8cb6fc47ac2c46a7c..0cc9d34adbbff76673163f5ec5e4654068b5f095 100644
+index c17779d1b0b8529d9b7cca7b9bb9e31299ec1743..1d22860f31fb6803dd7cd2573e881359bcf0c8a3 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -23,6 +23,15 @@ public final class SpawnerCreature {

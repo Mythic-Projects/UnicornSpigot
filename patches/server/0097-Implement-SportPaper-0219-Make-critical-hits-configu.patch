@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [SportPaper-0219] Make critical hits configurable
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index 491bb14e581258e1310746afdb2ca6f64427552e..1a9fc593be06781cac960baae01bbc58d8a46891 100644
+index 6a930eb8bc07934b84cc54370c864f7b2095ebb6..b5a335c111e8a44078b5f7b7608d57e7e0ab4ecb 100644
 --- a/src/main/java/net/minecraft/server/EntityHuman.java
 +++ b/src/main/java/net/minecraft/server/EntityHuman.java
 @@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;

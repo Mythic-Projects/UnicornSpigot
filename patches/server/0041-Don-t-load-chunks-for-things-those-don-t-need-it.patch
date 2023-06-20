@@ -242,7 +242,7 @@ index 304e82754e7f0d3cec6bbd97d1e563f7421090cc..dbffce329559a49f174b57af15513ae9
  
      int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection);
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 0b4343e1132c666e88006c691140e043cd8d26f3..f181034c59168385663387c8cb6fc47ac2c46a7c 100644
+index 9c2eb99dc1909cebc5a178a580a2b3023ac164c7..c17779d1b0b8529d9b7cca7b9bb9e31299ec1743 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -132,9 +132,9 @@ public final class SpawnerCreature {
@@ -345,7 +345,7 @@ index 1e1d08b547884241811ad4eb6d730930e7e3d8be..66690e688ce470dba4c28d902daf8afa
  
      public void b(NBTTagCompound nbttagcompound) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ea15d84248a28bc3207a4523c5a92c6c94b18b5e..70e4350f123e9cfd30ad15aa04a10310c8fe7e38 100644
+index 7d45d52ae66b8dd030aa3dfd5c78ff4a1cad5c58..9037968d1719cb7699a4eb92ae9fa9ecbcd6979f 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -685,7 +685,8 @@ public abstract class World implements IBlockAccess {

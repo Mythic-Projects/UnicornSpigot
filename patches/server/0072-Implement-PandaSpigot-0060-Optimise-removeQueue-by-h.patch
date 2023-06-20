@@ -5,7 +5,7 @@ Subject: [PATCH] Implement [PandaSpigot-0060] Optimise removeQueue by hpfxd
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 96a930a7f8f3aa0625d6ed2bcfedbc6f746b3519..4c6a6b3fb030bc9d7226ab2530cd0b45418ec69c 100644
+index 76aadf54c66b8e65a222afa9c80ca83a6173e78f..1ed5199837d172cf9bc9b607c92c48fd82960eff 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -34,7 +34,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -17,7 +17,7 @@ index 96a930a7f8f3aa0625d6ed2bcfedbc6f746b3519..4c6a6b3fb030bc9d7226ab2530cd0b45
      private final ServerStatisticManager bK;
      private float bL = Float.MIN_VALUE;
      private float bM = -1.0E8F;
-@@ -217,14 +217,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -213,14 +213,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          while (!this.removeQueue.isEmpty()) {
              int i = Math.min(this.removeQueue.size(), Integer.MAX_VALUE);
              int[] aint = new int[i];
@@ -41,7 +41,7 @@ index 96a930a7f8f3aa0625d6ed2bcfedbc6f746b3519..4c6a6b3fb030bc9d7226ab2530cd0b45
              this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
          }
  
-@@ -941,7 +948,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -916,7 +923,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.lastSentExp = -1;
          this.bM = -1.0F;
          this.bN = -1;

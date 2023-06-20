@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Sat, 4 Apr 2020 17:00:20 -0700
+Subject: [PATCH] Implement [Tuinity-0046] Consolidate flush calls for entity
+ tracker packets by Spottedleaf
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 057bba686f6ef3fe2a9076372c316432851ac20f..394b51781d5883f8beb54a142a597df784cb41c7 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -948,7 +948,26 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+                     throw new ReportedException(crashreport);
+                 }
+ 
+-                worldserver.getTracker().updatePlayers();
++                // Tuinity start - controlled flush for entity tracker packets
++                List<NetworkManager> disabledFlushes = new ArrayList<>(worldserver.players.size());
++                for (EntityHuman player : worldserver.players) {
++                    if (!(player instanceof EntityPlayer)) continue; // skip non-player entities
++                    PlayerConnection connection = ((EntityPlayer) player).playerConnection;
++                    if (connection != null) {
++                        connection.networkManager.disableAutomaticFlush();
++                        disabledFlushes.add(connection.networkManager);
++                    }
++                }
++                try {
++                    // Tuinity end
++                    worldserver.getTracker().updatePlayers();
++                    // Tuinity start - controlled flush for entity tracker packets
++                } finally {
++                    for (NetworkManager networkManager : disabledFlushes) {
++                        networkManager.enableAutomaticFlush();
++                    }
++                }
++                // Tuinity end
+                 worldserver.explosionDensityCache.clear(); // PaperSpigot - Optimize explosions
+             // } // CraftBukkit
+ 
