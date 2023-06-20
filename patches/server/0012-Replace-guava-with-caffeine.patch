@@ -5,7 +5,7 @@ Subject: [PATCH] Replace guava with caffeine
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 6165e623ac7dd86a04e8f3c8eef7d4a35c6051b8..9ccdf6c4f48296b991c0661536eab2b1b86833a9 100644
+index c8c2cbde369c6aa03f14883f2b91e3061b432da1..3fabeac930915fd7fc999fcddcd0d60085d62196 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -29,6 +29,8 @@ dependencies {

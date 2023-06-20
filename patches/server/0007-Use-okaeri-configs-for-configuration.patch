@@ -5,7 +5,7 @@ Subject: [PATCH] Use okaeri-configs for configuration
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index ce34f378f9f336d1f2f47820927833cac7efb6e8..6165e623ac7dd86a04e8f3c8eef7d4a35c6051b8 100644
+index ce34f378f9f336d1f2f47820927833cac7efb6e8..c8c2cbde369c6aa03f14883f2b91e3061b432da1 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -23,6 +23,12 @@ dependencies {
@@ -13,7 +13,7 @@ index ce34f378f9f336d1f2f47820927833cac7efb6e8..6165e623ac7dd86a04e8f3c8eef7d4a3
      implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
      implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
 +
-+    val okaeriConfigsVersion = "5.0.0-beta.5"
++    val okaeriConfigsVersion = "5.0.0-beta.6"
 +    implementation("eu.okaeri:okaeri-configs-core:$okaeriConfigsVersion")
 +    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:$okaeriConfigsVersion")
 +    implementation("eu.okaeri:okaeri-configs-serdes-commons:$okaeriConfigsVersion")
