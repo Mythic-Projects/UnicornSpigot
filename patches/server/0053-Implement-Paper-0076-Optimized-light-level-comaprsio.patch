@@ -146,10 +146,10 @@ index 9fefb867bca8685b7c571dda0d05091c05d335d6..fd2c3673834f25902eaef299214ef4b2
      }
  
 diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
-index 663de79af243bff679c9a27f227eac39237a629e..0efed48846065febb3e3fd3e3ba02efc6b5992ff 100644
+index 9306317d3745a04edf63b1fd1b25a7c53a951a85..6a07458d28b5af53c9b772e5ccf4448ccd3caff4 100644
 --- a/src/main/java/net/minecraft/server/EntityZombie.java
 +++ b/src/main/java/net/minecraft/server/EntityZombie.java
-@@ -183,7 +183,7 @@ public class EntityZombie extends EntityMonster {
+@@ -184,7 +184,7 @@ public class EntityZombie extends EntityMonster {
                      int j1 = j + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
                      int k1 = k + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
  

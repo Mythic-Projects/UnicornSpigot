@@ -5,14 +5,15 @@ Subject: [PATCH] Implement [PaperBin-????] Faster Game Rules Lookup
 
 
 diff --git a/src/main/java/net/minecraft/server/GameRules.java b/src/main/java/net/minecraft/server/GameRules.java
-index 1c89c90581cf6e703f84b2acc436a0585452da4e..cc2d3d10c1cfadd0c92929740bd583af07cb3094 100644
+index 1c89c90581cf6e703f84b2acc436a0585452da4e..c4b0d265e805beacc528b2679bf7822ccdafb47e 100644
 --- a/src/main/java/net/minecraft/server/GameRules.java
 +++ b/src/main/java/net/minecraft/server/GameRules.java
-@@ -2,11 +2,10 @@ package net.minecraft.server;
+@@ -2,11 +2,11 @@ package net.minecraft.server;
  
  import java.util.Iterator;
  import java.util.Set;
 -import java.util.TreeMap;
++//import java.util.TreeMap; // PaperBin - TreeMap -> HashMap - Faster Game Rules Lookup
  
  public class GameRules {
  

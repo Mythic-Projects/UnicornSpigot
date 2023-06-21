@@ -365,18 +365,10 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
      }
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bfa2a35122 100644
+index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bfa2a35122 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -23,6 +23,7 @@ import java.util.logging.Level;
- 
- import org.bukkit.WeatherType;
- import org.bukkit.block.BlockState;
-+import org.bukkit.craftbukkit.util.LongHash;
- import org.bukkit.craftbukkit.util.HashTreeSet;
- 
- import org.bukkit.event.block.BlockFormEvent;
-@@ -223,13 +224,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -224,13 +224,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
          long time = this.worldData.getTime();
          if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
@@ -390,7 +382,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
          this.chunkProvider.unloadChunks();
          int j = this.a(1.0F);
  
-@@ -242,29 +240,18 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -243,29 +240,18 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
          }
  
@@ -420,7 +412,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
      }
  
      public BiomeBase.BiomeMeta a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
-@@ -459,7 +446,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -460,7 +446,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      }
                  }
  
@@ -428,7 +420,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
                  i1 = this.getGameRules().c("randomTickSpeed");
                  if (i1 > 0) {
                      ChunkSection[] achunksection = chunk.getSections();
-@@ -488,7 +474,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -489,7 +474,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                          }
                      }
                  }
@@ -436,7 +428,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
              }
  
          }
-@@ -618,7 +603,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -619,7 +603,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -444,7 +436,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
                  NextTickListEntry nextticklistentry;
  
                  for (int j = 0; j < i; ++j) {
-@@ -631,7 +615,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -632,7 +615,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      this.M.remove(nextticklistentry);
                      this.V.add(nextticklistentry);
                  }
@@ -452,7 +444,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
  
                  // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
                  if (paperConfigUnicorn.tickNextTickListCapIgnoresRedstone) {
-@@ -650,7 +633,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -651,7 +633,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -460,7 +452,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
                  Iterator iterator = this.V.iterator();
  
                  while (iterator.hasNext()) {
-@@ -661,7 +643,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -662,7 +643,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      if (this.areChunksLoadedBetween(nextticklistentry.a.a(-b0, -b0, -b0), nextticklistentry.a.a(b0, b0, b0))) {
                          IBlockData iblockdata = this.getType(nextticklistentry.a);
                          co.aikar.timings.Timing timing = iblockdata.getBlock().getTiming(); // Spigot
@@ -468,7 +460,7 @@ index ef1e09c649f7a559e50d63cac00451761e42a05c..469545559f9eb0fc6b50c30d93ad86bf
  
                          if (iblockdata.getBlock().getMaterial() != Material.AIR && Block.a(iblockdata.getBlock(), nextticklistentry.a())) {
                              try {
-@@ -674,12 +655,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -675,12 +655,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                                  throw new ReportedException(crashreport);
                              }
                          }

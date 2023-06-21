@@ -212,7 +212,7 @@ index d59d779732c628b5c7eb73cc26f7746760cc5d91..15c700e7267c79f759aa880092ebb274
      private static final Item[] c = new Item[] { Items.GLOWSTONE_DUST, Items.SUGAR, Items.REDSTONE, Items.SPIDER_EYE, Items.GLASS_BOTTLE, Items.GUNPOWDER, Items.STICK, Items.STICK};
      private int bm;
 diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
-index be937d66a7b8ec8b7f6023b4c0a5f85bcc9384cb..663de79af243bff679c9a27f227eac39237a629e 100644
+index 49bcb00999be806838fe602af4049978f2f77573..9306317d3745a04edf63b1fd1b25a7c53a951a85 100644
 --- a/src/main/java/net/minecraft/server/EntityZombie.java
 +++ b/src/main/java/net/minecraft/server/EntityZombie.java
 @@ -4,6 +4,7 @@ import java.util.Calendar;
@@ -222,8 +222,8 @@ index be937d66a7b8ec8b7f6023b4c0a5f85bcc9384cb..663de79af243bff679c9a27f227eac39
 +import com.eatthepath.uuid.FastUUID;
  import org.mythicprojects.unicornspigot.config.PaperConfig;
  //CraftBukkit start
- import org.bukkit.event.entity.CreatureSpawnEvent;
-@@ -15,7 +16,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
+ import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+@@ -16,7 +17,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
  public class EntityZombie extends EntityMonster {
  
      protected static final IAttribute a = (new AttributeRanged((IAttribute) null, "zombie.spawnReinforcements", 0.0D, 0.0D, 1.0D)).a("Spawn Reinforcements Chance");
