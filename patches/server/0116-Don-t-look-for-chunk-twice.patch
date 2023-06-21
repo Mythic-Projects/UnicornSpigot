@@ -66,7 +66,7 @@ index 63f682da626c474eb878c4e97f55d8e869d9b9df..4180113e323650ed45bb60e7fc910332
  
              if (list.size() > 0) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c4285be4d069 100644
+index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010defee915ab 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -266,9 +266,10 @@ public abstract class World implements IBlockAccess {
@@ -98,7 +98,54 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c428
          }
      }
  
-@@ -1734,8 +1738,11 @@ public abstract class World implements IBlockAccess {
+@@ -879,10 +883,13 @@ public abstract class World implements IBlockAccess {
+ 
+     public int b(int i, int j) {
+         if (isInWorldBounds(i, j)) { // Unicorn
+-            if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
++            // Unicorn start - don't look chunk twice
++            Chunk chunk = this.getChunkIfLoaded(i >> 4, j >> 4);
++            if (chunk == null) {
+                 return 0;
+             } else {
+-                Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
++                //Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
++            // Unicorn end
+ 
+                 return chunk.v();
+             }
+@@ -898,10 +905,14 @@ public abstract class World implements IBlockAccess {
+ 
+         if (!this.isValidLocation(blockposition)) {
+             return enumskyblock.c;
+-        } else if (!this.isLoaded(blockposition)) {
++        // Unicorn start - don't look chunk twice
++        }
++        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        if (chunk == null) {
+             return enumskyblock.c;
+         } else {
+-            Chunk chunk = this.getChunkAtWorldCoords(blockposition);
++            //Chunk chunk = this.getChunkAtWorldCoords(blockposition);
++        // Unicorn end
+ 
+             return chunk.getBrightness(enumskyblock, blockposition);
+         }
+@@ -909,8 +920,11 @@ public abstract class World implements IBlockAccess {
+ 
+     public void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i) {
+         if (this.isValidLocation(blockposition)) {
+-            if (this.isLoaded(blockposition)) {
+-                Chunk chunk = this.getChunkAtWorldCoords(blockposition);
++            // Unicorn start - don't look chunk twice
++            Chunk chunk = this.getChunkIfLoaded(blockposition);
++            if (chunk != null) {
++                //Chunk chunk = this.getChunkAtWorldCoords(blockposition);
++            // Unicorn end
+ 
+                 chunk.a(enumskyblock, blockposition, i);
+                 this.n(blockposition);
+@@ -1734,8 +1748,11 @@ public abstract class World implements IBlockAccess {
                  tilesThisCycle--;
                  this.tileEntityList.remove(tileTickPosition--);
                  //this.h.remove(tileentity); // PaperSpigot - Remove unused list
@@ -112,7 +159,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c428
                  }
              }
          }
-@@ -1760,8 +1767,11 @@ public abstract class World implements IBlockAccess {
+@@ -1760,8 +1777,11 @@ public abstract class World implements IBlockAccess {
                      }
                      // CraftBukkit end */
  
@@ -126,7 +173,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c428
                      }
  
                      this.notify(tileentity1.getPosition());
-@@ -2888,8 +2898,11 @@ public abstract class World implements IBlockAccess {
+@@ -2888,8 +2908,11 @@ public abstract class World implements IBlockAccess {
      }
  
      public void b(BlockPosition blockposition, TileEntity tileentity) {
@@ -140,7 +187,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c428
          }
  
      }
-@@ -3394,9 +3407,10 @@ public abstract class World implements IBlockAccess {
+@@ -3394,9 +3417,10 @@ public abstract class World implements IBlockAccess {
              EnumDirection enumdirection = (EnumDirection) iterator.next();
              BlockPosition blockposition1 = blockposition.shift(enumdirection);
  
@@ -154,7 +201,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c428
                  if (Blocks.UNPOWERED_COMPARATOR.e(iblockdata.getBlock())) {
                      iblockdata.getBlock().doPhysics(this, blockposition1, iblockdata, block);
                  } else if (iblockdata.getBlock().isOccluding()) {
-@@ -3415,9 +3429,12 @@ public abstract class World implements IBlockAccess {
+@@ -3415,9 +3439,12 @@ public abstract class World implements IBlockAccess {
          long i = 0L;
          float f = 0.0F;
  
