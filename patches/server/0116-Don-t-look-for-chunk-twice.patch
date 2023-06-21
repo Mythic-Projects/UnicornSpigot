@@ -1,0 +1,241 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 21 Jun 2023 18:59:58 +0200
+Subject: [PATCH] Don't look for chunk twice
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index b5a335c111e8a44078b5f7b7608d57e7e0ab4ecb..4bdfe8ee4e4f90a928ef39c9075de07c45ef32c9 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -1176,8 +1176,11 @@ public abstract class EntityHuman extends EntityLiving {
+         // CraftBukkit end
+ 
+         this.setSize(0.2F, 0.2F);
+-        if (this.world.isLoaded(blockposition)) {
+-            EnumDirection enumdirection = (EnumDirection) this.world.getType(blockposition).get(BlockDirectional.FACING);
++        // Unicorn start - don't look chunk twice
++        IBlockData blockData = this.world.getTypeIfLoaded(blockposition);
++        if (blockData != null) {
++            EnumDirection enumdirection = (EnumDirection) blockData.get(BlockDirectional.FACING);
++        // Unicorn end
+             float f = 0.5F;
+             float f1 = 0.5F;
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 64b210f66f29b4676560d57e79ac982cd82089b9..44d3322367bcea7a60d60d437d63c4742731873d 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1419,7 +1419,7 @@ public abstract class EntityLiving extends Entity {
+                     this.motY = 0.2D;
+                 }
+ 
+-                if (this.world.isClientSide && (!this.world.isLoaded(new BlockPosition((int) this.locX, 0, (int) this.locZ)) || !this.world.getChunkAtWorldCoords(new BlockPosition((int) this.locX, 0, (int) this.locZ)).o())) {
++                if (this.world.isClientSide && (!this.world.isLoaded((int) this.locX, (int) this.locZ) || !this.world.getChunkAtWorldCoords((int) this.locX, (int) this.locZ).o())) { // Unicorn - don't create new BlockPosition
+                     if (this.locY > 0.0D) {
+                         this.motY = -0.1D;
+                     } else {
+diff --git a/src/main/java/net/minecraft/server/TileEntityHopper.java b/src/main/java/net/minecraft/server/TileEntityHopper.java
+index 63f682da626c474eb878c4e97f55d8e869d9b9df..4180113e323650ed45bb60e7fc910332c37bc204 100644
+--- a/src/main/java/net/minecraft/server/TileEntityHopper.java
++++ b/src/main/java/net/minecraft/server/TileEntityHopper.java
+@@ -555,9 +555,12 @@ public class TileEntityHopper extends TileEntityContainer implements IHopper, IU
+         int i = MathHelper.floor(d0);
+         int j = MathHelper.floor(d1);
+         int k = MathHelper.floor(d2);
++        // Unicorn start - don't look chunk twice
++        IBlockData blockData = world.getTypeIfLoaded(i, j, k);
++        if ( blockData == null ) return null; // Spigot
++        Block block = blockData.getBlock();
++        // Unicorn end
+         BlockPosition blockposition = new BlockPosition(i, j, k);
+-        if ( !world.isLoaded( blockposition ) ) return null; // Spigot
+-        Block block = world.getType(blockposition).getBlock();
+ 
+         if (block.isTileEntity()) {
+             TileEntity tileentity = world.getTileEntity(blockposition);
+@@ -570,9 +573,7 @@ public class TileEntityHopper extends TileEntityContainer implements IHopper, IU
+             }
+         }
+ 
+-        net.minecraft.server.Chunk chunk = world.getChunkAtWorldCoords(blockposition);
+-
+-        if (object == null && chunk.getItemCount(blockposition) > 0 && !org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(block).isOccluding()) {
++        if (object == null && world.getChunkIfLoaded(i >> 4, k >> 4).getItemCount(blockposition) > 0 && !org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(block).isOccluding()) { // Unicorn
+             List list = world.a((Entity) null, new AxisAlignedBB(d0 - 0.5D, d1 - 0.5D, d2 - 0.5D, d0 + 0.5D, d1 + 0.5D, d2 + 0.5D), IEntitySelector.c);
+ 
+             if (list.size() > 0) {
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..9124eb928ac8882a527306179c36c4285be4d069 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -266,9 +266,10 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public BiomeBase getBiome(final BlockPosition blockposition) {
+-        if (this.isLoaded(blockposition)) {
+-            Chunk chunk = this.getChunkAtWorldCoords(blockposition);
+-
++        // Unicorn start - don't look chunk twice
++        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        if (chunk != null) {
++        // Unicorn end
+             try {
+                 return chunk.getBiome(blockposition, this.worldProvider.m());
+             } catch (Throwable throwable) {
+@@ -771,9 +772,12 @@ public abstract class World implements IBlockAccess {
+             if (blockposition.getY() >= 256) {
+                 blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
+             }
+-            if (!this.isLoaded(blockposition)) return 0; // Paper
++            // Unicorn start - don't look chunk twice
++            Chunk chunk = this.getChunkIfLoaded(blockposition);
++            if (chunk == null) return 0; // Paper
+ 
+-            return this.getChunkAtWorldCoords(blockposition).a(blockposition, 0);
++            return chunk.a(blockposition, 0);
++            // Unicorn end
+         }
+     }
+ 
+@@ -1734,8 +1738,11 @@ public abstract class World implements IBlockAccess {
+                 tilesThisCycle--;
+                 this.tileEntityList.remove(tileTickPosition--);
+                 //this.h.remove(tileentity); // PaperSpigot - Remove unused list
+-                if (this.isLoaded(tileentity.getPosition())) {
+-                    this.getChunkAtWorldCoords(tileentity.getPosition()).e(tileentity.getPosition());
++                // Unicorn start - don't look chunk twice
++                Chunk chunk = this.getChunkIfLoaded(tileentity.getPosition());
++                if (chunk != null) {
++                    chunk.e(tileentity.getPosition());
++                // Unicorn end
+                 }
+             }
+         }
+@@ -1760,8 +1767,11 @@ public abstract class World implements IBlockAccess {
+                     }
+                     // CraftBukkit end */
+ 
+-                    if (this.isLoaded(tileentity1.getPosition())) {
+-                        this.getChunkAtWorldCoords(tileentity1.getPosition()).a(tileentity1.getPosition(), tileentity1);
++                    // Unicorn start - don't look chunk twice
++                    Chunk chunk = this.getChunkIfLoaded(tileentity1.getPosition());
++                    if (chunk != null) {
++                        chunk.a(tileentity1.getPosition(), tileentity1);
++                    // Unicorn end
+                     }
+ 
+                     this.notify(tileentity1.getPosition());
+@@ -2888,8 +2898,11 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public void b(BlockPosition blockposition, TileEntity tileentity) {
+-        if (this.isLoaded(blockposition)) {
+-            this.getChunkAtWorldCoords(blockposition).e();
++        // Unicorn start - don't look chunk twice
++        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        if (chunk != null) {
++            chunk.e();
++        // Unicorn end
+         }
+ 
+     }
+@@ -3394,9 +3407,10 @@ public abstract class World implements IBlockAccess {
+             EnumDirection enumdirection = (EnumDirection) iterator.next();
+             BlockPosition blockposition1 = blockposition.shift(enumdirection);
+ 
+-            if (this.isLoaded(blockposition1)) {
+-                IBlockData iblockdata = this.getType(blockposition1);
+-
++            // Unicorn start - dont look chunk twice
++            IBlockData iblockdata = this.getTypeIfLoaded(blockposition1);
++            if (iblockdata != null) {
++            // Unicorn end
+                 if (Blocks.UNPOWERED_COMPARATOR.e(iblockdata.getBlock())) {
+                     iblockdata.getBlock().doPhysics(this, blockposition1, iblockdata, block);
+                 } else if (iblockdata.getBlock().isOccluding()) {
+@@ -3415,9 +3429,12 @@ public abstract class World implements IBlockAccess {
+         long i = 0L;
+         float f = 0.0F;
+ 
+-        if (this.isLoaded(blockposition)) {
++        // Unicorn start - dont look chunk twice
++        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        if (chunk != null) {
+             f = this.y();
+-            i = this.getChunkAtWorldCoords(blockposition).w();
++            i = chunk.w();
++        // Unicorn end
+         }
+ 
+         return new DifficultyDamageScaler(this.getDifficulty(), this.getDayTime(), i, f);
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index e9e1947ec8536bffa74d4245f2ec24c2b4323c6f..d8ac4cf4767aeedb3406142ff27b5d8c6c8e100a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -627,8 +627,10 @@ public class CraftWorld implements World {
+ 
+     public void setBiome(int x, int z, Biome bio) {
+         BiomeBase bb = CraftBlock.biomeToBiomeBase(bio);
+-        if (this.world.isLoaded(new BlockPosition(x, 0, z))) {
+-            net.minecraft.server.Chunk chunk = this.world.getChunkAtWorldCoords(new BlockPosition(x, 0, z));
++        // Unicorn start - don't look chunk twice
++        net.minecraft.server.Chunk chunk = this.world.getChunkIfLoaded(x >> 4, z >> 4);
++        if (chunk != null) {
++        // Unicorn end
+ 
+             if (chunk != null) {
+                 byte[] biomevals = chunk.getBiomeIndex();
+@@ -1208,8 +1210,11 @@ public class CraftWorld implements World {
+                 if (keepLoaded) {
+                     loadChunk(chunkCoordX + x, chunkCoordZ + z);
+                 } else {
+-                    if (isChunkLoaded(chunkCoordX + x, chunkCoordZ + z)) {
+-                        if (this.getHandle().getChunkAt(chunkCoordX + x, chunkCoordZ + z) instanceof EmptyChunk) {
++                    // Unicorn start - don't look chunk twice
++                    net.minecraft.server.Chunk nmsChunk = this.getHandle().getChunkIfLoaded(chunkCoordX + x, chunkCoordZ + z);
++                    if (nmsChunk != null) {
++                        if (nmsChunk instanceof EmptyChunk) {
++                    // Unicorn end
+                             unloadChunk(chunkCoordX + x, chunkCoordZ + z, false);
+                         } else {
+                             unloadChunk(chunkCoordX + x, chunkCoordZ + z);
+diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
+index f109c7ce27341aa81cddc64d4ed1e41fcac3cef5..f136c66bd856f3ca305e953f4079c59ae62a9f2e 100644
+--- a/src/main/java/org/spigotmc/ActivationRange.java
++++ b/src/main/java/org/spigotmc/ActivationRange.java
+@@ -127,9 +127,12 @@ public class ActivationRange
+             {
+                 for ( int j1 = k; j1 <= l; ++j1 )
+                 {
+-                    if ( world.getWorld().isChunkLoaded( i1, j1 ) )
++                    // Unicorn start - don't look chunks twice
++                    Chunk chunk = world.getChunkIfLoaded( i1, j1 );
++                    if (chunk != null)
+                     {
+-                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
++                        activateChunkEntities( chunk );
++                    // Unicorn end
+                     }
+                 }
+             }
+diff --git a/src/main/java/org/spigotmc/AntiXray.java b/src/main/java/org/spigotmc/AntiXray.java
+index 443469912e738c278acefbc5908250182453b7a1..8f9a09196d69dbb4b432f3525cfab2a0b61e81a0 100644
+--- a/src/main/java/org/spigotmc/AntiXray.java
++++ b/src/main/java/org/spigotmc/AntiXray.java
+@@ -226,10 +226,13 @@ public class AntiXray
+     private void updateNearbyBlocks(World world, BlockPosition position, int radius, boolean updateSelf)
+     {
+         // If the block in question is loaded
+-        if ( world.isLoaded( position ) )
++        // Unicorn start - don't look chunk twice
++        net.minecraft.server.IBlockData blockData = world.getTypeIfLoaded( position );
++        if ( blockData != null )
+         {
+             // Get block id
+-            Block block = world.getType(position).getBlock();
++            Block block = blockData.getBlock();
++        // Unicorn end
+ 
+             // See if it needs update
+             if ( updateSelf && obfuscateBlocks[Block.getId( block )] )
