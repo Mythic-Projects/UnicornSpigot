@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 02:53:49 +0200
+Subject: [PATCH] Add Event#callEvent and make async PlayerEvent constructor
+ public
+
+
+diff --git a/src/main/java/org/bukkit/event/Event.java b/src/main/java/org/bukkit/event/Event.java
+index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..bb29e836d26e4424ce40aa68df7f19424a147ad0 100644
+--- a/src/main/java/org/bukkit/event/Event.java
++++ b/src/main/java/org/bukkit/event/Event.java
+@@ -75,6 +75,21 @@ public abstract class Event {
+         return async;
+     }
+ 
++    // Unicorn start
++    /**
++     * Calls the event and tests if cancelled
++     *
++     * @return True if event is not cancelled, false if event is cancelled
++     */
++    public boolean callEvent() {
++        org.bukkit.Bukkit.getPluginManager().callEvent(this);
++        if (this instanceof Cancellable) {
++            return !((Cancellable) this).isCancelled();
++        }
++        return true;
++    }
++    // Unicorn end
++
+     public enum Result {
+ 
+         /**
+diff --git a/src/main/java/org/bukkit/event/player/PlayerEvent.java b/src/main/java/org/bukkit/event/player/PlayerEvent.java
+index 0d4833f60846f7911cefcbdb1933b9aaf5071455..7fd3fce062b8302d477be8adae64296bf26ddc6b 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerEvent.java
+@@ -13,7 +13,7 @@ public abstract class PlayerEvent extends Event {
+         player = who;
+     }
+ 
+-    PlayerEvent(final Player who, boolean async) {
++    public PlayerEvent(final Player who, boolean async) { // Unicorn - make public
+         super(async);
+         player = who;
+ 
