@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 14:03:16 +0200
+Subject: [PATCH] Option to toggle light detector ticking and change check
+ interval
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityLightDetector.java b/src/main/java/net/minecraft/server/TileEntityLightDetector.java
+index f75e2de63e96019b3210db14f036fd74353ddcce..9294b104c21eace5a0ca8f1d9203e2258836fa7a 100644
+--- a/src/main/java/net/minecraft/server/TileEntityLightDetector.java
++++ b/src/main/java/net/minecraft/server/TileEntityLightDetector.java
+@@ -1,11 +1,18 @@
+ package net.minecraft.server;
+ 
++import org.mythicprojects.unicornspigot.config.UnicornWorldConfig.Optimizations.Ticking.LightDetector; // Unicorn
++
+ public class TileEntityLightDetector extends TileEntity implements IUpdatePlayerListBox {
+ 
+     public TileEntityLightDetector() {}
+ 
+     public void c() {
+-        if (this.world != null && !this.world.isClientSide && this.world.getTime() % 20L == 0L) {
++        // Unicorn start
++        if (this.world == null) return;
++        LightDetector config = this.world.unicornConfig.optimizations.ticking.lightDetector;
++        if (!config.tick) return;
++        if (!this.world.isClientSide && this.world.getTime() % config.checkInterval == 0L) {
++        // Unicorn end
+             this.e = this.w();
+             if (this.e instanceof BlockDaylightDetector) {
+                 ((BlockDaylightDetector) this.e).f(this.world, this.position);
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index f8973f7243c7b866954e422e63505a947042d551..483bdb0a78012f97e36ce6b9187f4631eca26acd 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -32,6 +32,20 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+             @Comment("Use with caution and test, if you really could use this option.")
+             public boolean chunks = true;
+ 
++            @Comment("Configuration of light detector ticking.")
++            public LightDetector lightDetector = new LightDetector();
++
++            public static class LightDetector extends UnicornConfig {
++
++                @Comment("Whether light detector should tick.")
++                @Comment("Disabling this option can improve performance by a lot, but will break mechanisms relaying on it.")
++                public boolean tick = true;
++
++                @Comment("How often light detector should be ticked (in ticks).")
++                public long checkInterval = 20L;
++
++            }
++
+         }
+ 
+     }

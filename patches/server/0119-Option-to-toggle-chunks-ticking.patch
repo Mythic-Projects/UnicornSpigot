@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 13:44:27 +0200
+Subject: [PATCH] Option to toggle chunks ticking
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index fc44f312b1491bb416abd6a2aa18e8826d3dd3ca..6bd6c18d72a4788108774af7f82db3d21db45d8e 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -376,6 +376,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+     }
+ 
+     protected void h() {
++        // Unicorn start
++        if (!this.unicornConfig.optimizations.ticking.chunks) {
++            return;
++        }
++        // Unicorn end
+         super.h();
+         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+             // Spigot start
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 9a8779852d17e0730f5625243b09b1f08e5768d8..7cd3d24de215f8ff545a8ac943cda26523ddb3cb 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -1,9 +1,31 @@
+ package org.mythicprojects.unicornspigot.config;
+ 
++import eu.okaeri.configs.annotation.Comment;
+ import eu.okaeri.configs.annotation.NameModifier;
+ import eu.okaeri.configs.annotation.NameStrategy;
+ import eu.okaeri.configs.annotation.Names;
+ 
+ @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
+ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
++
++    @Comment("Optimizations that could improve performance, but may cause some issues.")
++    @Comment("Use with caution.")
++    public Optimizations optimizations = new Optimizations();
++
++    public static class Optimizations extends UnicornConfigSection {
++
++        @Comment("Configuration of ticking specific mechanics.")
++        public Ticking ticking = new Ticking();
++
++        public static class Ticking extends UnicornConfigSection {
++
++            @Comment("Whether chunks should be ticked.")
++            @Comment("Disabling this option can improve performance by a lot, but it may cause lots of issues.")
++            @Comment("Use with caution and test, if you really could use this option.")
++            public boolean chunks = true;
++
++        }
++
++    }
++
+ }

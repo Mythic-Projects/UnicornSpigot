@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 14:06:17 +0200
+Subject: [PATCH] Option to toggle entities collisions
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
+index 67603653bcc2bcb9ca4781e4a7eb5126194c6662..559a4470985f8d985953108918a0a4698a466daf 100644
+--- a/src/main/java/net/minecraft/server/EntityInsentient.java
++++ b/src/main/java/net/minecraft/server/EntityInsentient.java
+@@ -925,4 +925,12 @@ public abstract class EntityInsentient extends EntityLiving {
+ 
+         private EnumEntityPositionType() {}
+     }
++
++    // Unicorn start
++    @Override
++    protected void bL() {
++        if (this.world.unicornConfig.optimizations.entitiesCollisions)
++        super.bL();
++    }
++    // Unicorn end
+ }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index faf6dd894c23752f612d053310d010defee915ab..1dfec834a18ebb749c42a35a6323808accd3880c 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1455,6 +1455,7 @@ public abstract class World implements IBlockAccess {
+         }
+         // Spigot end
+ 
++        if (!this.unicornConfig.optimizations.entitiesCollisions && (entity instanceof EntityHuman || entity instanceof EntityInsentient || entity instanceof EntityArmorStand)) return arraylist; // Unicorn
+         if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
+ 
+         double d0 = 0.25D;
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 483bdb0a78012f97e36ce6b9187f4631eca26acd..57a9d52f68f05cdc399ce63a6511f3d7c9dcd53d 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -22,6 +22,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+         @Comment("Disabling this option may improve performance a bit, but it may cause visual issues for clients.")
+         public boolean syncTntInWater = true;
+ 
++        @Comment("Whether entities collisions should be handled.")
++        @Comment("Disabling this option may improve performance a bit, but it will break entities collisions.")
++        public boolean entitiesCollisions = true;
++
+         @Comment("Configuration of ticking specific mechanics.")
+         public Ticking ticking = new Ticking();
+ 

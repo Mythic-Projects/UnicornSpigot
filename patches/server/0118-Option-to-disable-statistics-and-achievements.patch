@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 13:39:44 +0200
+Subject: [PATCH] Option to disable statistics and achievements
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 1ed5199837d172cf9bc9b607c92c48fd82960eff..9fb3effa7c8e75e8267c3ffb4f1d1ffc63fe29f4 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -13,6 +13,7 @@ import java.util.List;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ // CraftBukkit start
+ import org.bukkit.Bukkit;
+ import org.bukkit.WeatherType;
+@@ -370,6 +371,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     protected void i_() {
+         BiomeBase biomebase = this.world.getBiome(new BlockPosition(MathHelper.floor(this.locX), 0, MathHelper.floor(this.locZ)));
+         String s = biomebase.ah;
++        // Unicorn start
++        if (UnicornConfig.get().settings.disableStatisticsAndAchievements) {
++            return;
++        }
++        // Unicorn end
+         AchievementSet achievementset = (AchievementSet) this.getStatisticManager().b((Statistic) AchievementList.L);
+ 
+         if (achievementset == null) {
+diff --git a/src/main/java/net/minecraft/server/StatisticManager.java b/src/main/java/net/minecraft/server/StatisticManager.java
+index 5d6c3deac0d16d522ac3ef793a3fea3d74f05e68..246c64e3694fc34d3b69dc3003f8792bb284b8df 100644
+--- a/src/main/java/net/minecraft/server/StatisticManager.java
++++ b/src/main/java/net/minecraft/server/StatisticManager.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import com.google.common.collect.Maps;
+ import java.util.Map;
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ 
+ public class StatisticManager {
+ 
+@@ -18,6 +19,11 @@ public class StatisticManager {
+     }
+ 
+     public void b(EntityHuman entityhuman, Statistic statistic, int i) {
++        // Unicorn start
++        if (UnicornConfig.get().settings.disableStatisticsAndAchievements) {
++            return;
++        }
++        // Unicorn end
+         if (!statistic.d() || this.b((Achievement) statistic)) {
+             // CraftBukkit start - fire Statistic events
+             org.bukkit.event.Cancellable cancellable = org.bukkit.craftbukkit.event.CraftEventFactory.handleStatisticsIncrease(entityhuman, statistic, this.getStatisticValue(statistic), i);
+@@ -30,6 +36,11 @@ public class StatisticManager {
+     }
+ 
+     public void setStatistic(EntityHuman entityhuman, Statistic statistic, int i) {
++        // Unicorn start
++        if (UnicornConfig.get().settings.disableStatisticsAndAchievements) {
++            return;
++        }
++        // Unicorn end
+         StatisticWrapper statisticwrapper = (StatisticWrapper) this.a.get(statistic);
+ 
+         if (statisticwrapper == null) {
+@@ -41,6 +52,11 @@ public class StatisticManager {
+     }
+ 
+     public int getStatisticValue(Statistic statistic) {
++        // Unicorn start
++        if (UnicornConfig.get().settings.disableStatisticsAndAchievements) {
++            return 0;
++        }
++        // Unicorn end
+         StatisticWrapper statisticwrapper = (StatisticWrapper) this.a.get(statistic);
+ 
+         return statisticwrapper == null ? 0 : statisticwrapper.a();
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index 515470151085ade2530e75f164e5cbebfad9fdcf..d2f1d59825fae6cf170aece98aa548be026ae71d 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -39,6 +39,10 @@ public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+         @Comment("Whether checking if everyone is sleeping should ignore players in end/nether.")
+         public boolean sleepingIgnoreOtherDimensions = false;
+ 
++        @Comment("Whether to disable statistics (ESC -> Statistics) and achievements.")
++        @Comment("Enabling this option could break some plugins that rely on this mechanics.")
++        public boolean disableStatisticsAndAchievements = false;
++
+     }
+ 
+     @Comment("Optimizations that could improve performance, but may cause some issues.")

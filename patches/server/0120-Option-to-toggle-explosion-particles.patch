@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 13:53:49 +0200
+Subject: [PATCH] Option to toggle explosion particles
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+index 3ab7efff8e01c1bda89a2662eb902429698e333e..dae19c1f03e38477fd64ad7379e227371d0e9495 100644
+--- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+@@ -90,6 +90,7 @@ public class EntityTNTPrimed extends Entity {
+             // CraftBukkit end
+         } else {
+             this.W();
++            if (!this.world.unicornConfig.optimizations.explosionParticles) return; // Unicorn
+             this.world.addParticle(EnumParticle.SMOKE_NORMAL, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D, new int[0]);
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
+index 9860d86a39d90dfe155c4f306423464b6cbf74fa..c9d914b31e7f95d96eadaec9f8d66af9792a0a9b 100644
+--- a/src/main/java/net/minecraft/server/Explosion.java
++++ b/src/main/java/net/minecraft/server/Explosion.java
+@@ -168,11 +168,15 @@ public class Explosion {
+         float volume = source instanceof EntityTNTPrimed ? world.paperConfigUnicorn.tntExplosionVolume : 4.0F;
+         this.world.makeSound(this.posX, this.posY, this.posZ, "random.explode", volume, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
+         // PaperSpigot end
++        // Unicorn start
++        if (!this.world.unicornConfig.optimizations.explosionParticles) {
+         if (this.size >= 2.0F && this.b) {
+             this.world.addParticle(EnumParticle.EXPLOSION_HUGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D, new int[0]);
+         } else {
+             this.world.addParticle(EnumParticle.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D, new int[0]);
+         }
++        }
++        // Unicorn end
+ 
+         Iterator iterator;
+         BlockPosition blockposition;
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 6bd6c18d72a4788108774af7f82db3d21db45d8e..c53ffb12b3c0bb103ff31ad02872283ffb619c8b 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -1059,6 +1059,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+             explosion.clearBlocks();
+         }
+ 
++        if (!this.unicornConfig.optimizations.explosionParticles) return explosion; // Unicorn
+         Iterator iterator = this.players.iterator();
+ 
+         while (iterator.hasNext()) {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 7cd3d24de215f8ff545a8ac943cda26523ddb3cb..0ee9645b44b29904d9297b1dd6ff8b572367c5b5 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -14,6 +14,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+ 
+     public static class Optimizations extends UnicornConfigSection {
+ 
++        @Comment("Whether to show explosion particles.")
++        @Comment("Disabling this option mainly helps clients performance, but may improve performance a bit.")
++        public boolean explosionParticles = true;
++
+         @Comment("Configuration of ticking specific mechanics.")
+         public Ticking ticking = new Ticking();
+ 

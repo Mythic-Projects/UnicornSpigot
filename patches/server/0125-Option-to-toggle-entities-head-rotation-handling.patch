@@ -1,0 +1,81 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 14:32:42 +0200
+Subject: [PATCH] Option to toggle entities head rotation handling
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 44e1099710ffc8326d1ce504111fb93188ddebac..e018593744d6258a952cb1196c2e7a6a3b41a62d 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -112,6 +112,7 @@ public class EntityTrackerEntry {
+             int i;
+             int j;
+ 
++            boolean handleHeadRotation = this.handleHeadRotation(); // Unicorn
+             if (this.tracker.vehicle == null) {
+                 ++this.v;
+                 i = MathHelper.floor(this.tracker.locX * 32.0D);
+@@ -148,7 +149,7 @@ public class EntityTrackerEntry {
+                         if ((!flag || !flag1) && !(this.tracker instanceof EntityArrow)) {
+                             if (flag) {
+                                 object = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, this.tracker.onGround);
+-                            } else if (flag1) {
++                            } else if (flag1 && handleHeadRotation) { // Unicorn
+                                 object = new PacketPlayOutEntity.PacketPlayOutEntityLook(this.tracker.getId(), (byte) l, (byte) i1, this.tracker.onGround);
+                             }
+                         } else {
+@@ -219,7 +220,7 @@ public class EntityTrackerEntry {
+                 // CraftBukkit end */
+ 
+                 this.x = false;
+-            } else {
++            } else if (handleHeadRotation) { // Unicorn
+                 i = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
+                 j = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
+                 boolean flag2 = Math.abs(i - this.yRot) >= 4 || Math.abs(j - this.xRot) >= 4;
+@@ -238,7 +239,7 @@ public class EntityTrackerEntry {
+             }
+ 
+             i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+-            if (Math.abs(i - this.i) >= 4) {
++            if (handleHeadRotation && Math.abs(i - this.i) >= 4) { // Unicorn
+                 this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
+                 this.i = i;
+             }
+@@ -415,7 +416,7 @@ public class EntityTrackerEntry {
+                     }
+ 
+                     // CraftBukkit start - Fix for nonsensical head yaw
+-                    if (this.tracker instanceof EntityLiving) { // [SportPaper-0027] Fix head rotation packet spam
++                    if (this.tracker instanceof EntityLiving && this.handleHeadRotation()) { // [SportPaper-0027] Fix head rotation packet spam // Unicorn
+                         this.i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+                         // SportPaper start
+                         /* This was originally introduced by CraftBukkit, though the implementation is wrong since it's broadcasting
+@@ -584,4 +585,10 @@ public class EntityTrackerEntry {
+         }
+ 
+     }
++
++    // Unicorn start - Option to disable entity head rotation handling
++    private boolean handleHeadRotation() {
++        return this.tracker instanceof EntityHuman || this.tracker instanceof EntityVillager || this.tracker.world.unicornConfig.optimizations.handleHeadRotation;
++    }
++    // Unicorn end
+ }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index a33f99d564618ecf8ea676dc9a656a13c812d048..6f97494969ff6343f798002717a1bb8da625989b 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -29,6 +29,11 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+         @Comment("Whether to optimize armor stands by disabling it's collisions and gravity.")
+         public boolean optimizeArmorStands = false;
+ 
++        @Comment("Whether to handle head rotations for entities.")
++        @Comment("Disabling this option may improve performance a bit, but it will cause visual issues for clients.")
++        @Comment("This option doesn't applies for players and villagers - they will always have head rotation handled.")
++        public boolean handleHeadRotation = true;
++
+         @Comment("Configuration of ticking specific mechanics.")
+         public Ticking ticking = new Ticking();
+ 

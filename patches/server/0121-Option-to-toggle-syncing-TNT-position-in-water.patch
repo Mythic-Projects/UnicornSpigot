@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Thu, 22 Jun 2023 13:57:41 +0200
+Subject: [PATCH] Option to toggle syncing TNT position in water
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+index dae19c1f03e38477fd64ad7379e227371d0e9495..13aeb07812bd6f2f04a5e2be164be5815da8c7ed 100644
+--- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+@@ -192,7 +192,7 @@ public class EntityTNTPrimed extends Entity {
+         this.motY = oldMotY;
+         this.motZ = oldMotZ;
+ 
+-        if (this.inWater) {
++        if (this.inWater && this.world.unicornConfig.optimizations.syncTntInWater) { // Unicorn
+             // Send position and velocity updates to nearby players on every tick while the TNT is in water.
+             // This does pretty well at keeping their clients in sync with the server.
+             EntityTrackerEntry ete = ((WorldServer) this.getWorld()).getTracker().trackedEntities.get(this.getId());
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 0ee9645b44b29904d9297b1dd6ff8b572367c5b5..f8973f7243c7b866954e422e63505a947042d551 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -18,6 +18,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+         @Comment("Disabling this option mainly helps clients performance, but may improve performance a bit.")
+         public boolean explosionParticles = true;
+ 
++        @Comment("Whether to sync TNT position in water.")
++        @Comment("Disabling this option may improve performance a bit, but it may cause visual issues for clients.")
++        public boolean syncTntInWater = true;
++
+         @Comment("Configuration of ticking specific mechanics.")
+         public Ticking ticking = new Ticking();
+ 
