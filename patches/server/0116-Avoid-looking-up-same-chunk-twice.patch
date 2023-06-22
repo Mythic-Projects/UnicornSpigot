@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Peridot <peridot491@protonmail.com>
 Date: Wed, 21 Jun 2023 18:59:58 +0200
-Subject: [PATCH] Don't look for chunk twice
+Subject: [PATCH] Avoid looking up same chunk twice
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java

@@ -1,0 +1,147 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@users.noreply.github.com>
+Date: Thu, 22 Jun 2023 03:01:41 +0200
+Subject: [PATCH] Implement [Spigot-0108] Remove DataWatcher Locking
+
+The lock in DataWatcher is used to prevent concurrent modifications,
+however any modifications to this map only occur on initialization of
+an Entity in its constructor.
+
+Every other access is through a readlock, which allows the threads to
+pass if there is no thread holding the writelock.
+
+Since the writelock is only obtained in the constructor of the Entity,
+the further readlocks are actually useless.
+
+diff --git a/src/main/java/net/minecraft/server/DataWatcher.java b/src/main/java/net/minecraft/server/DataWatcher.java
+index 313db0d35a24662a6da4d1984e9e7b952552e640..d71b2a24395c9b202fbb998aaed10a5ac90d07cf 100644
+--- a/src/main/java/net/minecraft/server/DataWatcher.java
++++ b/src/main/java/net/minecraft/server/DataWatcher.java
+@@ -29,13 +29,15 @@ public class DataWatcher {
+     private final Map<Integer, DataWatcher.WatchableObject> d = dataValues;
+     // SportPaper end
+     private boolean e;
+-    private ReadWriteLock f = new ReentrantReadWriteLock();
++    // private ReadWriteLock f = new ReentrantReadWriteLock(); // Spigot - not required
+ 
+     public DataWatcher(Entity entity) {
+         this.a = entity;
+     }
+ 
++    boolean registrationLocked = false; // Spigot
+     public <T> void a(int i, T t0) {
++        if (this.registrationLocked) throw new IllegalStateException("Registering datawatcher object after entity initialization"); // Spigot
+         int integer = classToId.get(t0.getClass()); // Spigot
+ 
+         if (integer == -1) { // Spigot
+@@ -47,9 +49,9 @@ public class DataWatcher {
+         } else {
+             DataWatcher.WatchableObject datawatcher_watchableobject = new DataWatcher.WatchableObject(integer, i, t0); // Spigot
+ 
+-            this.f.writeLock().lock();
++            //this.f.writeLock().lock(); // Spigot - not required
+             this.dataValues.put(i, datawatcher_watchableobject); // Spigot
+-            this.f.writeLock().unlock();
++            //this.f.writeLock().unlock(); // Spigot - not required
+             this.b = false;
+         }
+     }
+@@ -57,9 +59,9 @@ public class DataWatcher {
+     public void add(int i, int j) {
+         DataWatcher.WatchableObject datawatcher_watchableobject = new DataWatcher.WatchableObject(j, i, (Object) null);
+ 
+-        this.f.writeLock().lock();
++        // this.f.writeLock().lock(); // Spigot - not required
+         this.dataValues.put(i, datawatcher_watchableobject); // Spigot
+-        this.f.writeLock().unlock();
++        // this.f.writeLock().unlock(); // Spigot - not required
+         this.b = false;
+     }
+ 
+@@ -88,7 +90,8 @@ public class DataWatcher {
+     }
+ 
+     private DataWatcher.WatchableObject j(int i) {
+-        this.f.readLock().lock();
++        // Spigot start - Remove DataWatcher locking
++        /*this.f.readLock().lock();
+ 
+         DataWatcher.WatchableObject datawatcher_watchableobject;
+ 
+@@ -102,8 +105,9 @@ public class DataWatcher {
+             throw new ReportedException(crashreport);
+         }
+ 
+-        this.f.readLock().unlock();
+-        return datawatcher_watchableobject;
++        this.f.readLock().unlock();*/
++        return (WatchableObject) this.dataValues.get(i);
++        // Spigot end
+     }
+ 
+     public Vector3f h(int i) {
+@@ -149,7 +153,7 @@ public class DataWatcher {
+         ArrayList arraylist = null;
+ 
+         if (this.e) {
+-            this.f.readLock().lock();
++            //this.f.readLock().lock(); // Spigot - not required
+             Iterator iterator = this.dataValues.values().iterator(); // SportPaper
+ 
+             while (iterator.hasNext()) {
+@@ -176,7 +180,7 @@ public class DataWatcher {
+                 }
+             }
+ 
+-            this.f.readLock().unlock();
++            //this.f.readLock().unlock(); // Spigot - not required
+         }
+ 
+         this.e = false;
+@@ -184,7 +188,7 @@ public class DataWatcher {
+     }
+ 
+     public void a(PacketDataSerializer packetdataserializer) throws IOException {
+-        this.f.readLock().lock();
++        //this.f.readLock().lock(); // Spigot - not required
+         Iterator iterator = this.dataValues.values().iterator(); // SportPaper
+ 
+         while (iterator.hasNext()) {
+@@ -193,14 +197,14 @@ public class DataWatcher {
+             a(packetdataserializer, datawatcher_watchableobject);
+         }
+ 
+-        this.f.readLock().unlock();
++        //this.f.readLock().unlock(); // Spigot - not required
+         packetdataserializer.writeByte(127);
+     }
+ 
+     public List<DataWatcher.WatchableObject> c() {
+         ArrayList arraylist = Lists.newArrayList(); // Spigot
+ 
+-        this.f.readLock().lock();
++        //this.f.readLock().lock(); // Spigot - not required
+ 
+         arraylist.addAll(this.dataValues.values()); // SportPaper
+         // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
+@@ -219,7 +223,7 @@ public class DataWatcher {
+         }
+         // Spigot end
+ 
+-        this.f.readLock().unlock();
++        //this.f.readLock().unlock(); // Spigot - not required
+         return arraylist;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index e8b1e6a7db76ae712dcd423c4f4abc81e83bffbf..d451feb2e6956fd52f6ea60bfc1ac0c484c3f73f 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -200,6 +200,7 @@ public abstract class Entity implements ICommandListener {
+         this.datawatcher.a(2, "");
+         this.datawatcher.a(4, Byte.valueOf((byte) 0));
+         this.h();
++        this.datawatcher.registrationLocked = true; // Spigot
+     }
+ 
+     protected abstract void h();
