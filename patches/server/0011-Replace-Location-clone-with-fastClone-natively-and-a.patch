@@ -1,0 +1,206 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Mon, 19 Jun 2023 20:13:08 +0200
+Subject: [PATCH] Replace Location#clone with #fastClone natively and add
+ runtime patching #clone with #fastClone
+
+
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 81f65e6f10472c2e14e0e46aa723d092ca9eca99..7581a652fee066cbfe1b6073941849d0230c71e7 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -116,7 +116,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+         // CraftBukkit end
+ 
+-        org.mythicprojects.unicornspigot.patcher.DynamicPatcher.patch(); // Unicorn
++        org.mythicprojects.unicornspigot.patcher.DynamicPatcher.patchEarly(); // Unicorn
+ 
+         thread.setDaemon(true);
+         thread.start();
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 339430411f7efe022d0a1601599ba4ebaec377d9..b1f8201d2669baab7075770fa230861fb8dbd6bc 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -240,7 +240,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                 }
+                 // Spigot End
+                 Location from = new Location(player.getWorld(), lastPosX, lastPosY, lastPosZ, lastYaw, lastPitch); // Get the Players previous Event location.
+-                Location to = player.getLocation().clone(); // Start off the To location as the Players current location.
++                Location to = player.getLocation().fastClone(); // Start off the To location as the Players current location. // Unicorn - Fast Clone
+ 
+                 // If the packet contains movement information then we update the To location with the correct XYZ.
+                 if (packetplayinflying.hasPos && !(packetplayinflying.hasPos && packetplayinflying.y == -999.0D)) {
+@@ -268,7 +268,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+                     // Skip the first time we do this
+                     if (true) { // Spigot - don't skip any move events
+-                        Location oldTo = to.clone();
++                        Location oldTo = to.fastClone(); // Unicorn - Fast Clone
+                         PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
+                         this.server.getPluginManager().callEvent(event);
+ 
+@@ -497,7 +497,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+ 
+         Location to = new Location(this.getPlayer().getWorld(), x, y, z, yaw, pitch);
+-        PlayerTeleportEvent event = new PlayerTeleportEvent(player, from.clone(), to.clone(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
++        PlayerTeleportEvent event = new PlayerTeleportEvent(player, from.fastClone(), to.fastClone(), PlayerTeleportEvent.TeleportCause.UNKNOWN); // Unicorn - Fast Clone
+         this.server.getPluginManager().callEvent(event);
+ 
+         if (event.isCancelled() || to.equals(event.getTo())) {
+diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+index 72f3735b196cbd7d420c6338eb7aba01b40c7804..749df5212616daa73ab2adb961e4c31635ce828f 100644
+--- a/src/main/java/net/minecraft/server/PortalTravelAgent.java
++++ b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+@@ -170,7 +170,7 @@ public class PortalTravelAgent {
+ 
+     // Entity repositioning logic split out from original b method and combined with repositioning logic for The End from original a method
+     public void adjustExit(Entity entity, Location position, Vector velocity) {
+-        Location from = position.clone();
++        Location from = position.fastClone(); // Unicorn - Fast Clone
+         Vector before = velocity.clone();
+         BlockPosition object = new BlockPosition(position.getBlockX(), position.getBlockY(), position.getBlockZ());
+         float f = position.getYaw();
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 34427798737679318961ea25919170a5266ac994..d50e3e1533dc6efd0fff5ceccbe5ee24530b3817 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -367,7 +367,7 @@ public class CraftWorld implements World {
+         double xs = world.random.nextFloat() * 0.7F - 0.35D;
+         double ys = world.random.nextFloat() * 0.7F - 0.35D;
+         double zs = world.random.nextFloat() * 0.7F - 0.35D;
+-        loc = loc.clone();
++        loc = loc.fastClone(); // Unicorn - Fast Clone
+         // Makes sure the new item is created within the block the location points to.
+         // This prevents item spill in 1-block wide farms.
+         randomLocationWithinBlock(loc, xs, ys, zs);
+@@ -892,7 +892,7 @@ public class CraftWorld implements World {
+         double z = location.getBlockZ() + 0.5;
+ 
+         // PaperSpigot start - Add FallingBlock source location API
+-        location = location.clone();
++        location = location.fastClone(); // Unicorn - Fast Clone
+         EntityFallingBlock entity = new EntityFallingBlock(location, world, x, y, z, net.minecraft.server.Block.getById(material.getId()).fromLegacyData(data));
+         // PaperSpigot end
+         entity.ticksLived = 1;
+@@ -930,7 +930,7 @@ public class CraftWorld implements World {
+             int type = CraftMagicNumbers.getId(blockData.getBlock());
+             int data = blockData.getBlock().toLegacyData(blockData);
+             // PaperSpigot start - Add FallingBlock source location API
+-            location = location.clone();
++            location = location.fastClone(); // Unicorn - Fast Clone
+             entity = new EntityFallingBlock(location, world, x + 0.5, y + 0.5, z + 0.5, net.minecraft.server.Block.getById(type).fromLegacyData(data));
+             // PaperSpigot end
+         } else if (Projectile.class.isAssignableFrom(clazz)) {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+index 5bace430488a53f545713566bc5d661b8f03b4f2..3164222d67793ecd929ea5118b8c2eed3363c9bc 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+@@ -14,6 +14,7 @@ import org.mythicprojects.unicornspigot.config.PaperConfig;
+ import org.mythicprojects.unicornspigot.config.SpigotConfig;
+ import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ import org.mythicprojects.unicornspigot.config.serdes.WarningStateTransformer;
++import org.mythicprojects.unicornspigot.patcher.DynamicPatcher;
+ import org.mythicprojects.unicornspigot.util.Pair;
+ import org.spigotmc.RestartCommand;
+ import org.spigotmc.TicksPerSecondCommand;
+@@ -56,6 +57,9 @@ public class UnicornSpigot {
+         // Commands
+         this.registerCommand("restart", "Spigot", new RestartCommand("restart"));
+         this.registerCommand("tps", "Spigot", new TicksPerSecondCommand("tps"));
++
++        // Patches
++        DynamicPatcher.patchLate();
+     }
+ 
+     public @NotNull YamlConfiguration getUnicornConfiguration() {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index ca445b5de72c8e931071db544f651077c0f49023..c697a55566e3a2c56861b50c502b97956ef91ad7 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -32,6 +32,19 @@ public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+     @Exclude
+     private static UnicornConfig INSTANCE;
+ 
++    @Comment("Optimizations that could improve performance, but may cause some issues.")
++    @Comment("Use with caution.")
++    public Optimizations optimizations = new Optimizations();
++
++    public static class Optimizations extends UnicornConfigSection {
++
++        @Comment("Whether to use fast Location#clone() method.")
++        @Comment("This change applies only for 3-party usages, since #fastClone is used natively internally.")
++        @Comment("It is faster, but it may cause some issues with plugins that rely on Location#clone() standard implementation.")
++        public boolean fastLocationClone = false;
++
++    }
++
+     @Comment("Per world settings.")
+     public Map<String, UnicornWorldConfig> worldSettings = new HashMap<>();
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java b/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java
+index 8d5580278b83b4a8447adfd4d64735eb3f43430b..be1341b164244afde365b52c12cd61f0cde52b45 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/patcher/DynamicPatcher.java
+@@ -11,9 +11,13 @@ public final class DynamicPatcher {
+     private DynamicPatcher() {
+     }
+ 
+-    public static void patch() {
++    public static void patchEarly() {
+         ByteBuddyAgent.install();
+         PacketDataSerializerPatch.patchNetty();
+     }
+ 
++    public static void patchLate() {
++        LocationPatch.patchLocationClone();
++    }
++
+ }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/patcher/LocationPatch.java b/src/main/java/org/mythicprojects/unicornspigot/patcher/LocationPatch.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ec44306185f97fe48ad6b5a758240d885abd9d0a
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/patcher/LocationPatch.java
+@@ -0,0 +1,40 @@
++package org.mythicprojects.unicornspigot.patcher;
++
++import net.bytebuddy.ByteBuddy;
++import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
++import net.bytebuddy.implementation.MethodDelegation;
++import net.bytebuddy.implementation.bind.annotation.This;
++import net.bytebuddy.matcher.ElementMatchers;
++import org.bukkit.Location;
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
++
++final class LocationPatch {
++
++    private LocationPatch() {
++    }
++
++    static void patchLocationClone() {
++        UnicornConfig config = UnicornConfig.get();
++        if (!config.optimizations.fastLocationClone) {
++            return;
++        }
++
++        DynamicPatcher.LOGGER.info("Patching Location (Enabled fast cloning)");
++
++        new ByteBuddy()
++                .redefine(Location.class)
++                .method(ElementMatchers.isClone())
++                .intercept(MethodDelegation.to(CloneInterceptor.class))
++                .make()
++                .load(Location.class.getClassLoader(), ClassReloadingStrategy.fromInstalledAgent());
++    }
++
++    public static final class CloneInterceptor {
++
++        public static Location clone(@This Location thiz) {
++            return thiz.fastClone();
++        }
++
++    }
++
++}

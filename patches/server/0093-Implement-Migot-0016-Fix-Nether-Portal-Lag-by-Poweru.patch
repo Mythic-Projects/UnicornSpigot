@@ -5,7 +5,7 @@ Subject: [PATCH] Implement [Migot-0016] Fix Nether Portal Lag by Poweruser
 
 
 diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
-index f37202aedb203bae77276ae0502be6770a970db4..c263d4b2d7034e0b20655dd41092360fbbac941e 100644
+index b0fe7d8671eeffc54c6c582ac696a186b24978cb..bd934d10313981e9587dd98c0f0031f551b84121 100644
 --- a/src/main/java/net/minecraft/server/PortalTravelAgent.java
 +++ b/src/main/java/net/minecraft/server/PortalTravelAgent.java
 @@ -94,7 +94,12 @@ public class PortalTravelAgent {

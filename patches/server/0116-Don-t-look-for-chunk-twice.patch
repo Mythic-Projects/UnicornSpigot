@@ -217,7 +217,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
  
          return new DifficultyDamageScaler(this.getDifficulty(), this.getDayTime(), i, f);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index e9e1947ec8536bffa74d4245f2ec24c2b4323c6f..d8ac4cf4767aeedb3406142ff27b5d8c6c8e100a 100644
+index 955dee9e9c6e7db123261882b64af05bbf5a8e85..329b9e18020db9c8d8ae5ac84ab8f2318b0a3548 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -627,8 +627,10 @@ public class CraftWorld implements World {

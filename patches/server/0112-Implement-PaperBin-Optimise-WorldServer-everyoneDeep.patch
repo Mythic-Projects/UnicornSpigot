@@ -79,7 +79,7 @@ index b9de83edd03603e9ac195df4de24c00d4448ab5f..fc44f312b1491bb416abd6a2aa18e882
  
      protected void h() {
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index d4f82f6142f8ddbb1be61327c41d820ae4a4c858..93df9bc8d9519f36a5f6fe3df407000a8e4f21ff 100644
+index 8c239769bbd3e110164a939cde6bde8658416ee5..515470151085ade2530e75f164e5cbebfad9fdcf 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 @@ -32,6 +32,15 @@ public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {

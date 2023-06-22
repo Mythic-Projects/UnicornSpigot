@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [PandaSpigot-0054] Disconnect for payload errors by
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 339430411f7efe022d0a1601599ba4ebaec377d9..7805dd80a8e665ad834f69bdae480ed638ef4a54 100644
+index b1f8201d2669baab7075770fa230861fb8dbd6bc..8716582465d57bb8de206dd4881fcf30a6e270dd 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -2134,19 +2134,36 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList

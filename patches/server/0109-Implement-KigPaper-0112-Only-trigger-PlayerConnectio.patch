@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [KigPaper-0112] Only trigger
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 0f6806ea7ca0d961c8335139f901c5b984f0ba45..6c43298563ea92c22620c058e62db1a06ec2c322 100644
+index 3de94eb9f764adc50a9bcd830d1461e1a96b05c0..a1adbdcaa67ff053c5002274a5c25036631f17bc 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -91,6 +91,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList

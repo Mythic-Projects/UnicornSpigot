@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [SportPaper-0162] Fix PlayerInteractEvent not
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 1257e6a5f19dfd501be2ee7b8edbc24f68e8d898..0f6806ea7ca0d961c8335139f901c5b984f0ba45 100644
+index 4f6291d2fff7ffd85cbe2d763f8ac2022f653c1f..3de94eb9f764adc50a9bcd830d1461e1a96b05c0 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -731,7 +731,24 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
