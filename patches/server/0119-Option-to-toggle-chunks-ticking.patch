@@ -21,7 +21,7 @@ index fc44f312b1491bb416abd6a2aa18e8826d3dd3ca..6bd6c18d72a4788108774af7f82db3d2
          if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
              // Spigot start
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index 9a8779852d17e0730f5625243b09b1f08e5768d8..7cd3d24de215f8ff545a8ac943cda26523ddb3cb 100644
+index dbddd9a729ffdfa73eaa6bd31d1f91cd662e78ff..40785d1f24467fefea950c0b0b1c23b7762a5bd6 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 @@ -1,9 +1,31 @@
@@ -33,7 +33,7 @@ index 9a8779852d17e0730f5625243b09b1f08e5768d8..7cd3d24de215f8ff545a8ac943cda265
  import eu.okaeri.configs.annotation.Names;
  
  @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
- public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
 +
 +    @Comment("Optimizations that could improve performance, but may cause some issues.")
 +    @Comment("Use with caution.")

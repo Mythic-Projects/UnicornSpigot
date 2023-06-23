@@ -370,10 +370,10 @@ index 80a5c29f3b9f0e6ccb2acb01a6be3726d6b368b3..14b6924d490a7efc016444e06d155a8a
  
      public HashTreeSet() {
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
-index 751fd5863bbfaa6d718e4cfa832139f79cff8baf..5ed3987428463140ff445c598e4363a471eb8c96 100644
+index c10732498624e4a48a2cdd49efc85371ed93225d..b31593cc223c813b6a4d3e5d8d805cbec257c02d 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
-@@ -233,7 +233,7 @@ public class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
+@@ -233,7 +233,7 @@ public final class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
  
          @Exclude
          @Remap("forcedStats")

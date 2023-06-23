@@ -186,7 +186,7 @@ index 0000000000000000000000000000000000000000..5da56f734ebc39496e63c5203319b9cf
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 1a4cf2abcdfa223a78921ad22ab875803fdcf37d..386229fa762a33a693846a1eb8bd52a65c609709 100644
+index 1a4cf2abcdfa223a78921ad22ab875803fdcf37d..8774b47855a9c1478800bd4f56ccaad3aadf08c0 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -297,7 +297,7 @@ index 1a4cf2abcdfa223a78921ad22ab875803fdcf37d..386229fa762a33a693846a1eb8bd52a6
 +                MCUtil.isMainThread() && packet.isReady() && this.i.isEmpty() &&
 +                        (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
 +        ))) {
-+            this.dispatchPacket(packet, listeners);
++            this.writePacket(packet, listeners, null); // Unicorn - dispatchPacket -> writePacket
 +            return;
 +        }
 +        // write the packets to the queue, then flush - antixray hooks there already
@@ -441,7 +441,7 @@ index 1a4cf2abcdfa223a78921ad22ab875803fdcf37d..386229fa762a33a693846a1eb8bd52a6
 +            NetworkManager.QueuedPacket queued = iterator.next(); // poll -> peek
 +
 +            // Fix NPE (Spigot bug caused by handleDisconnection())
-+            if (queued == null) {
++            if (false && queued == null) { // Unicorn - we don't need this check
 +                return true;
              }
  

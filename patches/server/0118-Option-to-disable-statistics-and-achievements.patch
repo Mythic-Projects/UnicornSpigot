@@ -61,10 +61,10 @@ index 5d6c3deac0d16d522ac3ef793a3fea3d74f05e68..c83eb79af8a29165ba933f078243dcfa
  
          return statisticwrapper == null ? 0 : statisticwrapper.a();
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index 515470151085ade2530e75f164e5cbebfad9fdcf..d2f1d59825fae6cf170aece98aa548be026ae71d 100644
+index 1862e0b860ad91b8585d462e6f9681343bbded08..131b584d7292027ad8d4baef68241c38a41019b4 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-@@ -39,6 +39,10 @@ public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+@@ -39,6 +39,10 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
          @Comment("Whether checking if everyone is sleeping should ignore players in end/nether.")
          public boolean sleepingIgnoreOtherDimensions = false;
  

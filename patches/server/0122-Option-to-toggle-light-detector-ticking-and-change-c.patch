@@ -30,17 +30,17 @@ index f75e2de63e96019b3210db14f036fd74353ddcce..9294b104c21eace5a0ca8f1d9203e225
              if (this.e instanceof BlockDaylightDetector) {
                  ((BlockDaylightDetector) this.e).f(this.world, this.position);
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index f8973f7243c7b866954e422e63505a947042d551..483bdb0a78012f97e36ce6b9187f4631eca26acd 100644
+index 4bfdf367327fde28da8f2af9b2027ac2049dd205..29495ad0f1bd7af48ec00bc1fe825002997af2fd 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -32,6 +32,20 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -32,6 +32,20 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
              @Comment("Use with caution and test, if you really could use this option.")
              public boolean chunks = true;
  
 +            @Comment("Configuration of light detector ticking.")
 +            public LightDetector lightDetector = new LightDetector();
 +
-+            public static class LightDetector extends UnicornConfig {
++            public static class LightDetector extends UnicornConfigSection {
 +
 +                @Comment("Whether light detector should tick.")
 +                @Comment("Disabling this option can improve performance by a lot, but will break mechanisms relaying on it.")

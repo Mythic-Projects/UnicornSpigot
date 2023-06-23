@@ -116,10 +116,10 @@ index 5bace430488a53f545713566bc5d661b8f03b4f2..3164222d67793ecd929ea5118b8c2eed
  
      public @NotNull YamlConfiguration getUnicornConfiguration() {
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index ca445b5de72c8e931071db544f651077c0f49023..c697a55566e3a2c56861b50c502b97956ef91ad7 100644
+index bf116407eed7e4ad6d8e290bf7d788ba2b1e01b6..b34af9d76f50b0aab91dad3f5df4eddc9d94082a 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-@@ -32,6 +32,19 @@ public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+@@ -32,6 +32,19 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
      @Exclude
      private static UnicornConfig INSTANCE;
  

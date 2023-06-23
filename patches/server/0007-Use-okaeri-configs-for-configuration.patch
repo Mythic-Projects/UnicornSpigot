@@ -2982,7 +2982,7 @@ index 0000000000000000000000000000000000000000..5bace430488a53f545713566bc5d661b
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/BukkitConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/BukkitConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..93a98a1f8b2529bc15e03b955345326a423300d0
+index 0000000000000000000000000000000000000000..00c71c281560fb422ba445cab42098459f9d86b9
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/BukkitConfig.java
 @@ -0,0 +1,135 @@
@@ -3002,7 +3002,7 @@ index 0000000000000000000000000000000000000000..93a98a1f8b2529bc15e03b955345326a
 +@Header("For a reference for any variable inside this file, check out the Bukkit Wiki at")
 +@Header("https://bukkit.fandom.com/wiki/Bukkit.yml")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
-+public class BukkitConfig extends UnicornConfigSection {
++public final class BukkitConfig extends UnicornConfigSection {
 +
 +    public Settings settings = new Settings();
 +
@@ -3230,7 +3230,7 @@ index 0000000000000000000000000000000000000000..27e49e2d526c372e56a8abf4327065ac
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..221890b9f99d2b5c846dc9ce633239edddc7a06d
+index 0000000000000000000000000000000000000000..b8260fe5ddd7949c5683a9196e31061ffdf40938
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 @@ -0,0 +1,146 @@
@@ -3262,7 +3262,7 @@ index 0000000000000000000000000000000000000000..221890b9f99d2b5c846dc9ce633239ed
 +@Header("with caution, and make sure you know what each option does before configuring.")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
 +@RemapTarget(target = PaperSpigotConfig.class)
-+public class PaperConfig extends EngineConfig<PaperWorldConfig> {
++public final class PaperConfig extends EngineConfig<PaperWorldConfig> {
 +
 +    // For tests to work properly
 +    @Exclude
@@ -3382,7 +3382,7 @@ index 0000000000000000000000000000000000000000..221890b9f99d2b5c846dc9ce633239ed
 +
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c68c8e67650183c025913199d121c1431e6d3b29
+index 0000000000000000000000000000000000000000..54832ef8274a7618c9bfccae5b86a1631a817026
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
 @@ -0,0 +1,326 @@
@@ -3399,7 +3399,7 @@ index 0000000000000000000000000000000000000000..c68c8e67650183c025913199d121c143
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
 +@RemapTarget(target = org.github.paperspigot.PaperSpigotWorldConfig.class)
-+public class PaperWorldConfig extends EngineConfig.WorldConfig {
++public final class PaperWorldConfig extends EngineConfig.WorldConfig {
 +
 +    @Comment("Whether to revert tnt cannon logic to 1.7.")
 +    @Remap("fixCannons")
@@ -3714,7 +3714,7 @@ index 0000000000000000000000000000000000000000..c68c8e67650183c025913199d121c143
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..751fd5863bbfaa6d718e4cfa832139f79cff8baf
+index 0000000000000000000000000000000000000000..c10732498624e4a48a2cdd49efc85371ed93225d
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotConfig.java
 @@ -0,0 +1,277 @@
@@ -3755,7 +3755,7 @@ index 0000000000000000000000000000000000000000..751fd5863bbfaa6d718e4cfa832139f7
 +@Header("Forum: https://www.spigotmc.org/")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
 +@RemapTarget(target = org.spigotmc.SpigotConfig.class)
-+public class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
++public final class SpigotConfig extends EngineConfig<SpigotWorldConfig> {
 +
 +    // For tests to work properly
 +    @Exclude
@@ -3997,7 +3997,7 @@ index 0000000000000000000000000000000000000000..751fd5863bbfaa6d718e4cfa832139f7
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..df94dde4bdb4fcacf37b68a88bc3399301719f89
+index 0000000000000000000000000000000000000000..08c3bb524a6fac72bb8cbe8909d09c0240f54d03
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/SpigotWorldConfig.java
 @@ -0,0 +1,322 @@
@@ -4021,7 +4021,7 @@ index 0000000000000000000000000000000000000000..df94dde4bdb4fcacf37b68a88bc33993
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
 +@RemapTarget(target = org.spigotmc.SpigotWorldConfig.class)
-+public class SpigotWorldConfig extends EngineConfig.WorldConfig {
++public final class SpigotWorldConfig extends EngineConfig.WorldConfig {
 +
 +    public AntiXray antiXray = new AntiXray();
 +
@@ -4325,7 +4325,7 @@ index 0000000000000000000000000000000000000000..df94dde4bdb4fcacf37b68a88bc33993
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ca445b5de72c8e931071db544f651077c0f49023
+index 0000000000000000000000000000000000000000..bf116407eed7e4ad6d8e290bf7d788ba2b1e01b6
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 @@ -0,0 +1,71 @@
@@ -4355,7 +4355,7 @@ index 0000000000000000000000000000000000000000..ca445b5de72c8e931071db544f651077
 +@Header("Discord: https://discord.mythicprojects.org")
 +@Header("GitHub: https://github.com/Mythic-Projects")
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
-+public class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
++public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
 +
 +    // For tests to work properly
 +    @Exclude
@@ -4536,7 +4536,7 @@ index 0000000000000000000000000000000000000000..1099010d1bfc09cb12176c898916a65e
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9a8779852d17e0730f5625243b09b1f08e5768d8
+index 0000000000000000000000000000000000000000..dbddd9a729ffdfa73eaa6bd31d1f91cd662e78ff
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 @@ -0,0 +1,9 @@
@@ -4547,7 +4547,7 @@ index 0000000000000000000000000000000000000000..9a8779852d17e0730f5625243b09b1f0
 +import eu.okaeri.configs.annotation.Names;
 +
 +@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
-+public class UnicornWorldConfig extends EngineConfig.WorldConfig {
++public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/legacy/LegacyRemapper.java b/src/main/java/org/mythicprojects/unicornspigot/config/legacy/LegacyRemapper.java
 new file mode 100644

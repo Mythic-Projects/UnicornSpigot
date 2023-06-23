@@ -34,10 +34,10 @@ index faf6dd894c23752f612d053310d010defee915ab..1dfec834a18ebb749c42a35a6323808a
  
          double d0 = 0.25D;
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index 483bdb0a78012f97e36ce6b9187f4631eca26acd..57a9d52f68f05cdc399ce63a6511f3d7c9dcd53d 100644
+index 29495ad0f1bd7af48ec00bc1fe825002997af2fd..4c973b59d4a3592e068f290d9d4c3451345d4830 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -22,6 +22,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -22,6 +22,10 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
          @Comment("Disabling this option may improve performance a bit, but it may cause visual issues for clients.")
          public boolean syncTntInWater = true;
  

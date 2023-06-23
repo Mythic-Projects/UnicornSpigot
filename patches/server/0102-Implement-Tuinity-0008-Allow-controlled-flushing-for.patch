@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [Tuinity-0008] Allow controlled flushing for
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 386229fa762a33a693846a1eb8bd52a65c609709..dd2b29d845d64d0da3e4ab6e5d77c7760ea2f42d 100644
+index 8774b47855a9c1478800bd4f56ccaad3aadf08c0..6442e8c3f1ac3cb0e831fdd705c5856a25b82f69 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {

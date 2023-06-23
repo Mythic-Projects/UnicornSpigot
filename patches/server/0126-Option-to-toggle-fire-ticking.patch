@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 18:56:41 +0200
+Subject: [PATCH] Option to toggle fire ticking
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
+index 8b5a42e5af8b085cf2de77be1c858e0c6772e0f1..398f08e77ddf4e292870e17904520f125df3aec4 100644
+--- a/src/main/java/net/minecraft/server/BlockFire.java
++++ b/src/main/java/net/minecraft/server/BlockFire.java
+@@ -113,6 +113,7 @@ public class BlockFire extends Block {
+     }
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
++        if (!world.unicornConfig.optimizations.ticking.fire) return; // Unicorn
+         if (world.getGameRules().getBoolean("doFireTick")) {
+             if (!this.canPlace(world, blockposition)) {
+                 fireExtinguished(world, blockposition); // CraftBukkit - invalid place location
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 15033656a4715e223cc0300eebc74b92992f12fe..1a39482306f5cfc0eb1556eeea8ed71bb3241e27 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -44,6 +44,10 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
+             @Comment("Use with caution and test, if you really could use this option.")
+             public boolean chunks = true;
+ 
++            @Comment("Whether fire should be ticked.")
++            @Comment("Disabling this option can improve performance, but fire won't spread or extinguish.")
++            public boolean fire = true;
++
+             @Comment("Configuration of light detector ticking.")
+             public LightDetector lightDetector = new LightDetector();
+ 

@@ -64,10 +64,10 @@ index 44e1099710ffc8326d1ce504111fb93188ddebac..e018593744d6258a952cb1196c2e7a6a
 +    // Unicorn end
  }
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index a33f99d564618ecf8ea676dc9a656a13c812d048..6f97494969ff6343f798002717a1bb8da625989b 100644
+index 37f0f214de27ce74170729a771a0cda94585cf94..15033656a4715e223cc0300eebc74b92992f12fe 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -29,6 +29,11 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -29,6 +29,11 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
          @Comment("Whether to optimize armor stands by disabling it's collisions and gravity.")
          public boolean optimizeArmorStands = false;
  

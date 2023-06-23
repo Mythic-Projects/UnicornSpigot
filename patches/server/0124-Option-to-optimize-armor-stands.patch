@@ -46,10 +46,10 @@ index 1dfec834a18ebb749c42a35a6323808accd3880c..2cc95f6795fefc73c9bfebdb75f4ee38
  
          double d0 = 0.25D;
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index 57a9d52f68f05cdc399ce63a6511f3d7c9dcd53d..a33f99d564618ecf8ea676dc9a656a13c812d048 100644
+index 4c973b59d4a3592e068f290d9d4c3451345d4830..37f0f214de27ce74170729a771a0cda94585cf94 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -26,6 +26,9 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -26,6 +26,9 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
          @Comment("Disabling this option may improve performance a bit, but it will break entities collisions.")
          public boolean entitiesCollisions = true;
  

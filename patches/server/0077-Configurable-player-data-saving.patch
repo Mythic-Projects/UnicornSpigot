@@ -41,7 +41,7 @@ index d508977f55d3010a7602a8a5380e29d941da7aa0..cb6b2b58d27ac56152146e86c30bf3ed
  
          try {
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
-index 808dbced8e2091f76d91fedb514cca625d2fe357..f4f0e898c3a27576d369b454913bbc3bda4a15fa 100644
+index a5c6c4fa3d34b183f723287cea23ae12782be793..82ea3ea9e94f2623f1c6e0df4c19a04d005fcf66 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 @@ -14,6 +14,8 @@ import java.util.HashMap;
@@ -53,7 +53,7 @@ index 808dbced8e2091f76d91fedb514cca625d2fe357..f4f0e898c3a27576d369b454913bbc3b
  import net.minecraft.server.Items;
  import org.bukkit.Material;
  import org.github.paperspigot.PaperSpigotConfig;
-@@ -52,11 +54,20 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+@@ -52,11 +54,20 @@ public final class PaperConfig extends EngineConfig<PaperWorldConfig> {
          @Comment("Whether arrow projectiles should have chance to deal extra damage on critical hit.")
          public boolean includeRandomnessInArrowDamage = true;
  

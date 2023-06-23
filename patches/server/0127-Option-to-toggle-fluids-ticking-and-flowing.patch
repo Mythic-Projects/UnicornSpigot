@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 19:02:48 +0200
+Subject: [PATCH] Option to toggle fluids ticking and flowing
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockFlowing.java b/src/main/java/net/minecraft/server/BlockFlowing.java
+index 786f6a6cf6b7cd207d7fdfb4b1668379b65be3de..dc80fca6885304b744bd5a6abdbd0d9795c2ef54 100644
+--- a/src/main/java/net/minecraft/server/BlockFlowing.java
++++ b/src/main/java/net/minecraft/server/BlockFlowing.java
+@@ -23,6 +23,10 @@ public class BlockFlowing extends BlockFluids {
+     }
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
++        // Unicorn start
++        if (this.material == Material.WATER && !world.unicornConfig.optimizations.ticking.fluids.water) return;
++        if (this.material == Material.LAVA && !world.unicornConfig.optimizations.ticking.fluids.lava) return;
++        // Unicorn end
+         // CraftBukkit start
+         org.bukkit.World bworld = world.getWorld();
+         org.bukkit.Server server = world.getServer();
+@@ -158,6 +162,10 @@ public class BlockFlowing extends BlockFluids {
+     }
+ 
+     private void flow(World world, BlockPosition blockposition, IBlockData iblockdata, int i) {
++        // Unicorn start
++        if (this.material == Material.WATER && !world.unicornConfig.optimizations.flow.water) return;
++        if (this.material == Material.LAVA && !world.unicornConfig.optimizations.flow.lava) return;
++        // Unicorn end
+         if (world.isLoaded(blockposition) && this.h(world, blockposition, iblockdata)) { // CraftBukkit - add isLoaded check
+             if (iblockdata.getBlock() != Blocks.AIR) {
+                 if (this.material == Material.LAVA) {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 1a39482306f5cfc0eb1556eeea8ed71bb3241e27..377b1e51321eb8587aa3ac7b8a218bbb17ecc586 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -34,6 +34,19 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
+         @Comment("This option doesn't applies for players and villagers - they will always have head rotation handled.")
+         public boolean handleHeadRotation = true;
+ 
++        @Comment("Configuration of fluids flow.")
++        public Flow flow = new Flow();
++
++        public static class Flow extends UnicornConfigSection {
++
++            @Comment("Whether water should flow.")
++            public boolean water = true;
++
++            @Comment("Whether lava should flow.")
++            public boolean lava = true;
++
++        }
++
+         @Comment("Configuration of ticking specific mechanics.")
+         public Ticking ticking = new Ticking();
+ 
+@@ -48,6 +61,21 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
+             @Comment("Disabling this option can improve performance, but fire won't spread or extinguish.")
+             public boolean fire = true;
+ 
++            @Comment("Configuration of fluids ticking.")
++            public Fluids fluids = new Fluids();
++
++            public static class Fluids extends UnicornConfigSection {
++
++                @Comment("Whether water should be ticked.")
++                @Comment("Disabling this option can improve performance, but fluids won't spread or flow.")
++                public boolean water = true;
++
++                @Comment("Whether lava should be ticked.")
++                @Comment("Disabling this option can improve performance, but fluids won't spread or flow.")
++                public boolean lava = true;
++
++            }
++
+             @Comment("Configuration of light detector ticking.")
+             public LightDetector lightDetector = new LightDetector();
+ 

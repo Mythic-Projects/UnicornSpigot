@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 19:15:31 +0200
+Subject: [PATCH] Add proxy online mode setting
+
+
+diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
+index 2bd00223fd0774d417bc27b2405c54e787930007..fcf73479cce233798f58bb25ffcc1792f5b9190a 100644
+--- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
++++ b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
+@@ -68,7 +68,7 @@ public class NameReferencingFileConverter {
+             }
+         }), String.class);
+ 
+-        if (minecraftserver.getOnlineMode() || SpigotConfig.get().settings.bungeecord) { // Spigot: bungee = online mode, for now.
++        if (minecraftserver.server.unicornSpigot.isProxyOnlineMode()) { // Spigot: bungee = online mode, for now. // Unicorn - add proxy online mode setting
+             minecraftserver.getGameProfileRepository().findProfilesByNames(astring, Agent.MINECRAFT, profilelookupcallback);
+         } else {
+             String[] astring1 = astring;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index f457eb7df85ddac87be27f59c6a21f51676cbb26..e3bfa2575c209513343b7b8de79100ecedf0f9f8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1496,7 +1496,7 @@ public final class CraftServer implements Server {
+             // Spigot Start
+             GameProfile profile = null;
+             // Only fetch an online UUID in online mode
+-            if ( MinecraftServer.getServer().getOnlineMode() || this.spigotConfig.settings.bungeecord ) // Unicorn
++            if ( this.unicornSpigot.isProxyOnlineMode() ) // Unicorn - add proxy online mode setting
+             {
+                 profile = MinecraftServer.getServer().getUserCache().getProfile( name );
+             }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+index 3164222d67793ecd929ea5118b8c2eed3363c9bc..c66393977f438e42e79a69216c87f3886afd6027 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+@@ -5,6 +5,7 @@ import java.util.Map;
+ import java.util.Objects;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.World;
++import org.bukkit.Bukkit;
+ import org.bukkit.command.Command;
+ import org.bukkit.configuration.file.YamlConfiguration;
+ import org.jetbrains.annotations.NotNull;
+@@ -139,6 +140,10 @@ public class UnicornSpigot {
+                 .register(key, command.getLeft(), command.getRight()));
+     }
+ 
++    public boolean isProxyOnlineMode() {
++        return Bukkit.getOnlineMode() || (this.spigotConfig.settings.bungeecord && this.unicornConfig.settings.proxyOnlineMode);
++    }
++
+     public static @NotNull UnicornSpigot get() {
+         return Objects.requireNonNull(INSTANCE, "UnicornSpigot not initialized");
+     }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index 131b584d7292027ad8d4baef68241c38a41019b4..034b354282a637d49250b56ea13bbb62b6f2c794 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -36,6 +36,10 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+ 
+     public static class Settings extends UnicornConfigSection {
+ 
++        @Comment("Instructs the server how to handle player UUIDs and data when behind a proxy.")
++        @Comment("Set to match your proxy's online-mode setting.")
++        public boolean proxyOnlineMode = true;
++
+         @Comment("Whether checking if everyone is sleeping should ignore players in end/nether.")
+         public boolean sleepingIgnoreOtherDimensions = false;
+ 

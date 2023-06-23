@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 19:08:43 +0200
+Subject: [PATCH] Option to toggle fireworks and arrows saving
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index d451feb2e6956fd52f6ea60bfc1ac0c484c3f73f..997b0dd1c733edda1a1e8dc7f4c1e89f58439e8c 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -1217,6 +1217,7 @@ public abstract class Entity implements ICommandListener {
+     public void b(Entity entity, int i) {}
+ 
+     public boolean c(NBTTagCompound nbttagcompound) {
++        if (!this.world.unicornConfig.settings.saveFireworksAndArrows && (this instanceof EntityFireworks || this instanceof EntityArrow)) return false; // Unicorn
+         String s = this.ag();
+ 
+         if (!this.dead && s != null) {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+index 377b1e51321eb8587aa3ac7b8a218bbb17ecc586..efeed42e8c91cb765efeafd2bcc0b9d4ead82999 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
+@@ -8,6 +8,15 @@ import eu.okaeri.configs.annotation.Names;
+ @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
+ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
+ 
++    public Settings settings = new Settings();
++
++    public static class Settings extends UnicornConfigSection {
++
++        @Comment("Whether to save fireworks and arrows.")
++        public boolean saveFireworksAndArrows = true;
++
++    }
++
+     @Comment("Optimizations that could improve performance, but may cause some issues.")
+     @Comment("Use with caution.")
+     public Optimizations optimizations = new Optimizations();

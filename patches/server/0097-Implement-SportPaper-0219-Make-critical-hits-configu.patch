@@ -27,10 +27,10 @@ index 6a930eb8bc07934b84cc54370c864f7b2095ebb6..b5a335c111e8a44078b5f7b7608d57e7
  
                      f += f1;
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
-index f4f0e898c3a27576d369b454913bbc3bda4a15fa..84e4d555fef159e40aa7fd546b30d45b0f513fbe 100644
+index 82ea3ea9e94f2623f1c6e0df4c19a04d005fcf66..f89581d7627630b9cf7c02e3bada89ce2583ec60 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperConfig.java
-@@ -48,6 +48,9 @@ public class PaperConfig extends EngineConfig<PaperWorldConfig> {
+@@ -48,6 +48,9 @@ public final class PaperConfig extends EngineConfig<PaperWorldConfig> {
          @Remap("babyZombieMovementSpeed")
          public double babyZombieMovementSpeed = 0.5;
  

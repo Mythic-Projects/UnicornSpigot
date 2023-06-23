@@ -18,10 +18,10 @@ index dae19c1f03e38477fd64ad7379e227371d0e9495..13aeb07812bd6f2f04a5e2be164be581
              // This does pretty well at keeping their clients in sync with the server.
              EntityTrackerEntry ete = ((WorldServer) this.getWorld()).getTracker().trackedEntities.get(this.getId());
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index 0ee9645b44b29904d9297b1dd6ff8b572367c5b5..f8973f7243c7b866954e422e63505a947042d551 100644
+index 00b7948c9b8fef1754db1df922b64fd96f58f327..4bfdf367327fde28da8f2af9b2027ac2049dd205 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -18,6 +18,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -18,6 +18,10 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
          @Comment("Disabling this option mainly helps clients performance, but may improve performance a bit.")
          public boolean explosionParticles = true;
  

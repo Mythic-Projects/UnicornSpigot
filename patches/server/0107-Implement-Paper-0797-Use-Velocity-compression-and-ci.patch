@@ -41,7 +41,7 @@ index 812d9a94712f359f30a6d74efb49e13503265d65..08746ac8202ca1bdd5a10794a9a68c75
              authenticatorPool.execute(new Runnable() {
                  public void run() {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index dd2b29d845d64d0da3e4ab6e5d77c7760ea2f42d..da68e008bf1078dee0f5e0e9f9b69af1416c019d 100644
+index 6442e8c3f1ac3cb0e831fdd705c5856a25b82f69..2e38d3b1f38ba1ac49343e18c7ab8d915ae12ec0 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -441,11 +441,30 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {

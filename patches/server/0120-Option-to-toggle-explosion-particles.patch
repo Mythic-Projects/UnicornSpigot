@@ -49,10 +49,10 @@ index 6bd6c18d72a4788108774af7f82db3d21db45d8e..c53ffb12b3c0bb103ff31ad02872283f
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-index 7cd3d24de215f8ff545a8ac943cda26523ddb3cb..0ee9645b44b29904d9297b1dd6ff8b572367c5b5 100644
+index 40785d1f24467fefea950c0b0b1c23b7762a5bd6..00b7948c9b8fef1754db1df922b64fd96f58f327 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornWorldConfig.java
-@@ -14,6 +14,10 @@ public class UnicornWorldConfig extends EngineConfig.WorldConfig {
+@@ -14,6 +14,10 @@ public final class UnicornWorldConfig extends EngineConfig.WorldConfig {
  
      public static class Optimizations extends UnicornConfigSection {
  
