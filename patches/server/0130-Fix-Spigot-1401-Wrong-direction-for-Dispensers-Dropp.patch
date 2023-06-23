@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 20:00:31 +0200
+Subject: [PATCH] Fix Spigot-1401 - Wrong direction for
+ Dispensers/Droppers/Furnaces when touching other blocks
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockDispenser.java b/src/main/java/net/minecraft/server/BlockDispenser.java
+index 010d7c6d660cffc59a10c82925769f4375ab5b84..fcf48538d07b88f06008e7066b0866ca2f21c1a4 100644
+--- a/src/main/java/net/minecraft/server/BlockDispenser.java
++++ b/src/main/java/net/minecraft/server/BlockDispenser.java
+@@ -20,7 +20,8 @@ public class BlockDispenser extends BlockContainer {
+         return 4;
+     }
+ 
+-    public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
++    // Spigot start - Fix wrong direction for Dispensers/Droppers/Furnaces when touching other blocks (SPIGOT-1401)
++    /* public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         super.onPlace(world, blockposition, iblockdata);
+         this.e(world, blockposition, iblockdata);
+     }
+@@ -48,7 +49,8 @@ public class BlockDispenser extends BlockContainer {
+ 
+             world.setTypeAndData(blockposition, iblockdata.set(BlockDispenser.FACING, enumdirection).set(BlockDispenser.TRIGGERED, Boolean.valueOf(false)), 2);
+         }
+-    }
++    }*/
++    // Spigot end
+ 
+     public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
+         if (world.isClientSide) {
+diff --git a/src/main/java/net/minecraft/server/BlockFurnace.java b/src/main/java/net/minecraft/server/BlockFurnace.java
+index 233f30025190df849a8ca8b28f249d60fb171bac..857c12308a78590c5ce5c45fe8f2e193a7954e92 100644
+--- a/src/main/java/net/minecraft/server/BlockFurnace.java
++++ b/src/main/java/net/minecraft/server/BlockFurnace.java
+@@ -19,7 +19,8 @@ public class BlockFurnace extends BlockContainer {
+         return Item.getItemOf(Blocks.FURNACE);
+     }
+ 
+-    public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
++    // Spigot start - Fix wrong direction for Dispensers/Droppers/Furnaces when touching other blocks (SPIGOT-1401)
++    /*public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         this.e(world, blockposition, iblockdata);
+     }
+ 
+@@ -43,7 +44,8 @@ public class BlockFurnace extends BlockContainer {
+ 
+             world.setTypeAndData(blockposition, iblockdata.set(BlockFurnace.FACING, enumdirection), 2);
+         }
+-    }
++    }*/
++    // Spigot end
+ 
+     public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
+         if (world.isClientSide) {
