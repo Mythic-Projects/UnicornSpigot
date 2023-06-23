@@ -1,0 +1,177 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 23 Jun 2023 21:22:14 +0200
+Subject: [PATCH] Add Book and Quill limits
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+index 0b5ada0118f521eaca65b0fd67ebf232fa183b1a..25da1bc1305e8b83d31a3400097e29b6a90adcb1 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+@@ -21,6 +21,7 @@ import net.minecraft.server.IChatBaseComponent.ChatSerializer;
+ import net.minecraft.server.IChatBaseComponent;
+ import net.minecraft.server.NBTTagString;
+ import org.bukkit.craftbukkit.util.CraftChatMessage;
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ 
+ // Spigot start
+ import static org.spigotmc.ValidateUtils.*;
+@@ -33,8 +34,22 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+     static final ItemMetaKey BOOK_PAGES = new ItemMetaKey("pages");
+     static final ItemMetaKey RESOLVED = new ItemMetaKey("resolved");
+     static final ItemMetaKey GENERATION = new ItemMetaKey("generation");
+-    static final int MAX_PAGE_LENGTH = Short.MAX_VALUE; // TODO: Check me
+-    static final int MAX_TITLE_LENGTH = 0xffff;
++    // FlamePaper start - Book limits
++    static final int MAX_PAGE_LENGTH;
++    static final int MAX_PAGES;
++    static final int MAX_TITLE_LENGTH;
++    static final int MAX_AUTHOR_LENGTH;
++
++    // Unicorn start
++    static {
++        UnicornConfig.Exploits.Book bookLimits = UnicornConfig.get().exploits.book;
++        MAX_PAGE_LENGTH = bookLimits.maxPageLength;
++        MAX_PAGES = bookLimits.maxPages;
++        MAX_TITLE_LENGTH = bookLimits.maxTitleLength;
++        MAX_AUTHOR_LENGTH = bookLimits.maxAuthorLength;
++    }
++    // Unicorn end
++    // FlamePaper end
+ 
+     protected String title;
+     protected String author;
+@@ -61,11 +76,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+         super(tag);
+ 
+         if (tag.hasKey(BOOK_TITLE.NBT)) {
+-            this.title = limit( tag.getString(BOOK_TITLE.NBT), 1024 ); // Spigot
++            this.title = limit( tag.getString(BOOK_TITLE.NBT), MAX_TITLE_LENGTH ); // Spigot // FlamePaper
+         }
+ 
+         if (tag.hasKey(BOOK_AUTHOR.NBT)) {
+-            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), 1024 ); // Spigot
++            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), MAX_TITLE_LENGTH ); // Spigot // FlamePaper
+         }
+ 
+         boolean resolved = false;
+@@ -80,7 +95,10 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+         if (tag.hasKey(BOOK_PAGES.NBT) && handlePages) {
+             NBTTagList pages = tag.getList(BOOK_PAGES.NBT, 8);
+ 
+-            for (int i = 0; i < pages.size(); i++) {
++            // FlamePaper start - book limits
++            int size = MAX_PAGES == -1 ? pages.size() : Math.min(pages.size(), MAX_PAGES);
++            for (int i = 0; i < size; i++) {
++            // FlamePaper end
+                 String page = pages.getString(i);
+                 if (resolved) {
+                     try {
+@@ -90,7 +108,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+                         // Ignore and treat as an old book
+                     }
+                 }
+-                addPage( limit( page, 2048 ) ); // Spigot
++                addPage( limit( page, MAX_PAGE_LENGTH ) ); // Spigot // FlamePaper
+             }
+         }
+     }
+@@ -104,7 +122,13 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+ 
+         Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, BOOK_PAGES.BUKKIT, true);
+         if(pages != null) {
++            // FlamePaper start - book limits
++            int pageCount = 0;
+             for (Object page : pages) {
++                if (MAX_PAGES != -1 && pageCount++ >= MAX_PAGES) {
++                    break;
++                }
++            // FlamePaper end
+                 if (page instanceof String) {
+                     addPage((String) page);
+                 }
+@@ -187,11 +211,10 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+         if (title == null) {
+             this.title = null;
+             return true;
+-        } else if (title.length() > MAX_TITLE_LENGTH) {
+-            return false;
++        // FlamePaper start - cut string instead skipping
+         }
+-
+-        this.title = title;
++        this.title = title.substring(0, Math.min(title.length(), MAX_PAGE_LENGTH));
++        // FlamePaper end
+         return true;
+     }
+ 
+@@ -224,7 +247,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+     }
+ 
+     public void addPage(final String... pages) {
+-        for (String page : pages) {
++        // FlamePaper start - book limits
++        int size = MAX_PAGES == -1 ? pages.length : Math.min(pages.length, MAX_PAGES);
++        for (int i = 0; i < size; i++) {
++            String page = pages[i];
++        // FlamePaper end
+             if (page == null) {
+                 page = "";
+             } else if (page.length() > MAX_PAGE_LENGTH) {
+@@ -257,9 +284,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+ 
+     public void setPages(List<String> pages) {
+         this.pages.clear();
+-        for (String page : pages) {
+-            addPage(page);
+-        }
++        addPage(pages.toArray(new String[0])); // FlamePaper - book limits
+     }
+ 
+     private boolean isValidPage(int page) {
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index 034b354282a637d49250b56ea13bbb62b6f2c794..f0bf074df9d1a3025521aa44bfec4caaba47c982 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -72,6 +72,32 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+         @Comment("UnicornSpigot by default sets it to 50000 which is ~50Kb - it should be enough for most plugins.")
+         public long nbtReadLimiter = 50000L;
+ 
++        @Comment("Configuration of Book and Quill limit.")
++        @Comment("You can prevent some really nasty exploits with this.")
++        @Comment("Check also 'nbt-read-limiter' option.")
++        public Book book = new Book();
++
++        public static class Book extends UnicornConfigSection {
++
++            @Comment("The max book title length.")
++            @Comment("Optimal values is 32.")
++            public int maxTitleLength = 1024;
++
++            @Comment("The max book author length.")
++            @Comment("Optimal values is 16 (player's names can't be longer).")
++            public int maxAuthorLength = 1024;
++
++            @Comment("The max amount of pages a book can have.")
++            @Comment("Disable limit with -1")
++            @Comment("Optimal values is 64.")
++            public int maxPages = -1;
++
++            @Comment("The max length of one page the book can have.")
++            @Comment("Optimal values is 400.")
++            public int maxPageLength = 2048;
++
++        }
++
+     }
+ 
+     @Comment("Per world settings.")
+@@ -107,7 +133,7 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+     }
+ 
+     static void log(String log, Object... params) {
+-        log( Level.INFO, log, params);
++        log(Level.INFO, log, params);
+     }
+ 
+ }
