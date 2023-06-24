@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 01:20:05 +0200
+Subject: [PATCH] Optimize handling movement in water
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 6216238561c22c57faaf6b73f2887987ab869ca6..45bfb2932d236fc0087c578881bee0668bf9e8ef 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2036,15 +2036,17 @@ public abstract class World implements IBlockAccess {
+             for (int k1 = i; k1 < j; ++k1) {
+                 for (int l1 = k; l1 < l; ++l1) {
+                     for (int i2 = i1; i2 < j1; ++i2) {
+-                        blockposition_mutableblockposition.c(k1, l1, i2);
+-                        IBlockData iblockdata = this.getType(blockposition_mutableblockposition);
++                        //blockposition_mutableblockposition.c(k1, l1, i2); // Unicorn - moved down
++                        IBlockData iblockdata = this.getTypeIfLoaded(k1, l1, i2); // Unicorn
++                        if (iblockdata == null) return false; // Unicorn
+                         Block block = iblockdata.getBlock();
+ 
+                         if (block.getMaterial() == material) {
+-                            double d0 = (double) ((float) (l1 + 1) - BlockFluids.b(((Integer) iblockdata.get(BlockFluids.LEVEL)).intValue()));
++                            double d0 = ((float) (l1 + 1) - BlockFluids.b(iblockdata.get(BlockFluids.LEVEL))); // Unicorn
+ 
+                             if ((double) l >= d0) {
+                                 flag = true;
++                                blockposition_mutableblockposition.c(k1, l1, i2); // Unicorn
+                                 vec3d = block.a(this, blockposition_mutableblockposition, entity, vec3d);
+                             }
+                         }

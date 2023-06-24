@@ -301,7 +301,7 @@ index 26a2fb89425677d94a1d8a375337b70a00e4c5eb..00000000000000000000000000000000
 -    }
 -}
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
-index 7ef577271902f858f5b59953049511a481dde8b8..7679016f2de5f84802d302f8009ff78af1a072d2 100644
+index 7ef577271902f858f5b59953049511a481dde8b8..cf782539ea16cf5c5e6a7ec45a1116f49e2e624e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
 @@ -7,9 +7,11 @@ import java.util.logging.Level;
@@ -309,12 +309,12 @@ index 7ef577271902f858f5b59953049511a481dde8b8..7679016f2de5f84802d302f8009ff78a
  import org.bukkit.craftbukkit.util.Waitable;
  
 -import jline.console.completer.Completer;
-+// Titanium start - Remove jline2 import
++// Unicorn start - Remove jline2 import
 +//import jline.console.completer.Completer;
  
 -public class ConsoleCommandCompleter implements Completer {
 +public class ConsoleCommandCompleter /*implements Completer*/ {
-+// Titanium end
++// Unicorn end
      private final CraftServer server;
  
      public ConsoleCommandCompleter(CraftServer server) {

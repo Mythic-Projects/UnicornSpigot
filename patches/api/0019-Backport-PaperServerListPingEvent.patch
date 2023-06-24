@@ -6,7 +6,7 @@ Subject: [PATCH] Backport PaperServerListPingEvent
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..546d3b3f83f92be9240e930fdabdf6dcc37fe41b
+index 0000000000000000000000000000000000000000..77d54548f33a630aaaebbe6def6a2bea7039a1cc
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
 @@ -0,0 +1,338 @@
@@ -157,7 +157,7 @@ index 0000000000000000000000000000000000000000..546d3b3f83f92be9240e930fdabdf6dc
 +        return this.playerSample;
 +    }
 +
-+    // Titanium start
++    // Unicorn start
 +    /**
 +     * Sets a mutable list of {@link PlayerProfile} that will be displayed
 +     * as online players on the client.
@@ -173,7 +173,7 @@ index 0000000000000000000000000000000000000000..546d3b3f83f92be9240e930fdabdf6dc
 +        }
 +        this.playerSample = playerSample;
 +    }
-+    // Titanium end
++    // Unicorn end
 +
 +    /**
 +     * Returns the version that will be sent as server version on the client.

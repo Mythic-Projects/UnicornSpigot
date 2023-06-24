@@ -405,7 +405,7 @@ index 48acf63644761ed2a5ae5a1cbdc7705bc6afe75f..69398687cbcc73f307f41bd8d3ae2d71
      }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0017a93d31aa31d0dbe19102d770bc2c9c4a22a3..2580566e444ace415f6e8351da684ebfd9565e61 100644
+index 15e39959a1c15ce8d6a9fb76f3368d33af9674b3..cc4941d471a6baf268cb63b54e8e99db91a3d370 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -60,7 +60,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
@@ -413,7 +413,7 @@ index 0017a93d31aa31d0dbe19102d770bc2c9c4a22a3..2580566e444ace415f6e8351da684ebf
      public final MethodProfiler methodProfiler = new MethodProfiler();
      private ServerConnection q; // Spigot
 -    private final ServerPing r = new ServerPing();
-+    public final ServerPing r = new ServerPing(); // Titanium - make public
++    public final ServerPing r = new ServerPing(); // Unicorn - make public
      private final Random s = new Random();
      private String serverIp;
      private int u = -1;
@@ -433,7 +433,7 @@ index 2e38d3b1f38ba1ac49343e18c7ab8d915ae12ec0..1becc922840eafe450c524622c7834f7
      // Paper start - Optimize network
      public boolean isPending = true;
 diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
-index 046487f2af208c377aa41cf5c530dd56cff1b385..2fbb591890a9c3f90d6b730bee833701d49e9682 100644
+index 046487f2af208c377aa41cf5c530dd56cff1b385..051c747ac95f3d0778d22281141483e28a190588 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusListener.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
 @@ -1,6 +1,7 @@
@@ -449,7 +449,7 @@ index 046487f2af208c377aa41cf5c530dd56cff1b385..2fbb591890a9c3f90d6b730bee833701
          }
  
 -        ServerListPingEvent event = new ServerListPingEvent();
-+        // Titanium start - backport PaperServerListPingEvent
++        // Unicorn start - backport PaperServerListPingEvent
 +        /*ServerListPingEvent event = new ServerListPingEvent();
          this.minecraftServer.server.getPluginManager().callEvent(event);
  
@@ -462,19 +462,19 @@ index 046487f2af208c377aa41cf5c530dd56cff1b385..2fbb591890a9c3f90d6b730bee833701
          // CraftBukkit end
 +
 +        StandardPaperServerListPingEventImpl.processRequest(minecraftServer, this.networkManager);
-+        // Titanium end
++        // Unicorn end
      }
  
      public void a(PacketStatusInPing packetstatusinping) {
 diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
-index b0d0773d603dc042ea69139ac309dc8a134950bc..ff45b54e9a45a163f0070fd4ecd24e714191c579 100644
+index b0d0773d603dc042ea69139ac309dc8a134950bc..162ea63ab3cf4e1e376aa23b940990eb713a8c5a 100644
 --- a/src/main/java/net/minecraft/server/ServerPing.java
 +++ b/src/main/java/net/minecraft/server/ServerPing.java
 @@ -30,6 +30,7 @@ public class ServerPing {
          this.a = ichatbasecomponent;
      }
  
-+    public ServerPing.ServerPingPlayerSample getPlayers() { return this.b(); } // Titanium - OBFHELPER
++    public ServerPing.ServerPingPlayerSample getPlayers() { return this.b(); } // Unicorn - OBFHELPER
      public ServerPing.ServerPingPlayerSample b() {
          return this.b;
      }
@@ -482,7 +482,7 @@ index b0d0773d603dc042ea69139ac309dc8a134950bc..ff45b54e9a45a163f0070fd4ecd24e71
          this.b = serverping_serverpingplayersample;
      }
  
-+    public ServerPing.ServerData getVersion() { return this.c(); } // Titanium - OBFHELPER
++    public ServerPing.ServerData getVersion() { return this.c(); } // Unicorn - OBFHELPER
      public ServerPing.ServerData c() {
          return this.c;
      }
@@ -490,7 +490,7 @@ index b0d0773d603dc042ea69139ac309dc8a134950bc..ff45b54e9a45a163f0070fd4ecd24e71
              return this.a;
          }
  
-+        public int getProtocol() { return this.b(); } // Titanium - OBFHELPER
++        public int getProtocol() { return this.b(); } // Unicorn - OBFHELPER
          public int b() {
              return this.b;
          }
@@ -498,7 +498,7 @@ index b0d0773d603dc042ea69139ac309dc8a134950bc..ff45b54e9a45a163f0070fd4ecd24e71
              return this.c;
          }
  
-+        public void setSample(GameProfile[] sample) { this.a(sample); } // Titanium - OBFHELPER
++        public void setSample(GameProfile[] sample) { this.a(sample); } // Unicorn - OBFHELPER
          public void a(GameProfile[] agameprofile) {
              this.c = agameprofile;
          }
