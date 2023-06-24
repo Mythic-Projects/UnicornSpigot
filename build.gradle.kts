@@ -69,31 +69,26 @@ subprojects {
         }
 
         tasks.withType<ShadowJar> {
-            exclude("org/google/gson/**.*")
             // include cerberus libraries as file
             val librariesFile = File(buildDir, "libraries.cerberus")
             if (!librariesFile.exists()) {
                 librariesFile.createNewFile()
             }
 
-            val resultDependencies = mutableSetOf<String>()
-
-            resultDependencies.addAll(cerberusLibraries)
+            val resultDependencies = LinkedHashSet<String>(cerberusLibraries)
             this.project.configurations.stream()
-                .flatMap { it.allDependencies.stream() }
-                .filter { it is ProjectDependency }
-                .forEachOrdered {
-                    val project = (it as ProjectDependency).dependencyProject.project
-                    println(project)
-                    val projectExtra = project.extra
-                    if (!projectExtra.has("cerberusLibraries")) {
-                        return@forEachOrdered
+                    .flatMap { it.allDependencies.stream() }
+                    .filter { it is ProjectDependency }
+                    .map { it as ProjectDependency }
+                    .map { it.dependencyProject.project }
+                    .distinct()
+                    .map { it.ext }
+                    .forEachOrdered { extra ->
+                        if (!extra.has("cerberusLibraries")) {
+                            return@forEachOrdered
+                        }
+                        resultDependencies += extra["cerberusLibraries"] as MutableSet<String>
                     }
-                    @SuppressWarnings("UNCHECKED_CAST")
-                    val projectCerberusLibraries = projectExtra["cerberusLibraries"] as MutableSet<String>
-                    resultDependencies.addAll(projectCerberusLibraries)
-                }
-
             librariesFile.writeText(resultDependencies.joinToString("\n"))
             from(librariesFile)
         }
