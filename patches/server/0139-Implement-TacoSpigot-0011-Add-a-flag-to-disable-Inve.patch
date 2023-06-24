@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Peridot <peridot491@protonmail.com>
 Date: Sat, 24 Jun 2023 18:23:27 +0200
-Subject: [PATCH] Implement [Taco-0011] Add a flag to disable
+Subject: [PATCH] Implement [TacoSpigot-0011] Add a flag to disable
  InventoryMoveItemEvent by Techcable
 
 Even with no listeners, InventoryMoveItemEvent hurts performance.

@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: AmbrosL <ambrosl@users.noreply.github.com>
+Date: Sat, 24 Jun 2023 19:28:42 +0200
+Subject: [PATCH] Implement [TacoSpigot-0026] Disable falling block stacking at
+ 256 by AmbrosL
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+index 003f71f060622ccaa4a7dcdf2833f27a3ddd574a..6c11911116a4bcc99c63a2379df95cfd80c6a747 100644
+--- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+@@ -113,7 +113,7 @@ public class EntityFallingBlock extends Entity {
+                     if (this.world.getType(blockposition).getBlock() != Blocks.PISTON_EXTENSION) {
+                         this.die();
+                         if (!this.e) {
+-                            if (this.world.a(block, blockposition, true, EnumDirection.UP, (Entity) null, (ItemStack) null) && !BlockFalling.canFall(this.world, blockposition.down()) /* mimic the false conditions of setTypeIdAndData */ && blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000 && blockposition.getY() >= 0 && blockposition.getY() < 256 && this.world.getType(blockposition) != this.block) {
++                            if (this.world.a(block, blockposition, true, EnumDirection.UP, (Entity) null, (ItemStack) null) && !BlockFalling.canFall(this.world, blockposition.down()) /* mimic the false conditions of setTypeIdAndData */ && World.isInWorldBounds(blockposition) && blockposition.getY() >= 0 && blockposition.getY() < (this.world.tacoConfigUnicorn.disableFallingBlockStackingAt256 ? 255 : 256) && this.world.getType(blockposition) != this.block) { // TacoSpigot
+                                 if (CraftEventFactory.callEntityChangeBlockEvent(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.block.getBlock(), this.block.getBlock().toLegacyData(this.block)).isCancelled()) {
+                                     return;
+                                 }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 6decd3444c5a068f98e9306a497821a1b4c775e2..1bb83de9f3d944416f2e5213abdadf39906020af 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -3496,11 +3496,11 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     // Unicorn start
+-    private static boolean isInWorldBounds(int x, int z) {
++    public static boolean isInWorldBounds(int x, int z) {
+         return x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000;
+     }
+ 
+-    private static boolean isInWorldBounds(BlockPosition pos) {
++    public static boolean isInWorldBounds(BlockPosition pos) {
+         return isInWorldBounds(pos.getX(), pos.getZ());
+     }
+     // Unicorn end
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+index cfe1b149bdcf5250409f823dd8de205928688de4..e7e0cc4c7fef9d583533bcb312386ba5fff38482 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+@@ -43,6 +43,9 @@ public final class TacoWorldConfig extends EngineConfig.WorldConfig {
+ 
+     }
+ 
++    @Comment("Whether to disable stacking falling blocks at 256 height.")
++    public boolean disableFallingBlockStackingAt256 = false;
++
+     @Comment("Cannoning on east and west normally is not calculated properly.")
+     @Comment("Enabling this option resolve this issue, but it's not vanilla behavior and could break some TNT cannons.")
+     public boolean fixEastWestCannoning = false;
