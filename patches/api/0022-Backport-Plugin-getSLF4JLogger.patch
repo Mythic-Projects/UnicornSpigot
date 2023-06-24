@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 01:45:21 +0200
+Subject: [PATCH] Backport Plugin#getSLF4JLogger
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index dba9c71c2b0b6b716f13c656a15c488ebe8254a9..fee865ad1693c9fdcdfa7006f36bc0f143e0331d 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -17,6 +17,7 @@ dependencies {
+ 
+     // Unicorn libraries start
+     libraryApi("org.apache.commons:commons-lang3:3.12.0") // Unicorn - updated commons-lang3 to 3.12.0 // Unicorn - Add commons-lang3 to API
++    libraryApi("org.slf4j:slf4j-api:1.7.36") // Backport Plugin#getSLF4JLogger
+     libraryApi("org.jetbrains:annotations:24.0.1") // Unicorn - add jetbrains annotations - future is now 😎
+ 
+     // Paper start - Use ASM for event executors
+diff --git a/src/main/java/org/bukkit/plugin/Plugin.java b/src/main/java/org/bukkit/plugin/Plugin.java
+index 7bdc809c6d99eb837c276d43ebae36cd8ddb07d6..a7a5c09273ed9abf56a62b490edbffa8bc691d17 100644
+--- a/src/main/java/org/bukkit/plugin/Plugin.java
++++ b/src/main/java/org/bukkit/plugin/Plugin.java
+@@ -177,6 +177,12 @@ public interface Plugin extends TabExecutor {
+      */
+     public Logger getLogger();
+ 
++    // Paper start - Add SLF4J logger
++    default org.slf4j.Logger getSLF4JLogger() {
++        return org.slf4j.LoggerFactory.getLogger(getLogger().getName());
++    }
++    // Paper end
++
+     /**
+      * Returns the name of the plugin.
+      * <p>

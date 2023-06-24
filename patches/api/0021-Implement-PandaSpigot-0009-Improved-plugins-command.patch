@@ -5,7 +5,7 @@ Subject: [PATCH] Implement [PandaSpigot-0009] Improved plugins command
 
 
 diff --git a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
-index e21d16793b703189a5f4cf9091ac12f494d0107e..763abb2b61e7cff8c71a19a55a34063d03ed24f1 100644
+index e21d16793b703189a5f4cf9091ac12f494d0107e..aedb33bdd45da47ec7fbcfc8dc1e30e3524af7af 100644
 --- a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
 @@ -2,10 +2,17 @@ package org.bukkit.command.defaults;
