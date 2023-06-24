@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 17:11:29 +0200
+Subject: [PATCH] Implement [FlamePaper-0030] Adaptive chunk GC
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 329b9e18020db9c8d8ae5ac84ab8f2318b0a3548..7843c47aac839818feab1c682308cfa86e64aa35 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -56,6 +56,7 @@ import org.bukkit.plugin.Plugin;
+ import org.bukkit.plugin.messaging.StandardMessenger;
+ import org.bukkit.util.Vector;
+ import org.github.paperspigot.exception.ServerInternalException;
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ 
+ public class CraftWorld implements World {
+     public static final int CUSTOM_DIMENSION_OFFSET = 10;
+@@ -1399,7 +1400,16 @@ public class CraftWorld implements World {
+     public void processChunkGC() {
+         chunkGCTickCount++;
+ 
+-        if (chunkLoadCount >= server.chunkGCLoadThresh && server.chunkGCLoadThresh > 0) {
++        // FlamePaper start - Adaptative chunk GC
++        int playerCount = this.getPlayers().size();
++        int viewDistance = this.getHandle().getServer().getViewDistance();
++        int viewChunks = ((viewDistance * 2) + 1);
++        int chunkGCLoadThreshold = UnicornConfig.get().chunks.adaptiveChunkGC
++                ? (world.keepSpawnInMemory ? 256 : 0) + playerCount * (viewChunks * viewChunks)
++                : server.chunkGCLoadThresh;
++
++        if (chunkLoadCount > chunkGCLoadThreshold && chunkGCLoadThreshold > 0) {
++        // FlamePaper end - Adaptative chunk GC
+             chunkLoadCount = 0;
+         } else if (chunkGCTickCount >= server.chunkGCPeriod && server.chunkGCPeriod > 0) {
+             chunkGCTickCount = 0;
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index cf83103cf4d3520350926149dbbe56b5f65c0b7d..422f7385f1639da2b81812f4fec6d86b00013ee1 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -105,6 +105,13 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+ 
+     public static class Chunks extends UnicornConfigSection {
+ 
++        @Comment("Normally server uses bukkit.chunk-gc.load-threshold - it's define how many chunks could be loaded before GC will be triggered.")
++        @Comment("This option make that value more flexible and change it dynamically.")
++        @Comment("As a factor, it uses the amount of players online and multiply it by square of view-distance.")
++        @Comment("Basically if there is no players online, server won't store any chunks in memory.")
++        @Comment("However if there are 100 players online and view-distance is 10, server will store up to 10000 chunks in memory.")
++        public boolean adaptiveChunkGC = false;
++
+         @Comment("Configuration of chunks I/O loadings.")
+         @Comment("If you're using CPU with more threads, you can try to increase this value.")
+         public IO io = new IO();

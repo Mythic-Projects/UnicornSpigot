@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 17:43:33 +0200
+Subject: [PATCH] TacoSpigot configuration files
+
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index ec018b926ff740c7760aa459dcebc365e7511ab6..9bfe8ffac5d29bf13938622dc388a084576dd6f5 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -992,7 +992,16 @@ public interface Server extends PluginMessageRecipient {
+         public org.bukkit.configuration.file.YamlConfiguration getPaperConfig() {
+             return this.getPaperSpigotConfig();
+         }
++        // Unicorn end
++
++        // TacoSpigot start
++        public org.bukkit.configuration.file.YamlConfiguration getTacoSpigotConfig()
++        {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++        // TacoSpigot end
+ 
++        // Unicorn start
+         public org.bukkit.configuration.file.YamlConfiguration getUnicornConfig() {
+             throw new UnsupportedOperationException("Not supported yet.");
+         }

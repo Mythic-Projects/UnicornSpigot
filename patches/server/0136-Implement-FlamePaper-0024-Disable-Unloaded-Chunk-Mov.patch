@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 17:18:33 +0200
+Subject: [PATCH] Implement [FlamePaper-0024] Disable Unloaded Chunk Movement
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 997b0dd1c733edda1a1e8dc7f4c1e89f58439e8c..39aa21c3fcee6346079b2fa3fb68491b3004db6f 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -34,7 +34,7 @@ import org.bukkit.event.entity.EntityCombustEvent;
+ import org.bukkit.event.entity.EntityPortalEvent;
+ import org.bukkit.plugin.PluginManager;
+ // CraftBukkit end
+-
++import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ // PaperSpigot start
+ import org.spigotmc.event.entity.EntityDismountEvent;
+ // PaperSpigot end
+@@ -479,6 +479,12 @@ public abstract class Entity implements ICommandListener {
+ 
+     public void move(double d0, double d1, double d2) {
+         if (this.loadChunks) loadChunks(); // PaperSpigot - Load chunks
++        // FlamePaper start - Disable unloaded chunk movement
++        if (UnicornConfig.get().chunks.disableUnloadedChunksMovement && this.world.isLoaded((int) this.locX, (int) this.locZ)) {
++            this.a(this.getBoundingBox().c(d0, d1, d2));
++            this.recalcPosition();
++        }
++        // FlamePaper end
+         if (this.noclip) {
+             this.a(this.getBoundingBox().c(d0, d1, d2));
+             this.recalcPosition();
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index 422f7385f1639da2b81812f4fec6d86b00013ee1..0ffec14e1239a9ec47c9a641be4b89ff3553c19c 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -105,6 +105,9 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+ 
+     public static class Chunks extends UnicornConfigSection {
+ 
++        @Comment("Enabling this option prevents entities from moving in unloaded chunk (and for eg. falling down in \"slow-motion\")")
++        public boolean disableUnloadedChunksMovement = false;
++
+         @Comment("Normally server uses bukkit.chunk-gc.load-threshold - it's define how many chunks could be loaded before GC will be triggered.")
+         @Comment("This option make that value more flexible and change it dynamically.")
+         @Comment("As a factor, it uses the amount of players online and multiply it by square of view-distance.")

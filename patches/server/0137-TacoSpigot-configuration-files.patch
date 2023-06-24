@@ -1,0 +1,232 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 17:43:33 +0200
+Subject: [PATCH] TacoSpigot configuration files
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 2cc95f6795fefc73c9bfebdb75f4ee3894f67ac8..22386a9f890187844e3bf4ee37d2c643ecea7744 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+ import org.mythicprojects.unicornspigot.config.PaperWorldConfig;
+ import org.mythicprojects.unicornspigot.config.SpigotWorldConfig;
++import org.mythicprojects.unicornspigot.config.TacoWorldConfig;
+ import org.mythicprojects.unicornspigot.config.UnicornWorldConfig;
+ import org.bukkit.Bukkit;
+ import org.bukkit.block.BlockState;
+@@ -170,6 +171,7 @@ public abstract class World implements IBlockAccess {
+     public final UnicornWorldConfig unicornConfig;
+     public final SpigotWorldConfig spigotConfigUnicorn;
+     public final PaperWorldConfig paperConfigUnicorn;
++    public final TacoWorldConfig tacoConfigUnicorn;
+     public org.spigotmc.AntiXray antiXray;
+     // Unicorn end
+ 
+@@ -202,6 +204,7 @@ public abstract class World implements IBlockAccess {
+         this.unicornConfig = server.unicornConfig.getWorldConfig( worlddata.getName() );
+         this.spigotConfigUnicorn = server.spigotConfig.getWorldConfig( worlddata.getName() );
+         this.paperConfigUnicorn = server.paperConfig.getWorldConfig( worlddata.getName() );
++        this.tacoConfigUnicorn = server.tacoConfig.getWorldConfig( worlddata.getName() );
+         this.antiXray = this.spigotConfigUnicorn.getAntiXray();
+         server.unicornSpigot.remapConfigs(this);
+         // Unicorn end
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 2172e953c753e67dfc20e66ab4c67402db1f34fb..a0661dedc23797ef7b6f1c573670b031eef1d374 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -109,6 +109,7 @@ import org.mythicprojects.unicornspigot.UnicornSpigot;
+ import org.mythicprojects.unicornspigot.config.BukkitConfig;
+ import org.mythicprojects.unicornspigot.config.PaperConfig;
+ import org.mythicprojects.unicornspigot.config.SpigotConfig;
++import org.mythicprojects.unicornspigot.config.TacoConfig;
+ import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ import org.yaml.snakeyaml.Yaml;
+ import org.yaml.snakeyaml.constructor.SafeConstructor;
+@@ -161,6 +162,7 @@ public final class CraftServer implements Server {
+     public final BukkitConfig bukkitConfig;
+     public final SpigotConfig spigotConfig;
+     public final PaperConfig paperConfig;
++    public final TacoConfig tacoConfig;
+     // Unicorn end
+     private int monsterSpawn = -1;
+     private int animalSpawn = -1;
+@@ -225,6 +227,7 @@ public final class CraftServer implements Server {
+         this.bukkitConfig = this.unicornSpigot.getBukkitConfig();
+         this.spigotConfig = this.unicornSpigot.getSpigotConfig();
+         this.paperConfig = this.unicornSpigot.getPaperConfig();
++        this.tacoConfig = this.unicornSpigot.getTacoConfig();
+ 
+         /* // Unicorn - we don't need this anymore, we have our own config system
+         configuration = YamlConfiguration.loadConfiguration(getConfigFile());
+@@ -1967,6 +1970,14 @@ public final class CraftServer implements Server {
+             return unicornSpigot.getPaperConfiguration(); // Unicorn
+         }
+ 
++        // TacoSpigot start
++        @Override
++        public YamlConfiguration getTacoSpigotConfig()
++        {
++            return unicornSpigot.getTacoConfiguration();
++        }
++        // TacoSpigot end
++
+         // Unicorn start
+         @Override
+         public YamlConfiguration getUnicornConfig() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 6375b17b1aa764f4f99a762f048e20bdea47b533..9978d550b2f09092a4248e73589f543058900e2e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -132,6 +132,14 @@ public class Main {
+                         .describedAs("Yml file");
+                 // PaperSpigot End
+ 
++                // TacoSpigot start
++                acceptsAll(asList("taco", "taco-settings"), "File for tacospigot settings")
++                        .withRequiredArg()
++                        .ofType(File.class)
++                        .defaultsTo(new File("taco.yml"))
++                        .describedAs("Yml file");
++                // TacoSpigot end
++
+                 // Unicorn start
+                 acceptsAll(asList("unicorn", "unicorn-settings"), "File for unicorn settings")
+                         .withRequiredArg()
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+index c66393977f438e42e79a69216c87f3886afd6027..66e8029a784a67ce4157fb438173d7d23f6ff681 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/UnicornSpigot.java
+@@ -13,6 +13,7 @@ import org.mythicprojects.unicornspigot.config.BukkitConfig;
+ import org.mythicprojects.unicornspigot.config.ConfigurationFactory;
+ import org.mythicprojects.unicornspigot.config.PaperConfig;
+ import org.mythicprojects.unicornspigot.config.SpigotConfig;
++import org.mythicprojects.unicornspigot.config.TacoConfig;
+ import org.mythicprojects.unicornspigot.config.UnicornConfig;
+ import org.mythicprojects.unicornspigot.config.serdes.WarningStateTransformer;
+ import org.mythicprojects.unicornspigot.patcher.DynamicPatcher;
+@@ -30,10 +31,12 @@ public class UnicornSpigot {
+     private final YamlConfiguration bukkitConfiguration = new YamlConfiguration();
+     private final YamlConfiguration spigotConfiguration = new YamlConfiguration();
+     private final YamlConfiguration paperConfiguration = new YamlConfiguration();
++    private final YamlConfiguration tacoConfiguration = new YamlConfiguration();
+     private UnicornConfig unicornConfig;
+     private BukkitConfig bukkitConfig;
+     private SpigotConfig spigotConfig;
+     private PaperConfig paperConfig;
++    private TacoConfig tacoConfig;
+     private boolean isReload = false;
+ 
+     private final Map<String, Pair<String, Command>> commands = new HashMap<>();
+@@ -53,6 +56,7 @@ public class UnicornSpigot {
+         this.bukkitConfig = configurationFactory.createServerConfig(BukkitConfig.class, this.bukkitConfiguration, "bukkit-settings");
+         this.spigotConfig = configurationFactory.createServerConfig(SpigotConfig.class, this.spigotConfiguration, "spigot-settings");
+         this.paperConfig = configurationFactory.createServerConfig(PaperConfig.class, this.paperConfiguration, "paper-settings");
++        this.tacoConfig = configurationFactory.createServerConfig(TacoConfig.class, this.tacoConfiguration, "taco-settings");
+         this.remapConfigs();
+ 
+         // Commands
+@@ -95,6 +99,14 @@ public class UnicornSpigot {
+         return Objects.requireNonNull(this.paperConfig, "PaperConfig not initialized");
+     }
+ 
++    public @NotNull YamlConfiguration getTacoConfiguration() {
++        return this.tacoConfiguration;
++    }
++
++    public @NotNull TacoConfig getTacoConfig() {
++        return Objects.requireNonNull(this.tacoConfig, "TacoConfig not initialized");
++    }
++
+     public void reloadConfigs() {
+         this.isReload = true;
+ 
+@@ -102,6 +114,7 @@ public class UnicornSpigot {
+         this.bukkitConfig.load();
+         this.spigotConfig.load();
+         this.paperConfig.load();
++        this.tacoConfig.load();
+ 
+         this.server.worlds.forEach(server -> {
+             server.antiXray = this.spigotConfig.getWorldConfig(server.getWorld().getName()).getAntiXray();
+@@ -116,6 +129,7 @@ public class UnicornSpigot {
+         this.unicornConfig.remap();
+         this.spigotConfig.remap();
+         this.paperConfig.remap();
++        this.tacoConfig.remap();
+         this.server.worlds.forEach(this::remapConfigs);
+     }
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/TacoConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/TacoConfig.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..71d5a118b1a9e2786ea06a3177b06d05fd68bb97
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/TacoConfig.java
+@@ -0,0 +1,51 @@
++package org.mythicprojects.unicornspigot.config;
++
++import eu.okaeri.configs.OkaeriConfig;
++import eu.okaeri.configs.annotation.Comment;
++import eu.okaeri.configs.annotation.Exclude;
++import eu.okaeri.configs.annotation.Header;
++import eu.okaeri.configs.annotation.NameModifier;
++import eu.okaeri.configs.annotation.NameStrategy;
++import eu.okaeri.configs.annotation.Names;
++import eu.okaeri.configs.exception.OkaeriException;
++import java.util.HashMap;
++import java.util.Map;
++import org.jetbrains.annotations.NotNull;
++
++@Header("This is the main configuration file for TacoSpigot.")
++@Header("As you can see, there's tons to configure. Some options may impact gameplay, so use")
++@Header("with caution, and make sure you know what each option does before configuring.")
++@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++public final class TacoConfig extends EngineConfig<TacoWorldConfig> {
++
++    // For tests to work properly
++    @Exclude
++    private static final TacoConfig DEFAULT_INSTANCE = new TacoConfig();
++    @Exclude
++    private static TacoConfig INSTANCE;
++
++    @Comment("Per world settings.")
++    public Map<String, TacoWorldConfig> worldSettings = new HashMap<>();
++
++    @Override
++    public @NotNull Map<String, TacoWorldConfig> getWorldConfigs() {
++        return this.worldSettings;
++    }
++
++    @Override
++    protected @NotNull TacoWorldConfig createDefaultWorldConfig() {
++        return new TacoWorldConfig();
++    }
++
++    @Override
++    public OkaeriConfig load() throws OkaeriException {
++        super.load();
++        INSTANCE = this;
++        return this;
++    }
++
++    public static @NotNull TacoConfig get() {
++        return (INSTANCE == null) ? DEFAULT_INSTANCE : INSTANCE;
++    }
++
++}
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..dfad33f6bb66dce22ee356388c82c3d6fbf1d77a
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+@@ -0,0 +1,9 @@
++package org.mythicprojects.unicornspigot.config;
++
++import eu.okaeri.configs.annotation.NameModifier;
++import eu.okaeri.configs.annotation.NameStrategy;
++import eu.okaeri.configs.annotation.Names;
++
++@Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
++public final class TacoWorldConfig extends EngineConfig.WorldConfig {
++}
