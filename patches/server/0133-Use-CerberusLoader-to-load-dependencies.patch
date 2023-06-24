@@ -5,7 +5,7 @@ Subject: [PATCH] Use CerberusLoader to load dependencies
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403ebae5170d5 100644
+index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..23ad78fbd87e122b5b9826ee4c4b16916307e261 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -1,3 +1,4 @@
@@ -13,7 +13,7 @@ index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403eb
  val minecraftVersion = "1_8_R3"
  
  dependencies {
-@@ -5,29 +6,39 @@ dependencies {
+@@ -5,29 +6,40 @@ dependencies {
  
      // Native (Minecraft) libraries start
      compileOnly("io.netty:netty-all:4.0.23.Final") // Loaded by CerberusLoader
@@ -52,9 +52,10 @@ index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403eb
 -    implementation("net.minecrell:terminalconsoleappender:1.3.0")
 -    implementation("org.jline:jline-terminal-jansi:3.21.0")
 +    library("net.minecrell:terminalconsoleappender:1.3.0")
-+    library("org.jline:jline-reader:3.21.0")
-+    library("org.jline:jline-terminal:3.21.0")
-+    library("org.jline:jline-terminal-jansi:3.21.0")
++    val jLineVersion = "3.21.0"
++    library("org.jline:jline-reader:$jLineVersion")
++    library("org.jline:jline-terminal:$jLineVersion")
++    library("org.jline:jline-terminal-jansi:$jLineVersion")
 +    library("org.fusesource.jansi:jansi:2.4.0")
      // Paper end
  
@@ -66,7 +67,7 @@ index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403eb
  
      val okaeriConfigsVersion = "5.0.0-beta.6"
      implementation("eu.okaeri:okaeri-configs-core:$okaeriConfigsVersion")
-@@ -36,9 +47,9 @@ dependencies {
+@@ -36,9 +48,9 @@ dependencies {
      implementation("eu.okaeri:okaeri-configs-validator-okaeri:$okaeriConfigsVersion")
  
      implementation("com.velocitypowered:velocity-native:1.1.9")
@@ -79,7 +80,7 @@ index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403eb
      // UnicornSpigot libraries end
  
      testImplementation("junit:junit:4.13.2") // Unicorn - update JUnit to 4.13.2
-@@ -51,16 +62,8 @@ tasks {
+@@ -51,16 +63,8 @@ tasks {
          transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer()) // Paper - Use TerminalConsoleAppender
          archiveClassifier.set("") // without "-all"
  
@@ -98,7 +99,7 @@ index 65bc6fb9fba7d7ed213b034ffa2327dfd4b75698..2541efad4256f4412cf795804b1403eb
  
          relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v${minecraftVersion}") {
              exclude("org.bukkit.craftbukkit.Main*") // don't relocate main class
-@@ -81,15 +84,15 @@ tasks {
+@@ -81,15 +85,15 @@ tasks {
          manifest {
              val gitHash = project.parent!!.ext["gitHash"]
              attributes(
