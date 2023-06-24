@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: killme <killme-git@ibts.me>
+Date: Sat, 24 Jun 2023 20:42:53 +0200
+Subject: [PATCH] Implement [Paper-0176] Prevent logins from being processed
+ when the player has disconnected by killme
+
+
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 08746ac8202ca1bdd5a10794a9a68c756dfaac19..29e4e6cd24f271e8336e67bc73a0fcdb1e9e99af 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -57,7 +57,11 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+ 
+     public void c() {
+         if (this.g == LoginListener.EnumProtocolState.READY_TO_ACCEPT) {
+-            this.b();
++            // Paper start - prevent logins to be processed even though disconnect was called
++            if (this.networkManager.channel != null && this.networkManager.channel.isOpen()) {
++                this.b();
++            }
++            // Paper end
+         } else if (this.g == LoginListener.EnumProtocolState.e) {
+             EntityPlayer entityplayer = this.server.getPlayerList().a(this.i.getId());
+ 

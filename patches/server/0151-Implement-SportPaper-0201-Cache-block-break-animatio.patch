@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: VytskaLT <vytskalt@protonmail.com>
+Date: Sat, 24 Jun 2023 20:24:43 +0200
+Subject: [PATCH] Implement [SportPaper-0201] Cache block break animation
+ packet by VytskaLT
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldManager.java b/src/main/java/net/minecraft/server/WorldManager.java
+index c3bda441dfa2f59a0570d578676a6d3e9765fdb6..7a9027fc6d22989e6ec84c77c51ce3ded3a7310c 100644
+--- a/src/main/java/net/minecraft/server/WorldManager.java
++++ b/src/main/java/net/minecraft/server/WorldManager.java
+@@ -64,6 +64,7 @@ public class WorldManager implements IWorldAccess {
+         java.util.List<? extends EntityHuman> list = entity != null ? entity.world.players : this.a.getPlayerList().v();
+         Iterator<? extends EntityHuman> iterator = list.iterator();
+ 
++        PacketPlayOutBlockBreakAnimation packet = null; // SportPaper - cache packet
+         while (iterator.hasNext()) {
+             EntityHuman human = iterator.next();
+             if (!(human instanceof EntityPlayer)) continue;
+@@ -82,7 +83,10 @@ public class WorldManager implements IWorldAccess {
+                 // CraftBukkit end
+ 
+                 if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
+-                    entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockBreakAnimation(i, blockposition, j));
++                    // SportPaper start
++                    if (packet == null) packet = new PacketPlayOutBlockBreakAnimation(i, blockposition, j);
++                    entityplayer.playerConnection.sendPacket(packet);
++                    // SportPaper end
+                 }
+             }
+         }

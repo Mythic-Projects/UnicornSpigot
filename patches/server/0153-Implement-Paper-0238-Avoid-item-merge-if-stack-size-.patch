@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Hugo Manrique <hugmanrique@gmail.com>
+Date: Sat, 24 Jun 2023 20:36:26 +0200
+Subject: [PATCH] Implement [Paper-0238] Avoid item merge if stack size above
+ max stack by Hugo Manrique
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
+index 83f95c7e6a06eae9d7c38145392d8b1ba607fd20..8ddfaba34673eadffd0e1072f68f9420de9f5913 100644
+--- a/src/main/java/net/minecraft/server/EntityItem.java
++++ b/src/main/java/net/minecraft/server/EntityItem.java
+@@ -155,6 +155,10 @@ public class EntityItem extends Entity implements HopperPusher {
+     // Spigot end
+ 
+     private void w() {
++        // Paper start - avoid item merge if stack size above max size
++        ItemStack stack = this.getItemStack();
++        if (stack.count >= stack.getMaxStackSize()) return;
++        // Paper end
+         // Spigot start
+         double radius = world.spigotConfigUnicorn.mergeRadius.item;
+         Iterator iterator = this.world.a(EntityItem.class, this.getBoundingBox().grow(radius, radius, radius)).iterator();

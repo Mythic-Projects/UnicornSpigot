@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zach Brown <zach.brown@destroystokyo.com>
+Date: Sat, 24 Jun 2023 20:52:14 +0200
+Subject: [PATCH] Implement [Paper-0115] Option to remove corrupt tile entities
+ by Zach Brown
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index c9854ec5ef60f4b4ad07e61e3bdd8ab33b755324..1e38cadf0eb8baf074cfdd480ee043f58ae59b05 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -46,7 +46,7 @@ public class Chunk {
+     private boolean done;
+     private boolean lit;
+     private boolean p;
+-    private boolean q;
++    private boolean q;public void markDirty() { this.q = true; }// Paper
+     private boolean r;
+     private long lastSaved;
+     private int t;
+@@ -883,11 +883,18 @@ public class Chunk {
+                     "Chunk coordinates: " + (this.locX * 16) + "," + (this.locZ * 16));
+             e.printStackTrace();
+             ServerInternalException.reportInternalException(e);
++
++            if (this.world.paperConfigUnicorn.removeCorruptTileEntities) {
++                this.removeTileEntity(blockposition);
++                this.markDirty();
++                Bukkit.getLogger().warning("Removing corrupt tile entity");
++            }
+             // Paper end
+             // CraftBukkit end
+         }
+     }
+ 
++    public void removeTileEntity(BlockPosition blockposition) { this.e(blockposition); } // Paper - OBFHELPER
+     public void e(BlockPosition blockposition) {
+         if (this.h) {
+             TileEntity tileentity = (TileEntity) this.tileEntities.remove(blockposition);
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
+index 54832ef8274a7618c9bfccae5b86a1631a817026..9394bdf2a904bea0f1b75faa355eb6d8fa457908 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
+@@ -323,4 +323,7 @@ public final class PaperWorldConfig extends EngineConfig.WorldConfig {
+     @Remap("allowBlockLocationTabCompletion")
+     public boolean allowBlockLocationTabCompletion = true;
+ 
++    @Comment("Whether to remove corrupted tile entities.")
++    public boolean removeCorruptTileEntities = false;
++
+ }

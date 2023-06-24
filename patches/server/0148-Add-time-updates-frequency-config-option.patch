@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 20:12:57 +0200
+Subject: [PATCH] Add time updates frequency config option
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 152271518414a1ae81223ae27ad99479478bd48e..0017a93d31aa31d0dbe19102d770bc2c9c4a22a3 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -884,7 +884,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+         // Paper start - optimize time updates
+         int i;
+ 
+-        if ((this.ticks % 20) == 0)
++        if ((this.ticks % this.server.unicornConfig.optimizations.timeUpdateFrequency) == 0) // Unicorn
+         {
+             for (i = 0; i < this.worlds.size(); ++i) {
+                 WorldServer world = this.worlds.get(i);
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index 0ffec14e1239a9ec47c9a641be4b89ff3553c19c..cd009a43cf7bc4a381f0f6a34e19cd3cdf5e748b 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -60,6 +60,12 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+         @Comment("It is faster, but it may cause some issues with plugins that rely on Location#clone() standard implementation.")
+         public boolean fastLocationClone = false;
+ 
++        @Comment("How many ticks should pass before sending time updates to players.")
++        @Comment("The vanilla value is 20 ticks (1 second), but UnicornSpigot uses 100 ticks (5 seconds) by default.")
++        @Comment("You shouldn't notice much difference, but it may improve performance a bit.")
++        @Comment("Higher values may seem more laggy for clients.")
++        public int timeUpdateFrequency = 100;
++
+     }
+ 
+     @Comment("Configuration of exploits fixes that could be used to crash the server or cause other issues.")

@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cswhite2000 <18whitechristop@gmail.com>
+Date: Sat, 24 Jun 2023 21:10:41 +0200
+Subject: [PATCH] Implement [SportPaper-0031] Implement equals() and hashCode()
+ for DoubleChestInventory by cswhite2000
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
+index 87252cad4f0eddfc860572f786258065fe53e3b4..f0773ab3718a39495b1997251da656398dad76f1 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftInventoryDoubleChest.java
+@@ -59,4 +59,18 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
+     public DoubleChest getHolder() {
+         return new DoubleChest(this);
+     }
++
++    // SportPaper start
++    @Override
++    public boolean equals(Object obj) {
++        if(!(obj instanceof DoubleChestInventory)) return false;
++        DoubleChestInventory other = (DoubleChestInventory) obj;
++        return this.left.equals(other.getLeftSide()) && this.right.equals(other.getRightSide());
++    }
++
++    @Override
++    public int hashCode() {
++        return 31 * this.left.hashCode() + this.right.hashCode();
++    }
++    // SportPaper end
+ }

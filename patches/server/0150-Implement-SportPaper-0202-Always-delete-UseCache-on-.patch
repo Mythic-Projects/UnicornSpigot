@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: linsaftw <linsaftw@users.noreply.github.com>
+Date: Sat, 24 Jun 2023 20:22:50 +0200
+Subject: [PATCH] Implement [SportPaper-0202] Always delete UseCache on error
+ by linsaftw
+
+
+diff --git a/src/main/java/net/minecraft/server/UserCache.java b/src/main/java/net/minecraft/server/UserCache.java
+index e5b8dab126b4344edf97a5bf26d4cd57ed2b9e37..38b7be5420daf6285a1be38e52f41d6a2bb8c90b 100644
+--- a/src/main/java/net/minecraft/server/UserCache.java
++++ b/src/main/java/net/minecraft/server/UserCache.java
+@@ -199,15 +199,9 @@ public class UserCache {
+                     this.a(usercache_usercacheentry.a(), usercache_usercacheentry.b());
+                 }
+             }
+-        } catch (FileNotFoundException filenotfoundexception) {
+-            ;
+-        // Spigot Start
+-        } catch (com.google.gson.JsonSyntaxException ex) {
+-            JsonList.a.warn( "Usercache.json is corrupted or has bad formatting. Deleting it to prevent further issues." );
++        } catch (Exception ex) {
++            // SportPaper - Catch all UserCache exceptions in one and always delete
+             this.g.delete();
+-        // Spigot End
+-        } catch (JsonParseException jsonparseexception) {
+-            ;
+         } finally {
+             IOUtils.closeQuietly(bufferedreader);
+         }

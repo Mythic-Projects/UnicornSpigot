@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cswhite2000 <18whitechristop@gmail.com>
+Date: Sat, 24 Jun 2023 21:14:06 +0200
+Subject: [PATCH] Implement [SportPaper-0012] Fix invalid player death messages
+ by cswhite2000
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index d59fd52b60f02e1c6509f05fa08f1f405702affe..4a1f19a1c9e444016b30710253590b8f5af249f6 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -429,7 +429,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             }
+         }
+ 
+-        IChatBaseComponent chatmessage = this.bs().b();
++        IChatBaseComponent chatmessage = damagesource == DamageSource.GENERIC ? damagesource.getLocalizedDeathMessage(this) : this.bs().b(); // SportPaper
+ 
+         String deathmessage = chatmessage.c();
+         org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, deathmessage, keepInventory);
+@@ -471,7 +471,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
+         EntityLiving entityliving = this.bt();
+ 
+-        if (entityliving != null) {
++        // SportPaper start - can't have a combat tracked killer with a generic damage source
++        if (entityliving != null && damagesource != DamageSource.GENERIC) {
+             EntityTypes.MonsterEggInfo entitytypes_monsteregginfo = (EntityTypes.MonsterEggInfo) EntityTypes.eggInfo.get(Integer.valueOf(EntityTypes.a(entityliving)));
+ 
+             if (entitytypes_monsteregginfo != null) {

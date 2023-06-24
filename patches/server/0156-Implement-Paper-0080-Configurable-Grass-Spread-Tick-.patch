@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 24 Jun 2023 20:56:35 +0200
+Subject: [PATCH] Implement [Paper-0080] Configurable Grass Spread Tick Rate by
+ Aikar
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
+index a8961b484b7f638ba15252385d1e9c3fc95407dc..b0d7926e13555a36c0fc587492ae71e6bc46caaa 100644
+--- a/src/main/java/net/minecraft/server/BlockGrass.java
++++ b/src/main/java/net/minecraft/server/BlockGrass.java
+@@ -99,6 +99,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+     }
+ 
+     public void b(World world, Random random, BlockPosition blockposition, IBlockData iblockdata) {
++        int grassUpdateRate = world.paperConfigUnicorn.grassSpreadTickRate; // Unicorn
++        if (grassUpdateRate != 1 && (grassUpdateRate < 1 || (MinecraftServer.currentTick + blockposition.hashCode()) % grassUpdateRate != 0)) { return; } // Paper
+         BlockPosition blockposition1 = blockposition.up();
+         int i = 0;
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
+index 9394bdf2a904bea0f1b75faa355eb6d8fa457908..dd3315dc56c267e6055ae1d2b86f00794648138e 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/PaperWorldConfig.java
+@@ -33,6 +33,10 @@ public final class PaperWorldConfig extends EngineConfig.WorldConfig {
+     @Remap("mobSpawnerTickRate")
+     public int mobSpawnerTickRate = 1;
+ 
++    @Comment("Number of ticks to check for grass spread.")
++    @Comment("Bumping this value will increase performance, but grass will spread slower.")
++    public int grassSpreadTickRate = 1;
++
+     @Comment("Whether to cache chunks when sending packets.")
+     @Remap("cacheChunkMaps")
+     public boolean cacheChunkMaps = false;
