@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 24 Jun 2023 04:45:28 +0200
+Subject: [PATCH] Use CerberusLoader to load most dependencies
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 56075e223bc641271e661b8118f304e14a26de5f..dba9c71c2b0b6b716f13c656a15c488ebe8254a9 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -8,20 +8,20 @@ dependencies {
+     compileOnlyApi("com.google.guava:guava:17.0") // Loaded by CerberusLoader
+     compileOnlyApi("com.google.code.gson:gson:2.2.4") // Loaded by CerberusLoader
+     compileOnlyApi("org.yaml:snakeyaml:1.15") // Loaded by CerberusLoader
+-    api("com.googlecode.json-simple:json-simple:1.1.1")
+-    api("commons-lang:commons-lang:2.6")
+-    api("org.avaje:ebean:2.8.1")
++    libraryApi("com.googlecode.json-simple:json-simple:1.1.1")
++    libraryApi("commons-lang:commons-lang:2.6")
++    libraryApi("org.avaje:ebean:2.8.1")
++    libraryApi("net.sf.trove4j:trove4j:3.0.3")
+     api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
+-    compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
+     // Native libraries end
+ 
+     // Unicorn libraries start
+-    api("org.apache.commons:commons-lang3:3.12.0") // Unicorn - updated commons-lang3 to 3.12.0 // Unicorn - Add commons-lang3 to API
+-    api("org.jetbrains:annotations:24.0.1") // Unicorn - add jetbrains annotations - future is now 😎
++    libraryApi("org.apache.commons:commons-lang3:3.12.0") // Unicorn - updated commons-lang3 to 3.12.0 // Unicorn - Add commons-lang3 to API
++    libraryApi("org.jetbrains:annotations:24.0.1") // Unicorn - add jetbrains annotations - future is now 😎
+ 
+     // Paper start - Use ASM for event executors
+-    implementation("org.ow2.asm:asm:9.4")
+-    implementation("org.ow2.asm:asm-commons:9.4")
++    libraryApi("org.ow2.asm:asm:9.4")
++    libraryApi("org.ow2.asm:asm-commons:9.4")
+     // Paper end
+     // Unicorn libraries end
+ 

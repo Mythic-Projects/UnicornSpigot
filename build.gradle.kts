@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -48,6 +49,56 @@ subprojects {
             events(TestLogEvent.STANDARD_OUT)
         }
     }
+
+    val cerberusLibraries = mutableSetOf<String>()
+    ext["cerberusLibraries"] = cerberusLibraries
+
+    val library by configurations.creating
+    val libraryApi by configurations.creating
+
+    afterEvaluate {
+        dependencies {
+            library.dependencies.forEach {
+                compileOnly(it)
+                cerberusLibraries.add("${it.group}:${it.name}:${it.version}")
+            }
+            libraryApi.dependencies.forEach {
+                compileOnlyApi(it)
+                cerberusLibraries.add("${it.group}:${it.name}:${it.version}")
+            }
+        }
+
+        tasks.withType<ShadowJar> {
+            exclude("org/google/gson/**.*")
+            // include cerberus libraries as file
+            val librariesFile = File(buildDir, "libraries.cerberus")
+            if (!librariesFile.exists()) {
+                librariesFile.createNewFile()
+            }
+
+            val resultDependencies = mutableSetOf<String>()
+
+            resultDependencies.addAll(cerberusLibraries)
+            this.project.configurations.stream()
+                .flatMap { it.allDependencies.stream() }
+                .filter { it is ProjectDependency }
+                .forEachOrdered {
+                    val project = (it as ProjectDependency).dependencyProject.project
+                    println(project)
+                    val projectExtra = project.extra
+                    if (!projectExtra.has("cerberusLibraries")) {
+                        return@forEachOrdered
+                    }
+                    @SuppressWarnings("UNCHECKED_CAST")
+                    val projectCerberusLibraries = projectExtra["cerberusLibraries"] as MutableSet<String>
+                    resultDependencies.addAll(projectCerberusLibraries)
+                }
+
+            librariesFile.writeText(resultDependencies.joinToString("\n"))
+            from(librariesFile)
+        }
+    }
+
 }
 
 ext["gitHash"] = project.getCurrentGitHash()
