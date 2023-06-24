@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: frash23 <jacob@bytesizedpacket.com>
+Date: Sat, 24 Jun 2023 18:39:47 +0200
+Subject: [PATCH] Implement [TacoSpigot-0017] Add option to stop redstone
+ firing BlockPhysicsEvent by frash23
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 22386a9f890187844e3bf4ee37d2c643ecea7744..04eed2e2c77b4f74cdc8d169aa07fed896348c82 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -702,7 +702,7 @@ public abstract class World implements IBlockAccess {
+             try {
+                 // CraftBukkit start
+                 CraftWorld world = ((WorldServer) this).getWorld();
+-                if (world != null && ((WorldServer) this).hasPhysicsEvent) { // Paper
++                if (world != null && ((WorldServer) this).hasPhysicsEvent && (this.tacoConfigUnicorn.redstoneFireBlockPhysicsEvent || !(block instanceof BlockRedstoneWire || block instanceof BlockRedstoneTorch || block instanceof BlockRepeater))) { // Paper // TacoSpigot - add config to disable redstone physics event
+                     BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftMagicNumbers.getId(block));
+                     this.getServer().getPluginManager().callEvent(event);
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+index 52326b810111d1e4f1bdc1b3d7844a076d4c43a5..b2cc18726a81d0aed7c65093750b2f11a653de61 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+@@ -12,6 +12,12 @@ public final class TacoWorldConfig extends EngineConfig.WorldConfig {
+     @Comment("Whether grass should ignore light level when growing.")
+     public boolean grassIgnoresLight = false;
+ 
++    @Comment("Whether redstone updates should call BlockPhysicsEvent.")
++    @Comment("Calling InventoryMoveEvent could be expensive, especially if there are many redstone in use.")
++    @Comment("Disabling this could increase performance, but also break some plugins (cuboids, region protection, etc.).")
++    @CustomKey("redstone-fire-BlockPhysicsEvent")
++    public boolean redstoneFireBlockPhysicsEvent = true;
++
+     public Hopper hopper = new Hopper();
+ 
+     public static class Hopper extends UnicornConfigSection {

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Techcable <techcable@outlook.com>
+Date: Sat, 24 Jun 2023 18:32:02 +0200
+Subject: [PATCH] Implement [TacoSpigot-0014] Add an option for grass to ignore
+ light by Techcable
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
+index 8c92338aba4a68255329bc17f8cc426749180911..a8961b484b7f638ba15252385d1e9c3fc95407dc 100644
+--- a/src/main/java/net/minecraft/server/BlockGrass.java
++++ b/src/main/java/net/minecraft/server/BlockGrass.java
+@@ -45,13 +45,14 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+                 }
+                 // CraftBukkit end
+             } else {
++                boolean ignoreLightLevel = world.tacoConfigUnicorn.grassIgnoresLight; // TacoSpigot
+                 // Paper start
+                 // If light was calculated above, reuse it, else grab it
+-                if (lightLevel == -1) {
++                if (!ignoreLightLevel && lightLevel == -1) { // TacoSpigot
+                     lightLevel = world.getLightLevel(blockposition.up());
+                 }
+ 
+-                if (lightLevel >= 9) {
++                if (ignoreLightLevel || lightLevel >= 9) { // TacoSpigot
+                 // Paper end
+                     for (int i = 0; i < Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); ++i) { // Spigot
+                         BlockPosition blockposition1 = blockposition.a(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+index a3d4045bfc5b383d5b070e4ea606b33020946175..52326b810111d1e4f1bdc1b3d7844a076d4c43a5 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/TacoWorldConfig.java
+@@ -9,6 +9,9 @@ import eu.okaeri.configs.annotation.Names;
+ @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
+ public final class TacoWorldConfig extends EngineConfig.WorldConfig {
+ 
++    @Comment("Whether grass should ignore light level when growing.")
++    public boolean grassIgnoresLight = false;
++
+     public Hopper hopper = new Hopper();
+ 
+     public static class Hopper extends UnicornConfigSection {
