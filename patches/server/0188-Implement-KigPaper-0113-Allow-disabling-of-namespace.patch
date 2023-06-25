@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [KigPaper-0113] Allow disabling of namespaced
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 589eb2ec2a438627d46b6b7233e37c107e75596d..8d03d754e6576a0b40f1cf329fb52e3df275eda0 100644
+index 5b12994918d3b0c416134e9c489a60f5deb09349..e69f326fa04b033467070467b6961794da85512a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -2030,4 +2030,17 @@ public final class CraftServer implements Server {

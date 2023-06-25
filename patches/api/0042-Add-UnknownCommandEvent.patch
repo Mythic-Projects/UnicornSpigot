@@ -6,11 +6,11 @@ Subject: [PATCH] Add UnknownCommandEvent
 
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/event/command/UnknownCommandEvent.java b/src/main/java/org/mythicprojects/unicornspigot/event/command/UnknownCommandEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..cc723ecc73bef014d1515cdc21e53b2f3cbe1456
+index 0000000000000000000000000000000000000000..78f12c9bd4d34ab64f5753b18a9f6e1e1986fff9
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/event/command/UnknownCommandEvent.java
 @@ -0,0 +1,85 @@
-+package org.mythicprojects.unicornspigot.event.command;
++package org.mythicprojects.unicornspigot.event.server;
 +
 +import org.bukkit.command.CommandSender;
 +import org.bukkit.event.Cancellable;

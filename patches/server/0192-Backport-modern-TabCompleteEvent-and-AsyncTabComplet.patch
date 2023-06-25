@@ -1,0 +1,207 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 17:33:15 +0200
+Subject: [PATCH] Backport modern TabCompleteEvent and AsyncTabCompleteEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketPlayInTabComplete.java b/src/main/java/net/minecraft/server/PacketPlayInTabComplete.java
+index 0d811e789c3ef7dd6ce5837a75dcbcf6ebcbd127..a04075c4cd2cdc6d45d305aa2c23534a42c09789 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayInTabComplete.java
++++ b/src/main/java/net/minecraft/server/PacketPlayInTabComplete.java
+@@ -40,8 +40,11 @@ public class PacketPlayInTabComplete implements Packet<PacketListenerPlayIn> {
+ 
+     }
+ 
++    // Unicorn start - Async tab complete
++    private static final java.util.concurrent.ExecutorService TAB_COMPLETION_EXECUTOR = java.util.concurrent.Executors.newCachedThreadPool(new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon(true).setNameFormat("Titanium - Tab Complete Thread #%d").build());
+     public void a(PacketListenerPlayIn packetlistenerplayin) {
+-        packetlistenerplayin.a(this);
++    TAB_COMPLETION_EXECUTOR.submit(() -> packetlistenerplayin.a(this));
++    // Unicorn end
+     }
+ 
+     public String a() {
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 6634b526856239c270bb556f3386ab4eaad81562..70c27392f14319f1372a0466a3c909c4e518aa32 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1976,14 +1976,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     }
+ 
+     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
+-        PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.u());
++        //PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.u()); // Paper - run this async
+         // CraftBukkit start
+         if (chatSpamField.addAndGet(this, 10) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+-            this.disconnect("disconnect.spam");
++            this.minecraftServer.postToMainThread(() -> this.disconnect("disconnect.spam")); // Paper
+             return;
+         }
+         // CraftBukkit end
+-        ArrayList arraylist = Lists.newArrayList();
++        // Unicorn start - Backport modern tab completion API
++        /*ArrayList arraylist = Lists.newArrayList();
+         Iterator iterator = this.minecraftServer.tabCompleteCommand(this.player, packetplayintabcomplete.a(), packetplayintabcomplete.b()).iterator();
+ 
+         while (iterator.hasNext()) {
+@@ -1992,7 +1993,26 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             arraylist.add(s);
+         }
+ 
+-        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) arraylist.toArray(new String[arraylist.size()])));
++        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) arraylist.toArray(new String[arraylist.size()])));*/
++
++        List<String> completions = new ArrayList<>();
++        String buffer = packetplayintabcomplete.a();
++        Location location = MCUtil.toLocation(this.player.getWorld(), packetplayintabcomplete.b());
++
++        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getPlayer(), completions, buffer, buffer.startsWith("/"), location);
++        boolean cancelled = !event.callEvent();
++
++        // If the event isn't handled, we can assume that we have no completions, and so we'll ask the server
++        if (!event.isHandled() && !cancelled) {
++            completions = org.mythicprojects.unicornspigot.util.async.AsyncUtil.supplyNextTick(() -> this.minecraftServer.tabCompleteCommand(this.player, buffer, packetplayintabcomplete.b()));
++            if (completions == null) {
++                completions = com.google.common.collect.ImmutableList.of();
++            }
++        } else if (!completions.isEmpty()) {
++            completions = event.getCompletions();
++        }
++        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(completions.toArray(new String[0])));
++        // Unicorn end
+     }
+ 
+     public void a(PacketPlayInSettings packetplayinsettings) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 1708796d14425daadd7ed0f21d893b4d7016096a..ee986c64f01a3e401ea6916530c72e99d64bf437 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -78,6 +78,7 @@ import org.bukkit.entity.Player;
+ import org.bukkit.event.inventory.InventoryType;
+ import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+ import org.bukkit.event.server.ServerLoadEvent;
++import org.bukkit.event.server.TabCompleteEvent;
+ import org.bukkit.event.world.WorldInitEvent;
+ import org.bukkit.event.world.WorldLoadEvent;
+ import org.bukkit.event.world.WorldUnloadEvent;
+@@ -1811,12 +1812,18 @@ public final class CraftServer implements Server {
+             return ImmutableList.of();
+         }
+ 
++        // Unicorn start - Backport modern tab completion API
+         Player player = ((EntityPlayer) sender).getBukkitEntity();
+-        if (message.startsWith("/")) {
+-            return tabCompleteCommand(player, message, blockPosition);
+-        } else {
+-            return tabCompleteChat(player, message);
+-        }
++
++        boolean isCommand = message.startsWith("/");
++        List<String> offers = isCommand
++                ? this.tabCompleteCommand(player, message, blockPosition)
++                : this.tabCompleteChat(player, message);
++        Location location = MCUtil.toLocation(((CraftWorld) player.getWorld()).getHandle(), blockPosition);
++
++        TabCompleteEvent tabEvent = new TabCompleteEvent(player, message, offers, isCommand, location);
++        return tabEvent.callEvent() ? tabEvent.getCompletions() : ImmutableList.of();
++        // Unicorn end
+     }
+     // PaperSpigot end
+ 
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsoleCommandCompleter.java b/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsoleCommandCompleter.java
+index 61ac89b3bb6c931fe06b76f9593df58d5e2ddf9c..89ed9543ec7da857d113dfa83b4d5690d73e9f96 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsoleCommandCompleter.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsoleCommandCompleter.java
+@@ -1,15 +1,19 @@
+ package org.mythicprojects.unicornspigot.console;
+ 
++import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
++import com.google.common.collect.ImmutableList;
++import java.util.ArrayList;
+ import java.util.List;
+-import java.util.concurrent.ExecutionException;
+-import java.util.logging.Level;
++import java.util.stream.Collectors;
+ import net.minecraft.server.DedicatedServer;
++import org.bukkit.command.CommandSender;
+ import org.bukkit.craftbukkit.CraftServer;
+-import org.bukkit.craftbukkit.util.Waitable;
++import org.bukkit.event.server.TabCompleteEvent;
+ import org.jline.reader.Candidate;
+ import org.jline.reader.Completer;
+ import org.jline.reader.LineReader;
+ import org.jline.reader.ParsedLine;
++import org.mythicprojects.unicornspigot.util.async.AsyncUtil;
+ 
+ public class UnicornConsoleCommandCompleter implements Completer {
+ 
+@@ -21,33 +25,49 @@ public class UnicornConsoleCommandCompleter implements Completer {
+ 
+     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+         CraftServer server = this.server.server;
++        CommandSender sender = server.getConsoleSender();
++        List<String> completions = new ArrayList<>();
+         String buffer = line.line();
+ 
+-        Waitable<List<String>> waitable = new Waitable<List<String>>() {
+-            @Override
+-            protected List<String> evaluate() {
+-                return server.getCommandMap().tabComplete(server.getConsoleSender(), buffer);
+-            }
+-        };
+-        server.getServer().processQueue.add(waitable);
++        AsyncTabCompleteEvent asyncEvent = new AsyncTabCompleteEvent(server.getConsoleSender(), completions, buffer, true, null);
++        boolean cancelled = !asyncEvent.callEvent();
++        completions = cancelled
++                ? ImmutableList.of()
++                : asyncEvent.getCompletions();
+ 
+-        try {
+-            List<String> offers = waitable.get();
+-            if (offers == null) {
+-                return;
++        if (cancelled || asyncEvent.isHandled()) {
++            // Still fire sync event with the provided completions, if someone is listening
++            if (!cancelled && TabCompleteEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                List<String> finalCompletions = completions;
++                completions = AsyncUtil.supplyNextTick(() -> {
++                    TabCompleteEvent syncEvent = new TabCompleteEvent(sender, buffer, finalCompletions);
++                    return syncEvent.callEvent()
++                            ? syncEvent.getCompletions()
++                            : null;
++                });
+             }
++        } else {
++            completions = AsyncUtil.supplyNextTick(() -> {
++                List<String> offers = server.getCommandMap().tabComplete(sender, buffer);
++                if (offers == null) {
++                    offers = ImmutableList.of();
++                }
+ 
+-            for (String completion : offers) {
+-                if (completion.isEmpty()) {
+-                    continue;
++                TabCompleteEvent syncEvent = new TabCompleteEvent(sender, buffer, offers);
++                if (syncEvent.callEvent()) {
++                    return syncEvent.getCompletions();
+                 }
+-                candidates.add(new Candidate(completion));
+-            }
+-        } catch (ExecutionException e) {
+-            server.getLogger().log(Level.WARNING, "Unhandled exception when tab completing", e);
+-        } catch (InterruptedException e) {
+-            Thread.currentThread().interrupt();
++                return null;
++            });
+         }
++
++        if (completions == null || completions.isEmpty()) {
++            return;
++        }
++
++        candidates.addAll(completions.stream()
++                .map(Candidate::new)
++                .collect(Collectors.toList()));
+     }
+ 
+ }

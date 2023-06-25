@@ -18,7 +18,7 @@ index 4d181f12570be1bbbeb9221b6c7d1f7aa9c06718..631c56d2cbc2d97d73c12595f3920a73
          return (Entity) this.entitiesById.get(i);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8d03d754e6576a0b40f1cf329fb52e3df275eda0..52702c53c10df3f40499ed9bc367fff3c738f02d 100644
+index e69f326fa04b033467070467b6961794da85512a..0360398793615f86880a021c89c708b3713fb70b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -73,6 +73,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
