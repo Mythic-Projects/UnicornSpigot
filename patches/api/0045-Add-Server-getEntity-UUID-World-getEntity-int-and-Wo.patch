@@ -1,0 +1,114 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 16:23:12 +0200
+Subject: [PATCH] Add Server#getEntity(UUID), World#getEntity(int) and
+ World#getEntity(UUID)
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 64160dbdda70f890305903319b5e2a0d0048b45e..12553b55cf1f70d1eba06a9a0909c9d0134b4ef9 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -42,7 +42,10 @@ import org.bukkit.generator.ChunkGenerator;
+ 
+ import org.bukkit.inventory.ItemFactory;
+ import org.bukkit.inventory.meta.ItemMeta;
++// Unicorn start
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++// Unicorn end
+ 
+ /**
+  * Represents the Bukkit core, for version and Server singleton handling
+@@ -453,6 +456,18 @@ public final class Bukkit {
+         return server.getPlayer(id);
+     }
+ 
++    // Unicorn start
++    /**
++     * Gets an entity on the server by its UUID
++     *
++     * @param uuid the UUID of the entity
++     * @return the entity with the given UUID, or null if it isn't found
++     */
++    public static @Nullable Entity getEntity(@NotNull UUID uuid) {
++        return server.getEntity(uuid);
++    }
++    // Unicorn end
++
+     /**
+      * Gets the plugin manager for interfacing with plugins.
+      *
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 5c5785c603e1a709f0916eeae23f995ce04738a9..175aed3917907ee800062ced58e93fd5315b3c24 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -43,7 +43,10 @@ import org.bukkit.generator.ChunkGenerator;
+ 
+ import org.bukkit.inventory.ItemFactory;
+ import org.bukkit.inventory.meta.ItemMeta;
++// Unicorn start
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++// Unicorn end
+ 
+ /**
+  * Represents a server implementation.
+@@ -374,6 +377,16 @@ public interface Server extends PluginMessageRecipient {
+      */
+     public Player getPlayer(UUID id);
+ 
++    // Unicorn start
++    /**
++     * Gets an entity on the server by its UUID
++     *
++     * @param uuid the UUID of the entity
++     * @return the entity with the given UUID, or null if it isn't found
++     */
++    public @Nullable Entity getEntity(@NotNull UUID uuid);
++    // Unicorn end
++
+     /**
+      * Gets the plugin manager for interfacing with plugins.
+      *
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index 325d65a37dc5e38bf64cb88b936d2a258be182ab..24a8508ee628014fb2c4ea44f8af1ce70b1578f7 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -16,6 +16,10 @@ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.metadata.Metadatable;
+ import org.bukkit.plugin.messaging.PluginMessageRecipient;
+ import org.bukkit.util.Vector;
++// Unicorn start
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++// Unicorn end
+ 
+ /**
+  * Represents a world, which may contain entities, chunks and blocks
+@@ -410,6 +414,25 @@ public interface World extends PluginMessageRecipient, Metadatable {
+      */
+     public List<LivingEntity> getLivingEntities();
+ 
++    // Unicorn start
++    /**
++     * Get an entity in this world by its id.
++     * Keep in mind that entity ids are not persistent across server restarts.
++     *
++     * @param id the id of the entity
++     * @return the entity with the given UUID, or null if it isn't found
++     */
++    public @Nullable Entity getEntity(int id);
++
++    /**
++     * Gets an entity in this world by its UUID.
++     *
++     * @param uuid the UUID of the entity
++     * @return the entity with the given UUID, or null if it isn't found
++     */
++    public @Nullable Entity getEntity(@NotNull UUID uuid);
++    // Unicorn end
++
+     /**
+      * Get a collection of all entities in this World matching the given
+      * class/interface

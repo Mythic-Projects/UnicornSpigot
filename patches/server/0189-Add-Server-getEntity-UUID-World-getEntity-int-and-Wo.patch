@@ -1,0 +1,84 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 16:23:11 +0200
+Subject: [PATCH] Add Server#getEntity(UUID), World#getEntity(int) and
+ World#getEntity(UUID)
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 4d181f12570be1bbbeb9221b6c7d1f7aa9c06718..631c56d2cbc2d97d73c12595f3920a733c291f23 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2950,6 +2950,7 @@ public abstract class World implements IBlockAccess {
+         return (T) entity; // CraftBukkit fix decompile error
+     }
+ 
++    public Entity getEntity(int i) { return  this.a(i); } // Unicorn- OBFHELPER
+     public Entity a(int i) {
+         return (Entity) this.entitiesById.get(i);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8d03d754e6576a0b40f1cf329fb52e3df275eda0..52702c53c10df3f40499ed9bc367fff3c738f02d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -73,6 +73,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+ import org.bukkit.craftbukkit.util.DatFileFilter;
+ import org.bukkit.craftbukkit.util.Versioning;
+ import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
++import org.bukkit.entity.Entity;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.inventory.InventoryType;
+ import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+@@ -577,6 +578,20 @@ public final class CraftServer implements Server {
+         return matchedPlayers;
+     }
+ 
++    // Unicorn start
++    @Override
++    public Entity getEntity(UUID uuid) {
++        Validate.notNull(uuid, "UUID cannot be null");
++        for (WorldServer world : this.getServer().worldServer) {
++            net.minecraft.server.Entity entity = world.getEntity(uuid);
++            if (entity != null) {
++                return entity.getBukkitEntity();
++            }
++        }
++        return null;
++    }
++    // Unicorn end
++
+     @Override
+     public int getMaxPlayers() {
+         return playerList.getMaxPlayers();
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 7843c47aac839818feab1c682308cfa86e64aa35..d36ca734c951d94a809f8af5d17cd71c9530ee13 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -684,6 +684,27 @@ public class CraftWorld implements World {
+         return list;
+     }
+ 
++    // Unicorn start
++    @Override
++    public Entity getEntity(int id) {
++        net.minecraft.server.Entity entity = world.getEntity(id);
++        if (entity == null) {
++            return null;
++        }
++        return entity.getBukkitEntity();
++    }
++
++    @Override
++    public Entity getEntity(UUID uuid) {
++        Validate.notNull(uuid, "UUID cannot be null");
++        net.minecraft.server.Entity entity = world.getEntity(uuid);
++        if (entity == null) {
++            return null;
++        }
++        return entity.getBukkitEntity();
++    }
++    // Unicorn end
++
+     @SuppressWarnings("unchecked")
+     @Deprecated
+     public <T extends Entity> Collection<T> getEntitiesByClass(Class<T>... classes) {
