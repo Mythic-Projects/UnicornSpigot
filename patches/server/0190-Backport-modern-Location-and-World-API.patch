@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 17:02:24 +0200
+Subject: [PATCH] Backport modern Location and World API
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index d36ca734c951d94a809f8af5d17cd71c9530ee13..f47efea95738568329a82d25faa7a92d962f0d00 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -12,6 +12,7 @@ import java.util.Random;
+ import java.util.Set;
+ import java.util.UUID;
+ 
++import java.util.function.Consumer;
+ import net.minecraft.server.*;
+ 
+ import org.apache.commons.lang.Validate;
+@@ -905,10 +906,6 @@ public class CraftWorld implements World {
+         spigot().playEffect( location, effect, data, 0, 0, 0, 0, 1, 1, radius );
+     }
+ 
+-    public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
+-        return spawn(location, clazz, SpawnReason.CUSTOM);
+-    }
+-
+     public FallingBlock spawnFallingBlock(Location location, org.bukkit.Material material, byte data) throws IllegalArgumentException {
+         Validate.notNull(location, "Location cannot be null");
+         Validate.notNull(material, "Material cannot be null");
+@@ -1174,22 +1171,35 @@ public class CraftWorld implements World {
+         throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
+     }
+ 
++    // Paper start
+     @SuppressWarnings("unchecked")
+     public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) throws IllegalArgumentException {
++        return this.addEntity(entity, reason, null);
++    }
++
++    @SuppressWarnings("unchecked")
++    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason, Consumer<T> function) throws IllegalArgumentException {
++    // Paper end
+         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
+ 
+         if (entity instanceof EntityInsentient) {
+             ((EntityInsentient) entity).prepare(getHandle().E(new BlockPosition(entity)), (GroupDataEntity) null);
+         }
+ 
++        // Paper start
++        if (function != null) {
++            function.accept((T) entity.getBukkitEntity());
++        }
++        // Paper end
++
+         world.addEntity(entity, reason);
+         return (T) entity.getBukkitEntity();
+     }
+ 
+-    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
++    public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
+         net.minecraft.server.Entity entity = createEntity(location, clazz);
+ 
+-        return addEntity(entity, reason);
++        return addEntity(entity, reason, function);
+     }
+ 
+     public ChunkSnapshot getEmptyChunkSnapshot(int x, int z, boolean includeBiome, boolean includeBiomeTempRain) {
