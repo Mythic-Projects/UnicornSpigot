@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 16:00:09 +0200
+Subject: [PATCH] Implement [KigPaper-0024] Allow disabling of namespaced
+ commands by RoccoDev
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 62dd9a168736a8fb3ba87f446783810ba30de905..64160dbdda70f890305903319b5e2a0d0048b45e 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -1217,4 +1217,11 @@ public final class Bukkit {
+     {
+         return server.spigot();
+     }
++
++    // Unicorn start
++    public static @NotNull Server.Unicorn unicorn() {
++        return server.unicorn();
++    }
++    // Unicorn end
++
+ }
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index b16807ed94c128718b840dbd905e259ecf5b9c3b..5c5785c603e1a709f0916eeae23f995ce04738a9 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -1068,4 +1068,22 @@ public interface Server extends PluginMessageRecipient {
+     }
+ 
+     Spigot spigot();
++
++    // Unicorn start
++    @NotNull Unicorn unicorn();
++
++    public class Unicorn {
++
++        public @NotNull Configuration getConfiguration() {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++
++        public interface Configuration {
++
++            boolean disableNamespacedCommands();
++
++        }
++
++    }
++    // Unicorn end
+ }
+diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+index e0f1fedfb5f39e0fd686a2775d91f1166d88568c..a9b709272b89cf7b1a7ea2b83720593e0b4186b2 100644
+--- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
++++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -12,6 +12,7 @@ import java.util.Map;
+ import java.util.regex.Pattern;
+ 
+ import org.apache.commons.lang.Validate;
++import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.Server;
+ import org.bukkit.command.defaults.*;
+@@ -134,6 +135,7 @@ public class SimpleCommandMap implements CommandMap {
+         }
+ 
+         String sentCommandLabel = args[0].toLowerCase();
++        if (Bukkit.unicorn().getConfiguration().disableNamespacedCommands() && sentCommandLabel.contains(":") && !sender.hasPermission("unicorn.namespaced")) return false; // Unicorn
+         Command target = getCommand(sentCommandLabel);
+ 
+         if (target == null) {
+@@ -189,6 +191,7 @@ public class SimpleCommandMap implements CommandMap {
+             final String prefix = (sender instanceof Player ? "/" : "");
+ 
+             for (Map.Entry<String, Command> commandEntry : knownCommands.entrySet()) {
++                if (Bukkit.unicorn().getConfiguration().disableNamespacedCommands() && commandEntry.getKey().contains(":") && !sender.hasPermission("unicorn.namespaced")) continue; // Unicorn
+                 Command command = commandEntry.getValue();
+ 
+                 if (!command.testPermissionSilent(sender)) {

@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 16:02:19 +0200
+Subject: [PATCH] Implement [KigPaper-0113] Allow disabling of namespaced
+ commands by RoccoDev
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 589eb2ec2a438627d46b6b7233e37c107e75596d..db9969665ecc3e957a8b047cbb8b5db248bde729 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -132,6 +132,10 @@ import io.netty.buffer.Unpooled;
+ import io.netty.handler.codec.base64.Base64;
+ import net.md_5.bungee.api.chat.BaseComponent;
+ 
++// Unicorn start
++import org.jetbrains.annotations.NotNull;
++// Unicorn end
++
+ public final class CraftServer implements Server {
+     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
+     private final String serverName = "UnicornSpigot"; // Unicorn - UnicornSpigot
+@@ -2030,4 +2034,17 @@ public final class CraftServer implements Server {
+     {
+         return spigot;
+     }
++
++    private final Unicorn unicorn = new Unicorn() {
++
++        @Override
++        public @NotNull Configuration getConfiguration() {
++            return unicornConfig;
++        }
++
++    };
++
++    public @NotNull Unicorn unicorn() {
++        return unicorn;
++    }
+ }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+index cd009a43cf7bc4a381f0f6a34e19cd3cdf5e748b..a53583afffd3c8f76a9ada578022fe004f83c8a9 100644
+--- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
++++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
+@@ -13,6 +13,7 @@ import java.util.Map;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ import org.bukkit.Bukkit;
++import org.bukkit.Server;
+ import org.jetbrains.annotations.NotNull;
+ 
+ @Header("This is the main configuration file for UnicornSpigot.")
+@@ -24,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
+ @Header("Discord: https://discord.mythicprojects.org")
+ @Header("GitHub: https://github.com/Mythic-Projects")
+ @Names(strategy = NameStrategy.HYPHEN_CASE, modifier = NameModifier.TO_LOWER_CASE)
+-public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
++public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> implements Server.Unicorn.Configuration {
+ 
+     // For tests to work properly
+     @Exclude
+@@ -47,6 +48,9 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+         @Comment("Enabling this option could break some plugins that rely on this mechanics.")
+         public boolean disableStatisticsAndAchievements = false;
+ 
++        @Comment("Whether to disable namespaced commands (for eg. /minecraft:help) and only left normal commands (like /help).")
++        public boolean disableNamespacedCommands = false;
++
+     }
+ 
+     @Comment("Optimizations that could improve performance, but may cause some issues.")
+@@ -159,6 +163,11 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+         return this;
+     }
+ 
++    @Override
++    public boolean disableNamespacedCommands() {
++        return this.settings.disableNamespacedCommands;
++    }
++
+     public static @NotNull UnicornConfig get() {
+         return (INSTANCE == null) ? DEFAULT_INSTANCE : INSTANCE;
+     }
