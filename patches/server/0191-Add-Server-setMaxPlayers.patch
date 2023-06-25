@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 15 Jun 2022 21:38:24 +0200
+Subject: [PATCH] Add Server#setMaxPlayers
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 633a829de847e5517f0719955d8cbe3350735660..a28e466e493ecc78bd17873edabef30be32fc32e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -523,6 +523,11 @@ public final class CraftServer implements Server {
+         return playerList.getMaxPlayers();
+     }
+ 
++    @Override
++    public void setMaxPlayers(int maxPlayers) {
++        this.playerList.maxPlayers = maxPlayers;
++    }
++
+     // NOTE: These are dependent on the corrisponding call in MinecraftServer
+     // so if that changes this will need to as well
+     @Override
