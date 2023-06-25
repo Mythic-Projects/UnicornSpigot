@@ -1,0 +1,317 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 15:46:05 +0200
+Subject: [PATCH] Backport modern messages sending API
+
+
+diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
+index 148756b9ca60beeb7643ab584dbfcb6defec8d54..7c629c9b506ff068b9c317b3ed500c98c8be6a73 100644
+--- a/src/main/java/org/bukkit/command/CommandSender.java
++++ b/src/main/java/org/bukkit/command/CommandSender.java
+@@ -2,6 +2,9 @@ package org.bukkit.command;
+ 
+ import org.bukkit.Server;
+ import org.bukkit.permissions.Permissible;
++// Unicorn start
++import org.jetbrains.annotations.NotNull;
++// Unicorn end
+ 
+ public interface CommandSender extends Permissible {
+ 
+@@ -32,4 +35,30 @@ public interface CommandSender extends Permissible {
+      * @return Name of the sender
+      */
+     public String getName();
++
++    // Paper start
++    /**
++     * Sends the component to the sender
++     *
++     * <p>If this sender does not support sending full components then
++     * the component will be sent as legacy text.</p>
++     *
++     * @param component the component to send
++     */
++    default void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
++        this.sendMessage(component.toLegacyText());
++    }
++
++    /**
++     * Sends an array of components as a single message to the sender
++     *
++     * <p>If this sender does not support sending full components then
++     * the components will be sent as legacy text.</p>
++     *
++     * @param components the components to send
++     */
++    default void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
++        this.sendMessage(new net.md_5.bungee.api.chat.TextComponent(components).toLegacyText());
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index f506d48fc38c6d7e6c4abb2cdab66314038af081..397cc94be6c36a8d6400334b91758d3be109ed92 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -22,6 +22,10 @@ import org.bukkit.scoreboard.Scoreboard;
+ // PaperSpigot start
+ import org.github.paperspigot.Title;
+ // PaperSpigot end
++// Unicorn start
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++// Unicorn end
+ 
+ /**
+  * Represents a player, connected or not
+@@ -334,19 +338,72 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+     public void sendMap(MapView map);
+ 
+     // Paper start
++    // Unicorn start
++    /**
++     * Sends an Action Bar message to the client.
++     *
++     * @param message The components to send
++     */
++    default void sendActionBar(@NotNull net.md_5.bungee.api.chat.BaseComponent... message) {
++        this.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, message);
++    }
++
++    /**
++     * Sends an Action Bar message to the client.
++     *
++     * Use Section symbols for legacy color codes to send formatting.
++     *
++     * @param message The message to send
++     */
++    default void sendActionBar(@NotNull String message) {
++        this.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message));
++    }
++
++    /**
++     * Sends an Action Bar message to the client.
++     *
++     * Use supplied alternative character to the section symbol to represent legacy color codes.
++     *
++     * @param alternateChar Alternate symbol such as '&amp;'
++     * @param message The message to send
++     */
++    default void sendActionBar(char alternateChar, @NotNull String message) {
++        if (message == null || message.isEmpty()) return;
++        this.sendActionBar(org.bukkit.ChatColor.translateAlternateColorCodes(alternateChar, message));
++    }
++    // Unicorn end
++
+     /**
+      * Sends the component to the player
+      *
+      * @param component the components to send
+      */
+-    public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component);
++    @Override
++    public default void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
++        this.spigot().sendMessage(component); // Unicorn
++    }
+ 
+     /**
+      * Sends an array of components as a single message to the player
+      *
+      * @param components the components to send
+      */
+-    public void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components);
++    @Override
++    public default void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
++        this.spigot().sendMessage(components); // Unicorn
++    }
++
++    // Unicorn start
++    /**
++     * Sends an array of components as a single message to the specified screen position of this player
++     *
++     * @param position the screen position
++     * @param components the components to send
++     */
++    public default void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
++        this.spigot().sendMessage(position, components); // Unicorn
++    }
++    // Unicorn end
+ 
+     /**
+      * Set the text displayed in the player list header and footer for this player
+@@ -380,28 +437,28 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @deprecated Use {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void setSubtitle(net.md_5.bungee.api.chat.BaseComponent[] subtitle);
++    public void setSubtitle(@Nullable net.md_5.bungee.api.chat.BaseComponent[] subtitle);
+ 
+     /**
+      * Update the subtitle of titles displayed to the player
+      * @deprecated Use {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void setSubtitle(net.md_5.bungee.api.chat.BaseComponent subtitle);
++    public void setSubtitle(@Nullable net.md_5.bungee.api.chat.BaseComponent subtitle);
+ 
+     /**
+      * Show the given title to the player, along with the last subtitle set, using the last set times
+      * @deprecated Use {@link #sendTitle(Title)} or {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void showTitle(net.md_5.bungee.api.chat.BaseComponent[] title);
++    public void showTitle(@NotNull net.md_5.bungee.api.chat.BaseComponent[] title);
+ 
+     /**
+      * Show the given title to the player, along with the last subtitle set, using the last set times
+      * @deprecated Use {@link #sendTitle(Title)} or {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void showTitle(net.md_5.bungee.api.chat.BaseComponent title);
++    public void showTitle(@NotNull net.md_5.bungee.api.chat.BaseComponent title);
+ 
+     /**
+      * Show the given title and subtitle to the player using the given times
+@@ -414,7 +471,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @deprecated Use {@link #sendTitle(Title)} or {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void showTitle(net.md_5.bungee.api.chat.BaseComponent[] title, net.md_5.bungee.api.chat.BaseComponent[] subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
++    public void showTitle(@NotNull net.md_5.bungee.api.chat.BaseComponent[] title, @Nullable net.md_5.bungee.api.chat.BaseComponent[] subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
+ 
+     /**
+      * Show the given title and subtitle to the player using the given times
+@@ -427,7 +484,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @deprecated Use {@link #sendTitle(Title)} or {@link #updateTitle(Title)}
+      */
+     @Deprecated
+-    public void showTitle(net.md_5.bungee.api.chat.BaseComponent title, net.md_5.bungee.api.chat.BaseComponent subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
++    public void showTitle(@NotNull net.md_5.bungee.api.chat.BaseComponent title, @Nullable net.md_5.bungee.api.chat.BaseComponent subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
+ 
+     /**
+      * Show the title to the player, overriding any previously displayed title.
+@@ -437,7 +494,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @param title the title to send
+      * @throws NullPointerException if the title is null
+      */
+-    void sendTitle(Title title);
++    void sendTitle(@NotNull Title title);
+ 
+     /**
+      * Show the title to the player, overriding any previously displayed title.
+@@ -447,7 +504,50 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @param title the title to send
+      * @throws NullPointerException if title is null
+      */
+-    void updateTitle(Title title);
++    void updateTitle(@NotNull Title title);
++
++    // Unicorn start
++    /**
++     * Show the title to the player, overriding any previously displayed title.
++     *
++     * <p>This method overrides any previous title, use {@link #updateTitle(Title)} to change the existing one.</p>
++     *
++     * @param title        big text
++     * @param subtitle     little text under it
++     * @param fadeInTicks  ticks to fade-in
++     * @param stayTicks    ticks to stay visible
++     * @param fadeOutTicks ticks to fade-out
++     */
++    default void sendTitle(@NotNull String title, @NotNull String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
++        this.sendTitle(new Title(title, subtitle, fadeInTicks, stayTicks, fadeOutTicks));
++    }
++
++    /**
++     * Show the title to the player, overriding any previously displayed title.
++     *
++     * <p>This method doesn't override previous titles, but changes their values.</p>
++     *
++     * @param title        big text
++     * @param subtitle     little text under it
++     * @param fadeInTicks  ticks to fade-in
++     * @param stayTicks    ticks to stay visible
++     * @param fadeOutTicks ticks to fade-out
++     */
++    default void updateTitle(@NotNull String title, @NotNull String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
++        this.updateTitle(new Title(title, subtitle, fadeInTicks, stayTicks, fadeOutTicks));
++    }
++
++    /**
++     * Show the title to the player, overriding any previously displayed title.
++     *
++     * <p>This method doesn't override previous titles, but changes their values.</p>
++     *
++     * @param title        big text
++     * @param subtitle     little text under it
++     */
++    default void updateTitle(@NotNull String title, @NotNull String subtitle) {
++        this.updateTitle(new Title(title, subtitle));
++    }
+ 
+     /**
+      * Hide any title that is currently visible to the player
+@@ -1190,8 +1290,8 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @param subtitle Subtitle text
+      * @deprecated API subject to change
+      */
+-    @Deprecated
+-    public void sendTitle(String title, String subtitle);
++    // Unicorn - Undeprecate
++    public void sendTitle(@NotNull String title, @NotNull String subtitle);
+ 
+     /**
+      * Resets the title displayed to the player.
+@@ -1293,7 +1393,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+         }
+ 
+         /**
+-         * Gets all players hidden with {@link hidePlayer(org.bukkit.entity.Player)}.
++         * Gets all players hidden with {@link #hidePlayer(org.bukkit.entity.Player)}.
+          *
+          * @return a Set with all hidden players
+          */
+@@ -1307,8 +1407,8 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+          *
+          * @param component the components to send
+          */
+-        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component) {
+-            throw new UnsupportedOperationException("Not supported yet.");
++        public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent component) {
++            this.sendMessage(net.md_5.bungee.api.ChatMessageType.CHAT, component); // Unicorn
+         }
+ 
+         /**
+@@ -1316,9 +1416,31 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+          *
+          * @param components the components to send
+          */
+-        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components) {
++        public void sendMessage(@NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
++            this.sendMessage(net.md_5.bungee.api.ChatMessageType.CHAT, components); // Unicorn
++        }
++
++        // Unicorn start
++        /**
++         * Sends the component to the specified screen position of this player
++         *
++         * @param position the screen position
++         * @param component the components to send
++         */
++        public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent component) {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++
++        /**
++         * Sends the component to the specified screen position of this player
++         *
++         * @param position the screen position
++         * @param components the components to send
++         */
++        public void sendMessage(@NotNull net.md_5.bungee.api.ChatMessageType position, @NotNull net.md_5.bungee.api.chat.BaseComponent... components) {
+             throw new UnsupportedOperationException("Not supported yet.");
+         }
++        // Unicorn end
+ 
+         /**
+          * Get whether the player affects mob spawning
