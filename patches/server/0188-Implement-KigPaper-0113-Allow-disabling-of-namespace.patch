@@ -6,21 +6,10 @@ Subject: [PATCH] Implement [KigPaper-0113] Allow disabling of namespaced
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 589eb2ec2a438627d46b6b7233e37c107e75596d..db9969665ecc3e957a8b047cbb8b5db248bde729 100644
+index 589eb2ec2a438627d46b6b7233e37c107e75596d..8d03d754e6576a0b40f1cf329fb52e3df275eda0 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -132,6 +132,10 @@ import io.netty.buffer.Unpooled;
- import io.netty.handler.codec.base64.Base64;
- import net.md_5.bungee.api.chat.BaseComponent;
- 
-+// Unicorn start
-+import org.jetbrains.annotations.NotNull;
-+// Unicorn end
-+
- public final class CraftServer implements Server {
-     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
-     private final String serverName = "UnicornSpigot"; // Unicorn - UnicornSpigot
-@@ -2030,4 +2034,17 @@ public final class CraftServer implements Server {
+@@ -2030,4 +2030,17 @@ public final class CraftServer implements Server {
      {
          return spigot;
      }
@@ -28,13 +17,13 @@ index 589eb2ec2a438627d46b6b7233e37c107e75596d..db9969665ecc3e957a8b047cbb8b5db2
 +    private final Unicorn unicorn = new Unicorn() {
 +
 +        @Override
-+        public @NotNull Configuration getConfiguration() {
++        public Configuration getConfiguration() {
 +            return unicornConfig;
 +        }
 +
 +    };
 +
-+    public @NotNull Unicorn unicorn() {
++    public Unicorn unicorn() {
 +        return unicorn;
 +    }
  }

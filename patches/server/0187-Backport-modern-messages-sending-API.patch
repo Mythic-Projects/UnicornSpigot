@@ -5,7 +5,7 @@ Subject: [PATCH] Backport modern messages sending API
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 4944e18154c69cc1eaafc1e27938ff307debdf9b..1fac1b6c69cba1eda32da6f189d648a4a4434a79 100644
+index 4944e18154c69cc1eaafc1e27938ff307debdf9b..43e24eb7a1840a8c506b89f052dd2b1604e3ad0e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -20,6 +20,7 @@ import java.util.Set;
@@ -16,18 +16,7 @@ index 4944e18154c69cc1eaafc1e27938ff307debdf9b..1fac1b6c69cba1eda32da6f189d648a4
  import net.md_5.bungee.api.chat.BaseComponent;
  
  import net.minecraft.server.*;
-@@ -67,6 +68,10 @@ import org.bukkit.scoreboard.Scoreboard;
- // PaperSpigot start
- import org.github.paperspigot.Title;
- // PaperSpigot end
-+// Unicorn start
-+import org.jetbrains.annotations.NotNull;
-+import org.jetbrains.annotations.Nullable;
-+// Unicorn end
- 
- @DelegateDeserialization(CraftOfflinePlayer.class)
- public class CraftPlayer extends CraftHumanEntity implements Player {
-@@ -166,20 +171,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -166,20 +167,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
  
      // Paper start
@@ -48,74 +37,7 @@ index 4944e18154c69cc1eaafc1e27938ff307debdf9b..1fac1b6c69cba1eda32da6f189d648a4
      @Override
      public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
          PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
-@@ -201,41 +192,41 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     }
- 
-     @Override
--    public void setSubtitle(BaseComponent[] subtitle) {
-+    public void setSubtitle(@Nullable BaseComponent[] subtitle) {
-         getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.SUBTITLE, subtitle, 0, 0, 0));
-     }
- 
-     @Override
--    public void setSubtitle(BaseComponent subtitle) {
-+    public void setSubtitle(@Nullable BaseComponent subtitle) {
-         setSubtitle(new BaseComponent[]{subtitle});
-     }
- 
-     @Override
--    public void showTitle(BaseComponent[] title) {
-+    public void showTitle(@NotNull BaseComponent[] title) {
-         getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TITLE, title, 0, 0, 0));
-     }
- 
-     @Override
--    public void showTitle(BaseComponent title) {
-+    public void showTitle(@NotNull BaseComponent title) {
-         showTitle(new BaseComponent[]{title});
-     }
- 
-     @Override
--    public void showTitle(BaseComponent[] title, BaseComponent[] subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-+    public void showTitle(@NotNull BaseComponent[] title, @Nullable BaseComponent[] subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-         setTitleTimes(fadeInTicks, stayTicks, fadeOutTicks);
-         setSubtitle(subtitle);
-         showTitle(title);
-     }
- 
-     @Override
--    public void showTitle(BaseComponent title, BaseComponent subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-+    public void showTitle(@NotNull BaseComponent title, @Nullable BaseComponent subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-         setTitleTimes(fadeInTicks, stayTicks, fadeOutTicks);
-         setSubtitle(subtitle);
-         showTitle(title);
-     }
- 
-     @Override
--    public void sendTitle(Title title) {
-+    public void sendTitle(@NotNull Title title) {
-         Preconditions.checkNotNull(title, "Title is null");
-         setTitleTimes(title.getFadeIn(), title.getStay(), title.getFadeOut());
-         setSubtitle(title.getSubtitle() == null ? new BaseComponent[0] : title.getSubtitle());
-@@ -243,7 +234,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     }
- 
-     @Override
--    public void updateTitle(Title title) {
-+    public void updateTitle(@NotNull Title title) {
-         Preconditions.checkNotNull(title, "Title is null");
-         setTitleTimes(title.getFadeIn(), title.getStay(), title.getFadeOut());
-         if (title.getSubtitle() != null) {
-@@ -1492,7 +1483,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     }
- 
-     @Override
--    public void sendTitle(String title, String subtitle) {
-+    public void sendTitle(@NotNull String title, @NotNull String subtitle) {
-         if (title != null) {
-             PacketPlayOutTitle packetTitle = new PacketPlayOutTitle(EnumTitleAction.TITLE, CraftChatMessage.fromString(title)[0]);
-             getHandle().playerConnection.sendPacket(packetTitle);
-@@ -1617,19 +1608,26 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1617,19 +1604,26 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              return java.util.Collections.unmodifiableSet( ret );
          }
  
@@ -123,7 +45,7 @@ index 4944e18154c69cc1eaafc1e27938ff307debdf9b..1fac1b6c69cba1eda32da6f189d648a4
          @Override
 -        public void sendMessage(BaseComponent component) {
 -          sendMessage( new BaseComponent[] { component } );
-+        public void sendMessage(@NotNull ChatMessageType position, @NotNull BaseComponent component) {
++        public void sendMessage(ChatMessageType position, BaseComponent component) {
 +            this.sendMessage( position, new BaseComponent[] { component } );
          }
  
@@ -132,7 +54,7 @@ index 4944e18154c69cc1eaafc1e27938ff307debdf9b..1fac1b6c69cba1eda32da6f189d648a4
 -           if ( getHandle().playerConnection == null ) return;
 -
 -            PacketPlayOutChat packet = new PacketPlayOutChat();
-+        public void sendMessage(@NotNull ChatMessageType position, @NotNull BaseComponent... components) {
++        public void sendMessage(ChatMessageType position, BaseComponent... components) {
 +            PlayerConnection connection = getHandle().playerConnection;
 +            if (connection == null ) return;
 +
