@@ -70,6 +70,7 @@ subprojects {
 
         tasks.withType<ShadowJar> {
             // include cerberus libraries as file
+            buildDir.mkdirs()
             val librariesFile = File(buildDir, "libraries.cerberus")
             if (!librariesFile.exists()) {
                 librariesFile.createNewFile()
