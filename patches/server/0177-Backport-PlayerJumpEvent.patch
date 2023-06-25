@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 02:30:17 +0200
+Subject: [PATCH] Backport PlayerJumpEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index a1adbdcaa67ff053c5002274a5c25036631f17bc..6634b526856239c270bb556f3386ab4eaad81562 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -414,6 +414,16 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+                     if (this.player.onGround && !packetplayinflying.f() && d12 > 0.0D) {
+                         this.player.bF();
++                        // Unicorn start - Backport PlayerJumpEvent
++                        com.destroystokyo.paper.event.player.PlayerJumpEvent event = new com.destroystokyo.paper.event.player.PlayerJumpEvent(player, from, to);
++                        if (event.callEvent()) {
++                            this.player.bF();
++                        } else {
++                            from = event.getFrom();
++                            this.a(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch(), Collections.emptySet());
++                            return;
++                        }
++                        // Unicorn end
+                     }
+ 
+                     this.player.move(d11, d12, d13);

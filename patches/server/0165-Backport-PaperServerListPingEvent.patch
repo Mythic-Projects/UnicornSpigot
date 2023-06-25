@@ -191,7 +191,7 @@ index 0000000000000000000000000000000000000000..a2a409e635dde08f7c53e67164b967a0
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c7007dced6b2a2f7e23e90a3f4dbb2e39c9f5f8f
+index 0000000000000000000000000000000000000000..55d2aed4b3cb3434090626df4c3becc00a6aacd5
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 @@ -0,0 +1,123 @@
@@ -199,7 +199,6 @@ index 0000000000000000000000000000000000000000..c7007dced6b2a2f7e23e90a3f4dbb2e3
 +
 +import com.destroystokyo.paper.profile.CraftPlayerProfile;
 +import com.destroystokyo.paper.profile.PlayerProfile;
-+import com.google.common.base.MoreObjects;
 +import com.google.common.base.Strings;
 +import com.mojang.authlib.GameProfile;
 +import java.util.List;
@@ -212,7 +211,8 @@ index 0000000000000000000000000000000000000000..c7007dced6b2a2f7e23e90a3f4dbb2e3
 +import net.minecraft.server.NetworkManager;
 +import net.minecraft.server.PacketStatusOutServerInfo;
 +import net.minecraft.server.ServerPing;
-+import net.titanium.config.TitaniumConfig;
++import org.mythicprojects.unicornspigot.config.SpigotConfig;
++import org.mythicprojects.unicornspigot.util.Objects;
 +
 +public final class StandardPaperServerListPingEventImpl extends PaperServerListPingEventImpl {
 +
@@ -230,7 +230,7 @@ index 0000000000000000000000000000000000000000..c7007dced6b2a2f7e23e90a3f4dbb2e3
 +                .collect(Collectors.toList());
 +        // Spigot Start
 +        if (!profiles.isEmpty()) {
-+            profiles = profiles.subList(0, Math.min(profiles.size(), TitaniumConfig.get().spigot.settings.sampleCount)); // Cap the sample to n (or less) displayed players, ie: Vanilla behaviour
++            profiles = profiles.subList(0, Math.min(profiles.size(), SpigotConfig.get().settings.sampleCount)); // Cap the sample to n (or less) displayed players, ie: Vanilla behaviour
 +            java.util.Collections.shuffle(profiles); // This sucks, its inefficient but we have no simple way of doing it differently
 +        }
 +        // Spigot End
@@ -277,7 +277,7 @@ index 0000000000000000000000000000000000000000..c7007dced6b2a2f7e23e90a3f4dbb2e3
 +            if (profile.getId() != null && profile.getName() != null) {
 +                profiles[i] = CraftPlayerProfile.asAuthlib(profile);
 +            } else {
-+                profiles[i] = new GameProfile(MoreObjects.firstNonNull(profile.getId(), FAKE_UUID), Strings.nullToEmpty(profile.getName()));
++                profiles[i] = new GameProfile(Objects.firstNonNull(profile.getId(), FAKE_UUID), Strings.nullToEmpty(profile.getName()));
 +            }
 +        }
 +

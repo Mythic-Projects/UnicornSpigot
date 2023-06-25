@@ -6,14 +6,14 @@ Subject: [PATCH] Add Event#callEvent and make async PlayerEvent constructor
 
 
 diff --git a/src/main/java/org/bukkit/event/Event.java b/src/main/java/org/bukkit/event/Event.java
-index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..bb29e836d26e4424ce40aa68df7f19424a147ad0 100644
+index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..ceca4af5a233f8a8634c220d954823a155cd0f60 100644
 --- a/src/main/java/org/bukkit/event/Event.java
 +++ b/src/main/java/org/bukkit/event/Event.java
 @@ -75,6 +75,21 @@ public abstract class Event {
          return async;
      }
  
-+    // Unicorn start
++    // Paper start
 +    /**
 +     * Calls the event and tests if cancelled
 +     *
@@ -26,7 +26,7 @@ index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..bb29e836d26e4424ce40aa68df7f1942
 +        }
 +        return true;
 +    }
-+    // Unicorn end
++    // Paper end
 +
      public enum Result {
  

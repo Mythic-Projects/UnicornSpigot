@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Wed, 26 Oct 2022 21:17:20 +0200
+Subject: [PATCH] Add LivingEntity#removePotionEffects
+
+
+diff --git a/src/main/java/org/bukkit/entity/LivingEntity.java b/src/main/java/org/bukkit/entity/LivingEntity.java
+index 48e2508941299ce55f672979ff85a2969fc1c64b..e034f8836bf559f023cf75e365e2f12251556d22 100644
+--- a/src/main/java/org/bukkit/entity/LivingEntity.java
++++ b/src/main/java/org/bukkit/entity/LivingEntity.java
+@@ -309,6 +309,13 @@ public interface LivingEntity extends Entity, Damageable, ProjectileSource {
+      */
+     public void removePotionEffect(PotionEffectType type);
+ 
++    // Unicorn start
++    /**
++     * Removes every active potion effect
++     */
++    void removePotionEffects();
++    // Unicorn end
++
+     /**
+      * Returns all currently active {@link PotionEffect}s on the living
+      * entity.

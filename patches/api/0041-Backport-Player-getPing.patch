@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 03:02:59 +0200
+Subject: [PATCH] Backport Player#getPing
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 0f2400f259adc8f68bbab8d1baca2b45b303c020..f506d48fc38c6d7e6c4abb2cdab66314038af081 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1214,6 +1214,25 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+     void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile);
+     // Paper end
+ 
++    // Unicorn start
++    /**
++     * Gets the player's estimated ping in milliseconds.
++     * <p>
++     * In Vanilla this value represents the average of the response time to the
++     * last four application layer ping packets sent. This value does not
++     * represent the network round trip time and as such may have less
++     * granularity and be impacted by other sources. For these reasons it
++     * <b>should not</b> be used for anti-cheat purposes. Its recommended use is
++     * only as a <b>qualitative</b> indicator of connection quality (Vanilla
++     * uses it for this purpose in the tab list).
++     *
++     * @return player ping
++     */
++    default int getPing() {
++        return this.spigot().getPing();
++    }
++    // Unicorn end
++
+     // Spigot start
+     public class Spigot extends Entity.Spigot
+     {

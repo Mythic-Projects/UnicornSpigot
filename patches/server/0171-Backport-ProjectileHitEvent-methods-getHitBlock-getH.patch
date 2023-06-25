@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 3 Dec 2022 15:46:51 +0100
+Subject: [PATCH] Backport ProjectileHitEvent methods - #getHitBlock &
+ #getHitEntity
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index 867791ecb9aea68c8b47b77a96e4feabd519b370..925a68a49f9ea7865301af808ed833ae890888cb 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -232,7 +232,7 @@ public class EntityArrow extends Entity implements IProjectile {
+             // PaperSpigot end
+ 
+             if (movingobjectposition != null) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // CraftBukkit - Call event
++                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition.entity, movingobjectposition.a(), movingobjectposition.direction); // CraftBukkit - Call event // Unicorn - Backport methods
+                 if (movingobjectposition.entity != null) {
+                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);
+                     int k = MathHelper.f((double) f2 * this.damage);
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 125f74dfcbd525c014e152db432241aab299a0fb..704da728147e60550c987620dea827a3eb0c053c 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -131,7 +131,7 @@ public abstract class EntityFireball extends Entity {
+ 
+                 // CraftBukkit start - Fire ProjectileHitEvent
+                 if (this.dead) {
+-                    CraftEventFactory.callProjectileHitEvent(this);
++                    CraftEventFactory.callProjectileHitEvent(this, movingobjectposition.entity, movingobjectposition.a(), movingobjectposition.direction); // Unicorn - Backport methods
+                 }
+                 // CraftBukkit end
+             }
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index 8ab102b2c9e713a8f1670b9e2cddd61429adcd35..b683449d8dda0e8e8d7c79907e348b1b13c9dde0 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -196,7 +196,7 @@ public class EntityFishingHook extends Entity {
+             // PaperSpigot end
+ 
+             if (movingobjectposition != null) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // Craftbukkit - Call event
++                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition.entity, movingobjectposition.a(), movingobjectposition.direction); // Craftbukkit - Call event // Unicorn - Backport methods
+                 if (movingobjectposition.entity != null) {
+                     if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.owner), 0.0F)) {
+                         this.hooked = movingobjectposition.entity;
+diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
+index 4cb8a804b625d3dcdc176d7b5b694406dd964126..f83c9a313007f31cf66bd8e413cb953344c5a5b1 100644
+--- a/src/main/java/net/minecraft/server/EntityProjectile.java
++++ b/src/main/java/net/minecraft/server/EntityProjectile.java
+@@ -163,7 +163,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
+                 this.a(movingobjectposition);
+                 // CraftBukkit start
+                 if (this.dead) {
+-                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this);
++                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition.entity, movingobjectposition.a(), movingobjectposition.direction); // Unicorn - Backport methods
+                 }
+                 // CraftBukkit end
+             }
+diff --git a/src/main/java/net/minecraft/server/MCUtil.java b/src/main/java/net/minecraft/server/MCUtil.java
+index bee48d71eac0db6b64044c750e49ace4b26e97df..1cd32066ae3dfcd0d27fff81ee3a3918a0dfd46d 100644
+--- a/src/main/java/net/minecraft/server/MCUtil.java
++++ b/src/main/java/net/minecraft/server/MCUtil.java
+@@ -79,4 +79,11 @@ public final class MCUtil {
+         return new Location(world.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+     }
+ 
++    public static org.bukkit.block.Block toBukkitBlock(World world, BlockPosition pos) {
++        if (pos == null) {
++            return null;
++        }
++        return world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
++    }
++
+ }
+\ No newline at end of file
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 729458fc11c1c2a7b953c65241b10b7af31f4bb7..8392f688fc3227a1834b4608b43c26340662221a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -778,10 +778,28 @@ public class CraftEventFactory {
+     }
+ 
+     public static ProjectileHitEvent callProjectileHitEvent(Entity entity) {
+-        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity());
+-        entity.world.getServer().getPluginManager().callEvent(event);
++        // Unicorn start - Backport methods
++        return callProjectileHitEvent(entity, null, null, null);
++    }
++
++    public static ProjectileHitEvent callProjectileHitEvent(Entity entity, Entity hitEntity, BlockPosition blockPos, EnumDirection blockFace) {
++        org.bukkit.block.Block hitBlock = null;
++        org.bukkit.block.BlockFace hitFace = null;
++        if (blockPos != null) {
++            hitBlock = MCUtil.toBukkitBlock(entity.world, blockPos);
++            hitFace = CraftBlock.notchToBlockFace(blockFace);
++        }
++
++        org.bukkit.entity.Entity hitBukkitEntity = null;
++        if (hitEntity != null) {
++            hitBukkitEntity = hitEntity.getBukkitEntity();
++        }
++
++        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity(), hitBukkitEntity, hitBlock, hitFace);
++        event.callEvent();
+         return event;
+     }
++    // Unicorn end
+ 
+     public static ExpBottleEvent callExpBottleEvent(Entity entity, int exp) {
+         ThrownExpBottle bottle = (ThrownExpBottle) entity.getBukkitEntity();

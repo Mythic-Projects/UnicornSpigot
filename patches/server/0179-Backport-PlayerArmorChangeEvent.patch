@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 02:36:48 +0200
+Subject: [PATCH] Backport PlayerArmorChangeEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index c5518b03093737399dbd0d3728498f1091a19c89..5c1f5f6cf879a9fe442f7c0cb216bdd661c214a3 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1486,6 +1486,11 @@ public abstract class EntityLiving extends Entity {
+                 ItemStack itemstack1 = this.getEquipment(j);
+ 
+                 if (!ItemStack.matches(itemstack1, itemstack)) {
++                    // Unicorn start - Backport PlayerArmorChangeEvent
++                    if (j > 0 && this instanceof EntityPlayer && com.destroystokyo.paper.event.player.PlayerArmorChangeEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                        CraftEventFactory.callPlayerArmorChangeEvent((EntityPlayer) this, j, itemstack, itemstack1);
++                    }
++                    // Unicorn end
+                     ((WorldServer) this.world).getTracker().a((Entity) this, (Packet) (new PacketPlayOutEntityEquipment(this.getId(), j, itemstack1)));
+                     if (itemstack != null) {
+                         this.c.a(itemstack.B());
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index d20d847dbb752432285d7425986762cd4b657b1f..7a54a901cd125dd1969bf00d146f1d5800a1a4d5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -195,6 +195,16 @@ public class CraftEventFactory {
+         event.callEvent();
+         return event;
+     }
++
++    // PlayerArmorChangeEvent
++    public static com.destroystokyo.paper.event.player.PlayerArmorChangeEvent callPlayerArmorChangeEvent(EntityPlayer player, int slot, ItemStack oldNms, ItemStack newNms) {
++        org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(oldNms);
++        org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(newNms);
++        com.destroystokyo.paper.event.player.PlayerArmorChangeEvent.SlotType slotType = com.destroystokyo.paper.event.player.PlayerArmorChangeEvent.SlotType.getByOrdinal(slot);
++        com.destroystokyo.paper.event.player.PlayerArmorChangeEvent event = new com.destroystokyo.paper.event.player.PlayerArmorChangeEvent(player.getBukkitEntity(), slotType, oldItem, newItem);
++        event.callEvent();
++        return event;
++    }
+     // Unicorn end
+ 
+     /**

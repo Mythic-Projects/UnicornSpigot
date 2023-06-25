@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 02:29:08 +0200
+Subject: [PATCH] Backport ServerLoadEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index cc4941d471a6baf268cb63b54e8e99db91a3d370..a43cc294ff8037d614ac69ef284ac397a7e131aa 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.FutureTask;
+ import javax.imageio.ImageIO;
++import org.bukkit.event.server.ServerLoadEvent;
+ import org.mythicprojects.unicornspigot.config.SpigotConfig;
+ import org.apache.commons.lang3.Validate;
+ import org.apache.logging.log4j.LogManager;
+@@ -402,6 +403,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
+         }
+         // CraftBukkit end
+         this.s();
++        this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP)); // Unicorn
+     }
+ 
+     protected void a(String s, IDataManager idatamanager) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 55c244e19206b1249d3b7f65172d2eef3a524cf4..157ca8d94698f9b28e076f8eb65ec50fe9071d53 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -76,6 +76,7 @@ import org.bukkit.craftbukkit.util.permissions.CraftDefaultPermissions;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.inventory.InventoryType;
+ import org.bukkit.event.player.PlayerChatTabCompleteEvent;
++import org.bukkit.event.server.ServerLoadEvent;
+ import org.bukkit.event.world.WorldInitEvent;
+ import org.bukkit.event.world.WorldLoadEvent;
+ import org.bukkit.event.world.WorldSaveEvent;
+@@ -879,6 +880,7 @@ public final class CraftServer implements Server {
+         loadPlugins();
+         enablePlugins(PluginLoadOrder.STARTUP);
+         enablePlugins(PluginLoadOrder.POSTWORLD);
++        getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.RELOAD)); // Unicorn
+     }
+ 
+     private void loadIcon() {

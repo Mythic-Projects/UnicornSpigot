@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 25 Jun 2023 02:59:05 +0200
+Subject: [PATCH] Add LivingEntity#removePotionEffects
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index 3e3a04808196e722fd1dcdae638bfcf45a79f4d9..4d5e8564e63bbcaaa4749bb45fd8e8fcc11ca67d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -322,6 +322,13 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+         getHandle().removeEffect(type.getId());
+     }
+ 
++    // Unicorn start
++    @Override
++    public void removePotionEffects() {
++        getHandle().removeAllEffects();
++    }
++    // Unicorn end
++
+     public Collection<PotionEffect> getActivePotionEffects() {
+         List<PotionEffect> effects = new ArrayList<PotionEffect>();
+         for (Object raw : getHandle().effects.values()) {

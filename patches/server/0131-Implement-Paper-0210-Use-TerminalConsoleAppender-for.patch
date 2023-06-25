@@ -414,7 +414,7 @@ index 0000000000000000000000000000000000000000..519ce3bdaafd4498467648e20ec9c3b4
 +}
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsole.java b/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsole.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d9e54edc2346a1e62c7a282c214ba4db9aa9a66c
+index 0000000000000000000000000000000000000000..cd6efc20d9f290766d7af868a034e4218f9f3a06
 --- /dev/null
 +++ b/src/main/java/org/mythicprojects/unicornspigot/console/UnicornConsole.java
 @@ -0,0 +1,41 @@
@@ -437,7 +437,7 @@ index 0000000000000000000000000000000000000000..d9e54edc2346a1e62c7a282c214ba4db
 +    @Override
 +    protected LineReader buildReader(LineReaderBuilder builder) {
 +        return super.buildReader(builder
-+                .appName("Titanium")
++                .appName("UnicornSpigot")
 +                .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
 +                .completer(new UnicornConsoleCommandCompleter(this.server))
 +        );
