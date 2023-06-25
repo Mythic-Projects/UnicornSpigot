@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Peridot <peridot491@protonmail.com>
 Date: Sat, 24 Jun 2023 04:45:28 +0200
-Subject: [PATCH] Use CerberusLoader to load most dependencies
+Subject: [PATCH] Use CerberusLoader to load dependencies
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
