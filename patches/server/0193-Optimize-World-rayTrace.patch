@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Fri, 30 Jun 2023 14:10:05 +0200
+Subject: [PATCH] Optimize World#rayTrace
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 631c56d2cbc2d97d73c12595f3920a733c291f23..227f550cff5b95d353983a53acecf8610a733d31 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1027,16 +1027,18 @@ public abstract class World implements IBlockAccess {
+     public MovingObjectPosition rayTrace(Vec3D vec3d, Vec3D vec3d1, boolean flag, boolean flag1, boolean flag2) {
+         if (!Double.isNaN(vec3d.a) && !Double.isNaN(vec3d.b) && !Double.isNaN(vec3d.c)) {
+             if (!Double.isNaN(vec3d1.a) && !Double.isNaN(vec3d1.b) && !Double.isNaN(vec3d1.c)) {
+-                int i = MathHelper.floor(vec3d1.a);
++                // Unicorn start - moved down
++                /*int i = MathHelper.floor(vec3d1.a);
+                 int j = MathHelper.floor(vec3d1.b);
+-                int k = MathHelper.floor(vec3d1.c);
++                int k = MathHelper.floor(vec3d1.c);*/
++                // Unicorn end
+                 int l = MathHelper.floor(vec3d.a);
+                 int i1 = MathHelper.floor(vec3d.b);
+                 int j1 = MathHelper.floor(vec3d.c);
+-                BlockPosition blockposition = new BlockPosition(l, i1, j1);
+-                IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // Paper
++                IBlockData iblockdata = this.getTypeIfLoaded(l, i1, j1); // Paper // Unicorn - don't use BlockPositon
+                 if (iblockdata == null) return null; // Paper
+                 Block block = iblockdata.getBlock();
++                BlockPosition blockposition = new BlockPosition(l, i1, j1); // Unicorn
+ 
+                 if ((!flag1 || block.a(this, blockposition, iblockdata) != null) && block.a(iblockdata, flag)) {
+                     MovingObjectPosition movingobjectposition = block.a(this, blockposition, vec3d, vec3d1);
+@@ -1049,6 +1051,14 @@ public abstract class World implements IBlockAccess {
+                 MovingObjectPosition movingobjectposition1 = null;
+                 int k1 = 200;
+ 
++                // Unicorn start
++                int i = MathHelper.floor(vec3d1.a);
++                int j = MathHelper.floor(vec3d1.b);
++                int k = MathHelper.floor(vec3d1.c);
++                IBlockData iblockdata1 = null;
++                Block block1 = null;
++                AxisAlignedBB box = null;
++                // Unicorn end
+                 while (k1-- >= 0) {
+                     if (Double.isNaN(vec3d.a) || Double.isNaN(vec3d.b) || Double.isNaN(vec3d.c)) {
+                         return null;
+@@ -1133,17 +1143,30 @@ public abstract class World implements IBlockAccess {
+                         vec3d = new Vec3D(vec3d.a + d6 * d5, vec3d.b + d7 * d5, d2);
+                     }
+ 
+-                    l = MathHelper.floor(vec3d.a) - (enumdirection == EnumDirection.EAST ? 1 : 0);
++                    // Unicorn start
++                    /*l = MathHelper.floor(vec3d.a) - (enumdirection == EnumDirection.EAST ? 1 : 0);
+                     i1 = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0);
+-                    j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
+-                    blockposition = new BlockPosition(l, i1, j1);
+-                    // PandaSpigot start - ray tracing into an unloaded chunk should be treated as a miss, this saves a ton of lag for when AI tries to raytrace near unloaded chunks.
+-                    IBlockData iblockdata1 = this.getTypeIfLoaded(blockposition);
+-                    if (iblockdata1 == null) return null;
+-                    // PandaSpigot end
+-                    Block block1 = iblockdata1.getBlock();
+-
+-                    if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
++                    j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);*/
++                    int newBlockX = MathHelper.floor(vec3d.a) - (enumdirection == EnumDirection.EAST ? 1 : 0); // Paper
++                    int newBlockY = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0); // Paper
++                    int newBlockZ = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0); // Paper
++                    if (l != newBlockX || i1 != newBlockY || j1 != newBlockZ || iblockdata1 == null) {
++                        l = newBlockX;
++                        i1 = newBlockY;
++                        j1 = newBlockZ;
++                        // PandaSpigot start - ray tracing into an unloaded chunk should be treated as a miss, this saves a ton of lag for when AI tries to raytrace near unloaded chunks.
++                        iblockdata1 = this.getTypeIfLoaded(l, i1, j1);
++                        if (iblockdata1 == null) return null;
++                        // PandaSpigot end
++                        blockposition = new BlockPosition(l, i1, j1);
++                        block1 = iblockdata1.getBlock();
++                        if (flag1) {
++                            box = block1.a(this, blockposition, iblockdata1);
++                        }
++                    }
++                    // Unicorn end
++
++                    if (!flag1 || box != null) {
+                         if (block1.a(iblockdata1, flag)) {
+                             MovingObjectPosition movingobjectposition2 = block1.a(this, blockposition, vec3d, vec3d1);
+ 
