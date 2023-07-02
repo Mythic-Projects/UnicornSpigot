@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 2 Jul 2023 15:05:51 +0200
+Subject: [PATCH] Optimize World#getTileEntity
+
+
+diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
+index 7366df11e3d115aebd5227c4f446b66e8be8b382..34c0eae36e3f33faf7beca663d5b538506d25e06 100644
+--- a/src/main/java/net/minecraft/server/ItemStack.java
++++ b/src/main/java/net/minecraft/server/ItemStack.java
+@@ -222,6 +222,7 @@ public final class ItemStack {
+             }
+         }
+         world.capturedTileEntities.clear();
++        world.capturedTileEntitiesEmpty = true; // Unicorn
+         world.capturedBlockStates.clear();
+         // CraftBukkit end
+ 
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 07d343c6e16bc26469db1d9c7767bfc702b67f3f..de8975798827a5761961992dfef4777b1142b4f6 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2232,6 +2232,7 @@ public abstract class World implements IBlockAccess {
+         }
+     }
+ 
++    public boolean capturedTileEntitiesEmpty = false; // Unicorn
+     public Map<BlockPosition, TileEntity> capturedTileEntities = Maps.newHashMap();
+ 
+     public TileEntity getTileEntity(BlockPosition blockposition) {
+@@ -2241,7 +2242,7 @@ public abstract class World implements IBlockAccess {
+             // CraftBukkit start
+             // Paper start - Optimize Captured TileEntity Lookup
+             TileEntity tileentity = null;
+-            if (!capturedTileEntities.isEmpty() && (tileentity = capturedTileEntities.get(blockposition)) != null) {
++            if (!this.capturedTileEntitiesEmpty && !capturedTileEntities.isEmpty() && (tileentity = capturedTileEntities.get(blockposition)) != null) { // Unicorn
+                 return tileentity;
+             // Paper end
+             }
+@@ -2286,6 +2287,7 @@ public abstract class World implements IBlockAccess {
+                 tileentity.a(this);
+                 tileentity.a(blockposition);
+                 capturedTileEntities.put(blockposition, tileentity);
++                this.capturedTileEntitiesEmpty = false; // Unicorn
+                 return;
+             }
+             // CraftBukkit end
