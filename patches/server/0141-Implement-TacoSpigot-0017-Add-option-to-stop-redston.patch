@@ -6,7 +6,7 @@ Subject: [PATCH] Implement [TacoSpigot-0017] Add option to stop redstone
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 22386a9f890187844e3bf4ee37d2c643ecea7744..04eed2e2c77b4f74cdc8d169aa07fed896348c82 100644
+index ee6207258c313eb7f17c10f9476e626c245d5124..e773c8c7403c185396e3eaf9babdfa59ed820ad4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -702,7 +702,7 @@ public abstract class World implements IBlockAccess {

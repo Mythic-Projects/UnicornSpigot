@@ -33,7 +33,7 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..4c8e6a9f69b3696fb0198d792c8a8266
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 36be537dfd2656ebdd2db1c17dd9b6b528f6c615..3a1abe0030fcd75b0d53af67b89af5294fcd6043 100644
+index 71719c0e728500f4582242ab42491e00cd5182e8..17a93e82d7f20480b8f49290e226706c3ec0cd99 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -184,7 +184,7 @@ public abstract class World implements IBlockAccess {
@@ -277,7 +277,7 @@ index 36be537dfd2656ebdd2db1c17dd9b6b528f6c615..3a1abe0030fcd75b0d53af67b89af529
                              iblockdata = this.getType(blockposition_mutableblockposition);
                          } else {
                              iblockdata = Blocks.BEDROCK.getBlockData();
-@@ -3251,4 +3353,14 @@ public abstract class World implements IBlockAccess {
+@@ -3247,4 +3349,14 @@ public abstract class World implements IBlockAccess {
  
          return k >= -short0 && k <= short0 && l >= -short0 && l <= short0 && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory'
      }

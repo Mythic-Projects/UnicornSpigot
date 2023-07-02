@@ -19,10 +19,10 @@ index 003f71f060622ccaa4a7dcdf2833f27a3ddd574a..6c11911116a4bcc99c63a2379df95cfd
                                      return;
                                  }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 6decd3444c5a068f98e9306a497821a1b4c775e2..1bb83de9f3d944416f2e5213abdadf39906020af 100644
+index f668b5b3c191257bf93b9e445240647795675c27..7a1a663484ce35eb6d8378d91316132d27564684 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -3496,11 +3496,11 @@ public abstract class World implements IBlockAccess {
+@@ -3492,11 +3492,11 @@ public abstract class World implements IBlockAccess {
      }
  
      // Unicorn start

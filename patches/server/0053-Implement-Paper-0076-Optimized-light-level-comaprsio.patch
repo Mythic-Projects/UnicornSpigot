@@ -159,7 +159,7 @@ index 9306317d3745a04edf63b1fd1b25a7c53a951a85..6a07458d28b5af53c9b772e5ccf4448c
                          if (!this.world.isPlayerNearby((double) i1, (double) j1, (double) k1, 7.0D) && this.world.a(entityzombie.getBoundingBox(), (Entity) entityzombie) && this.world.getCubes(entityzombie, entityzombie.getBoundingBox()).isEmpty() && !this.world.containsLiquid(entityzombie.getBoundingBox())) {
                              this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index bb05ffbe07c7a2add758f3f243710bafc5fab4e4..ccf9f1a886845ccb1e7392709e8cd468413d6b1f 100644
+index fb21c6ffd3df106369d701e8f40bcbd85372d95d..c4b906780fb7df6d76a1d41910861e3457199717 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -770,6 +770,37 @@ public abstract class World implements IBlockAccess {

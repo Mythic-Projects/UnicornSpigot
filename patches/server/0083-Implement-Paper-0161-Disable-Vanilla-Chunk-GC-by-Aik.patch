@@ -6,10 +6,10 @@ Subject: [PATCH] Implement [Paper-0161] Disable Vanilla Chunk GC by Aikar
 Bukkit has its own system for this.
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 66d18540c349c738aa7e3d4f6a21f725407d6e0e..b9de83edd03603e9ac195df4de24c00d4448ab5f 100644
+index d5526a92d9014002a31c29ad60f0d748110726ac..887aae3c405e552599b4277c6861b4ce22b06e7f 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -927,7 +927,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -925,7 +925,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
  
              this.chunkProvider.saveChunks(flag, iprogressupdate);
              // CraftBukkit - ArrayList -> Collection
@@ -19,7 +19,7 @@ index 66d18540c349c738aa7e3d4f6a21f725407d6e0e..b9de83edd03603e9ac195df4de24c00d
              Iterator iterator = arraylist.iterator();
  
              while (iterator.hasNext()) {
-@@ -936,8 +937,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -934,8 +935,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  if (chunk != null && !this.manager.a(chunk.locX, chunk.locZ)) {
                      this.chunkProviderServer.queueUnload(chunk.locX, chunk.locZ);
                  }

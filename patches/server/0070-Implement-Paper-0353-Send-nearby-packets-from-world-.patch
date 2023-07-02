@@ -118,10 +118,10 @@ index 55a2112d2ce3a5ccd4868888c4a529605ef54c34..c3bda441dfa2f59a0570d578676a6d3e
                  }
                  // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 0a5f9929268ba9a378380851dfb37ea5a318d2e3..66d18540c349c738aa7e3d4f6a21f725407d6e0e 100644
+index 9f55e7a9e0005ba8ac31005e2dc358e5f47d8a0c..d5526a92d9014002a31c29ad60f0d748110726ac 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1003,7 +1003,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -1001,7 +1001,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              return false;
          }
          if (super.strikeLightning(entity)) {
@@ -130,7 +130,7 @@ index 0a5f9929268ba9a378380851dfb37ea5a318d2e3..66d18540c349c738aa7e3d4f6a21f725
              // CraftBukkit end
              return true;
          } else {
-@@ -1076,7 +1076,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -1074,7 +1074,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
  
                  if (this.a(blockactiondata)) {
                      // CraftBukkit - this.worldProvider.dimension -> this.dimension

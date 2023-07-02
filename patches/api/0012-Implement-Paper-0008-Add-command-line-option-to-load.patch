@@ -76,7 +76,7 @@ index 96c342407293440ba0bafddfa3177f0b25d168a5..ec018b926ff740c7760aa459dcebc365
       * Gets the name of this server implementation.
       *
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index ce9839ec73e7ca668f1c920ddcd23fdeacd67a6a..17d5aa2de8ee814382f126eb908502f72f282340 100644
+index 3307340e51f1210be8d72b00c919d5a8f0310155..80c8ef5064d93738a84160fa8debcc0808d4d57d 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 @@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableSet;

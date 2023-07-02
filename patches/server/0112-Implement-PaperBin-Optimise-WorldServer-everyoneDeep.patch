@@ -31,7 +31,7 @@ index 2da9929320ffea51b3ec07512bf0cf69aecbcbb2..e8b1e6a7db76ae712dcd423c4f4abc81
       * PaperSpigot - Checks if the feature is enabled and the entity is above the nether world bedrock height
       */
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index b9de83edd03603e9ac195df4de24c00d4448ab5f..fc44f312b1491bb416abd6a2aa18e8826d3dd3ca 100644
+index 887aae3c405e552599b4277c6861b4ce22b06e7f..207154fbe5f9321e1f4c5ec27255aaab0de617d0 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -28,6 +28,7 @@ import org.bukkit.craftbukkit.util.HashTreeSet;
@@ -42,7 +42,7 @@ index b9de83edd03603e9ac195df4de24c00d4448ab5f..fc44f312b1491bb416abd6a2aa18e882
  // CraftBukkit end
  
  public class WorldServer extends World implements IAsyncTaskHandler {
-@@ -328,7 +329,24 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -326,7 +327,24 @@ public class WorldServer extends World implements IAsyncTaskHandler {
      }
  
      public boolean everyoneDeeplySleeping() {
@@ -68,7 +68,7 @@ index b9de83edd03603e9ac195df4de24c00d4448ab5f..fc44f312b1491bb416abd6a2aa18e882
              Iterator iterator = this.players.iterator();
  
              // CraftBukkit - This allows us to assume that some people are in bed but not really, allowing time to pass in spite of AFKers
-@@ -353,7 +371,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -351,7 +369,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              return false;
          } else {
              return false;

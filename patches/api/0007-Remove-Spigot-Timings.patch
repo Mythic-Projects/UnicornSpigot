@@ -29,11 +29,43 @@ index 0000000000000000000000000000000000000000..eb76a1d8ccd7d732d6c5fac8205caf16
 +public @interface DoNotUse {
 +}
 \ No newline at end of file
+diff --git a/src/main/java/co/aikar/timings/FullServerTickHandler.java b/src/main/java/co/aikar/timings/FullServerTickHandler.java
+index cb4e7ba8358015914aeb12a96dfe84efe3280de6..8bb90d4d1b884e78d85849ffd0483df8de549a86 100644
+--- a/src/main/java/co/aikar/timings/FullServerTickHandler.java
++++ b/src/main/java/co/aikar/timings/FullServerTickHandler.java
+@@ -2,6 +2,7 @@ package co.aikar.timings;
+ 
+ import static co.aikar.timings.TimingsManager.*;
+ 
++@Deprecated // Unicorn
+ public class FullServerTickHandler extends TimingHandler {
+     static final TimingIdentifier IDENTITY = new TimingIdentifier("Minecraft", "Full Server Tick", null, false);
+     final TimingData minuteData;
+diff --git a/src/main/java/co/aikar/timings/NullTimingHandler.java b/src/main/java/co/aikar/timings/NullTimingHandler.java
+index c73b617c5a0be69111f142a3ef9344a5a22dfa12..70d71e1c6b5c1aa24e0f00ec3f91b17b3a39a482 100644
+--- a/src/main/java/co/aikar/timings/NullTimingHandler.java
++++ b/src/main/java/co/aikar/timings/NullTimingHandler.java
+@@ -23,6 +23,7 @@
+  */
+ package co.aikar.timings;
+ 
++@Deprecated // Unicorn
+ public final class NullTimingHandler implements Timing {
+     @Override
+     public void startTiming() {
 diff --git a/src/main/java/co/aikar/timings/TimedEventExecutor.java b/src/main/java/co/aikar/timings/TimedEventExecutor.java
-index e3da034fcbdda91532e2882bbd1f09d31ef4b727..b532a67b0b83a1818926564ec28c229619fe165a 100644
+index e3da034fcbdda91532e2882bbd1f09d31ef4b727..5aa8b9233ca4efd4f99b4e317629fb6d1df4f713 100644
 --- a/src/main/java/co/aikar/timings/TimedEventExecutor.java
 +++ b/src/main/java/co/aikar/timings/TimedEventExecutor.java
-@@ -74,8 +74,8 @@ public class TimedEventExecutor implements EventExecutor {
+@@ -32,6 +32,7 @@ import org.bukkit.plugin.Plugin;
+ 
+ import java.lang.reflect.Method;
+ 
++@Deprecated // Unicorn
+ public class TimedEventExecutor implements EventExecutor {
+ 
+     private final EventExecutor executor;
+@@ -74,8 +75,8 @@ public class TimedEventExecutor implements EventExecutor {
              executor.execute(listener, event);
              return;
          }
@@ -45,10 +77,15 @@ index e3da034fcbdda91532e2882bbd1f09d31ef4b727..b532a67b0b83a1818926564ec28c2296
      }
  }
 diff --git a/src/main/java/co/aikar/timings/Timing.java b/src/main/java/co/aikar/timings/Timing.java
-index 4d990b130c5fa0e80982f010d171bca7902480e8..c9b766c531e8041a6d321ac5ecc4775175be6589 100644
+index 4d990b130c5fa0e80982f010d171bca7902480e8..b617dba654baf92fbd827dc733a1d9410a7b2214 100644
 --- a/src/main/java/co/aikar/timings/Timing.java
 +++ b/src/main/java/co/aikar/timings/Timing.java
-@@ -30,6 +30,7 @@ public interface Timing extends AutoCloseable {
+@@ -26,10 +26,12 @@ package co.aikar.timings;
+ /**
+  * Provides an ability to time sections of code within the Minecraft Server
+  */
++@Deprecated // Unicorn
+ public interface Timing extends AutoCloseable {
      /**
       * Starts timing the execution until {@link #stopTiming()} is called.
       */
@@ -56,7 +93,7 @@ index 4d990b130c5fa0e80982f010d171bca7902480e8..c9b766c531e8041a6d321ac5ecc47751
      public void startTiming();
  
      /**
-@@ -37,6 +38,7 @@ public interface Timing extends AutoCloseable {
+@@ -37,6 +39,7 @@ public interface Timing extends AutoCloseable {
       *
       * Will automatically be called when this Timing is used with try-with-resources
       */
@@ -64,7 +101,7 @@ index 4d990b130c5fa0e80982f010d171bca7902480e8..c9b766c531e8041a6d321ac5ecc47751
      public void stopTiming();
  
      /**
-@@ -44,6 +46,7 @@ public interface Timing extends AutoCloseable {
+@@ -44,6 +47,7 @@ public interface Timing extends AutoCloseable {
       *
       * But only if we are on the primary thread.
       */
@@ -72,7 +109,7 @@ index 4d990b130c5fa0e80982f010d171bca7902480e8..c9b766c531e8041a6d321ac5ecc47751
      public void startTimingIfSync();
  
      /**
-@@ -53,11 +56,13 @@ public interface Timing extends AutoCloseable {
+@@ -53,11 +57,13 @@ public interface Timing extends AutoCloseable {
       *
       * But only if we are on the primary thread.
       */
@@ -86,18 +123,86 @@ index 4d990b130c5fa0e80982f010d171bca7902480e8..c9b766c531e8041a6d321ac5ecc47751
      public void abort();
  
      /**
-@@ -68,5 +73,6 @@ public interface Timing extends AutoCloseable {
+@@ -68,5 +74,6 @@ public interface Timing extends AutoCloseable {
      TimingHandler getTimingHandler();
  
      @Override
 +    @io.papermc.paper.annotation.DoNotUse // Unicorn
      void close();
  }
+diff --git a/src/main/java/co/aikar/timings/TimingData.java b/src/main/java/co/aikar/timings/TimingData.java
+index b62e428c5422ab10e8f44d94e6d59d431aceb83a..4ebdb83c64cfb221450d99f6310dbd1300122218 100644
+--- a/src/main/java/co/aikar/timings/TimingData.java
++++ b/src/main/java/co/aikar/timings/TimingData.java
+@@ -34,6 +34,7 @@ import static co.aikar.util.JSONUtil.toArray;
+  *
+  * This is broken out to reduce memory usage
+  */
++@Deprecated // Unicorn
+ class TimingData {
+     static Function<Integer, TimingData> LOADER = new Function<Integer, TimingData>() {
+         @Override
+diff --git a/src/main/java/co/aikar/timings/TimingHandler.java b/src/main/java/co/aikar/timings/TimingHandler.java
+index 4918a17c5a26e3afa2ed7ccad60163325ba07071..fdb5f677a5c97720ca5431c1cdea3a7087f008ea 100644
+--- a/src/main/java/co/aikar/timings/TimingHandler.java
++++ b/src/main/java/co/aikar/timings/TimingHandler.java
+@@ -32,6 +32,7 @@ import co.aikar.util.MRUMapCache;
+ import java.util.Map;
+ import java.util.logging.Level;
+ 
++@Deprecated // Unicorn
+ class TimingHandler implements Timing {
+ 
+     private static int idPool = 1;
+diff --git a/src/main/java/co/aikar/timings/TimingHistory.java b/src/main/java/co/aikar/timings/TimingHistory.java
+index 7a04770932ec734d149facc5479a75ce635785d4..a22c8744d125fed6a064ff21cfd8e8aa1cf4a45e 100644
+--- a/src/main/java/co/aikar/timings/TimingHistory.java
++++ b/src/main/java/co/aikar/timings/TimingHistory.java
+@@ -48,6 +48,7 @@ import static co.aikar.timings.TimingsManager.MINUTE_REPORTS;
+ import static co.aikar.util.JSONUtil.*;
+ 
+ @SuppressWarnings({"deprecation", "SuppressionAnnotation"})
++@Deprecated // Unicorn
+ public class TimingHistory {
+     public static long lastMinuteTime;
+     public static long timedTicks;
+diff --git a/src/main/java/co/aikar/timings/TimingHistoryEntry.java b/src/main/java/co/aikar/timings/TimingHistoryEntry.java
+index eac4e218b37efce30eb577908c2b8d272d95eef0..bb9fb4575eb5ef702b1c3aea3161c161aef50863 100644
+--- a/src/main/java/co/aikar/timings/TimingHistoryEntry.java
++++ b/src/main/java/co/aikar/timings/TimingHistoryEntry.java
+@@ -29,6 +29,7 @@ import java.util.List;
+ 
+ import static co.aikar.util.JSONUtil.toArrayMapper;
+ 
++@Deprecated // Unicorn
+ class TimingHistoryEntry {
+     final TimingData data;
+     final TimingData[] children;
+diff --git a/src/main/java/co/aikar/timings/TimingIdentifier.java b/src/main/java/co/aikar/timings/TimingIdentifier.java
+index 623dda49c0d7c09a7c121e0289cf61d8aca2729a..76ff7c2eca792105e99751567e2f9cd503073587 100644
+--- a/src/main/java/co/aikar/timings/TimingIdentifier.java
++++ b/src/main/java/co/aikar/timings/TimingIdentifier.java
+@@ -35,6 +35,7 @@ import java.util.Map;
+  *
+  * This class uses interned strings giving us the ability to do an identity check instead of equals() on the strings
+  */
++@Deprecated // Unicorn
+ final class TimingIdentifier {
+     /**
+      * Holds all groups. Autoloads on request for a group by name.
 diff --git a/src/main/java/co/aikar/timings/Timings.java b/src/main/java/co/aikar/timings/Timings.java
-index 0f7be036bc528ee2371fe83512f9066608d3b3a2..6794ece5ebc4d711471bf455e8b5a52a60141bd0 100644
+index 0f7be036bc528ee2371fe83512f9066608d3b3a2..4c04360251114a3e3bcd240a870bbe1e3a7c6ec1 100644
 --- a/src/main/java/co/aikar/timings/Timings.java
 +++ b/src/main/java/co/aikar/timings/Timings.java
-@@ -105,7 +105,7 @@ public final class Timings {
+@@ -33,6 +33,7 @@ import java.util.Queue;
+ import java.util.logging.Level;
+ 
+ @SuppressWarnings("UnusedDeclaration")
++@Deprecated // Unicorn
+ public final class Timings {
+ 
+     private static final int MAX_HISTORY_FRAMES = 12;
+@@ -105,7 +106,7 @@ public final class Timings {
       */
      public static Timing ofStart(Plugin plugin, String name, Timing groupHandler) {
          Timing timing = of(plugin, name, groupHandler);
@@ -107,10 +212,18 @@ index 0f7be036bc528ee2371fe83512f9066608d3b3a2..6794ece5ebc4d711471bf455e8b5a52a
      }
  
 diff --git a/src/main/java/co/aikar/timings/TimingsCommand.java b/src/main/java/co/aikar/timings/TimingsCommand.java
-index 3dba3aa17314d2d1977278c55974093c9c46148f..2745f2e35a52b51b7bcc23b361d0d8ca5abd1322 100644
+index 3dba3aa17314d2d1977278c55974093c9c46148f..9f693c4dbb0bd481b040458e30e733a5b8a33440 100644
 --- a/src/main/java/co/aikar/timings/TimingsCommand.java
 +++ b/src/main/java/co/aikar/timings/TimingsCommand.java
-@@ -40,7 +40,7 @@ public class TimingsCommand extends BukkitCommand {
+@@ -33,14 +33,14 @@ import org.bukkit.util.StringUtil;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+-
++@Deprecated // Unicorn
+ public class TimingsCommand extends BukkitCommand {
+     public static final List<String> TIMINGS_SUBCOMMANDS = ImmutableList.of("report", "reset", "on", "off", "paste", "verbon", "verboff");
+ 
      public TimingsCommand(String name) {
          super(name);
          this.description = "Manages Spigot Timings data to see performance of the server.";
@@ -143,10 +256,68 @@ index 3dba3aa17314d2d1977278c55974093c9c46148f..2745f2e35a52b51b7bcc23b361d0d8ca
              return StringUtil.copyPartialMatches(args[0], TIMINGS_SUBCOMMANDS,
                  new ArrayList<String>(TIMINGS_SUBCOMMANDS.size()));
          }
+diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
+index fe19ea003eedfe21c6400d83430d87ddba8f5f6e..35aeeefcd05e1eb6dbc1a2cb1e7c015e247b3c8d 100644
+--- a/src/main/java/co/aikar/timings/TimingsExport.java
++++ b/src/main/java/co/aikar/timings/TimingsExport.java
+@@ -60,6 +60,7 @@ import static co.aikar.timings.TimingsManager.HISTORY;
+ import static co.aikar.util.JSONUtil.*;
+ 
+ @SuppressWarnings({"rawtypes", "SuppressionAnnotation"})
++@Deprecated // Unicorn
+ class TimingsExport extends Thread {
+ 
+     private final CommandSender sender;
+diff --git a/src/main/java/co/aikar/timings/TimingsManager.java b/src/main/java/co/aikar/timings/TimingsManager.java
+index 67c39df8a5a339256983011fbd82edca27f030b5..0320cf3fc5634124edb9aa1ab288680b800bd5c8 100644
+--- a/src/main/java/co/aikar/timings/TimingsManager.java
++++ b/src/main/java/co/aikar/timings/TimingsManager.java
+@@ -40,6 +40,7 @@ import java.util.List;
+ import java.util.Map;
+ import java.util.logging.Level;
+ 
++@Deprecated // Unicorn
+ public final class TimingsManager {
+     static final Map<TimingIdentifier, TimingHandler> TIMING_MAP =
+         Collections.synchronizedMap(LoadingMap.newHashMap(
+diff --git a/src/main/java/co/aikar/timings/UnsafeTimingHandler.java b/src/main/java/co/aikar/timings/UnsafeTimingHandler.java
+index e3b0ed8371d20bb598053561b3e4e48c00ff03db..da1e8584c00ffd283e4a6ea7d268dd269e4b8731 100644
+--- a/src/main/java/co/aikar/timings/UnsafeTimingHandler.java
++++ b/src/main/java/co/aikar/timings/UnsafeTimingHandler.java
+@@ -25,6 +25,7 @@ package co.aikar.timings;
+ 
+ import org.bukkit.Bukkit;
+ 
++@Deprecated // Unicorn
+ class UnsafeTimingHandler extends TimingHandler {
+ 
+     UnsafeTimingHandler(TimingIdentifier id) {
+diff --git a/src/main/java/org/bukkit/command/FormattedCommandAlias.java b/src/main/java/org/bukkit/command/FormattedCommandAlias.java
+index f89ad0759a9ac8b82ff6ea52338c918ca6396350..0dc2ededb71b840d050b13f6b4af14385debc717 100644
+--- a/src/main/java/org/bukkit/command/FormattedCommandAlias.java
++++ b/src/main/java/org/bukkit/command/FormattedCommandAlias.java
+@@ -14,7 +14,7 @@ public class FormattedCommandAlias extends Command {
+ 
+     public FormattedCommandAlias(String alias, String[] formatStrings) {
+         super(alias);
+-        timings = co.aikar.timings.TimingsManager.getCommandTiming("minecraft", this); // Spigot
++        // timings = co.aikar.timings.TimingsManager.getCommandTiming("minecraft", this); // Spigot // Unicorn - don't use timings
+         this.formatStrings = formatStrings;
+     }
+ 
 diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-index f35bc0921e1f65c8f35cca28b081d3223c2f417b..e0f1fedfb5f39e0fd686a2775d91f1166d88568c 100644
+index f35bc0921e1f65c8f35cca28b081d3223c2f417b..956c65e1384d845166c15e529de7f8b91f01340d 100644
 --- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
 +++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
+@@ -64,7 +64,7 @@ public class SimpleCommandMap implements CommandMap {
+      * {@inheritDoc}
+      */
+     public boolean register(String label, String fallbackPrefix, Command command) {
+-        command.timings = co.aikar.timings.TimingsManager.getCommandTiming(fallbackPrefix, command); // Spigot
++        //command.timings = co.aikar.timings.TimingsManager.getCommandTiming(fallbackPrefix, command); // Spigot // Unicorn - don't use timings
+         label = label.toLowerCase().trim();
+         fallbackPrefix = fallbackPrefix.toLowerCase().trim();
+         boolean registered = register(label, command, false, fallbackPrefix);
 @@ -141,15 +141,11 @@ public class SimpleCommandMap implements CommandMap {
          }
  
@@ -163,6 +334,36 @@ index f35bc0921e1f65c8f35cca28b081d3223c2f417b..e0f1fedfb5f39e0fd686a2775d91f116
              String msg = "Unhandled exception executing '" + commandLine + "' in " + target;
              server.getPluginManager().callEvent(new ServerExceptionEvent(new ServerCommandException(ex, target, sender, args))); // Paper
              throw new CommandException(msg, ex);
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index ce9839ec73e7ca668f1c920ddcd23fdeacd67a6a..3307340e51f1210be8d72b00c919d5a8f0310155 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -577,7 +577,7 @@ public final class SimplePluginManager implements PluginManager {
+             throw new IllegalPluginAccessException("Plugin attempted to register " + event + " while not enabled");
+         }
+ 
+-        executor = new co.aikar.timings.TimedEventExecutor(executor, plugin, null, event); // Spigot
++        //executor = new co.aikar.timings.TimedEventExecutor(executor, plugin, null, event); // Spigot // Unicorn - don't use timings
+         if (false) { // Spigot - RL handles useTimings check now
+             getEventListeners(event).register(new TimedRegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
+         } else {
+@@ -739,7 +739,7 @@ public final class SimplePluginManager implements PluginManager {
+     }
+ 
+     public boolean useTimings() {
+-        return co.aikar.timings.Timings.isTimingsEnabled(); // Spigot
++        return false; //co.aikar.timings.Timings.isTimingsEnabled(); // Spigot // Unicorn - don't use timings
+     }
+ 
+     /**
+@@ -748,6 +748,6 @@ public final class SimplePluginManager implements PluginManager {
+      * @param use True if per event timing code should be used
+      */
+     public void useTimings(boolean use) {
+-        co.aikar.timings.Timings.setTimingsEnabled(use); // Spigot
++        //co.aikar.timings.Timings.setTimingsEnabled(use); // Spigot // Unicorn - don't use timings
+     }
+ }
 diff --git a/src/main/java/org/spigotmc/CustomTimingsHandler.java b/src/main/java/org/spigotmc/CustomTimingsHandler.java
 index 6164aaa0daf0e62f2b9622508eba49db5921f5f0..dd574c026578a88832e1726065ae636f66588218 100644
 --- a/src/main/java/org/spigotmc/CustomTimingsHandler.java

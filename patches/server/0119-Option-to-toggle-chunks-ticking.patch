@@ -5,10 +5,10 @@ Subject: [PATCH] Option to toggle chunks ticking
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index fc44f312b1491bb416abd6a2aa18e8826d3dd3ca..6bd6c18d72a4788108774af7f82db3d21db45d8e 100644
+index 207154fbe5f9321e1f4c5ec27255aaab0de617d0..1f83f20ee637367cb8b5b1da5e88337b256fb975 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -376,6 +376,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -374,6 +374,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
      }
  
      protected void h() {

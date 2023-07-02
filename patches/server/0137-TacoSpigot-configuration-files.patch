@@ -5,7 +5,7 @@ Subject: [PATCH] TacoSpigot configuration files
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 2cc95f6795fefc73c9bfebdb75f4ee3894f67ac8..22386a9f890187844e3bf4ee37d2c643ecea7744 100644
+index 28930b905f0e6f84f5772852352186662f19f7e1..ee6207258c313eb7f17c10f9476e626c245d5124 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -6,6 +6,7 @@ import com.google.common.collect.Maps;

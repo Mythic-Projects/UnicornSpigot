@@ -26,7 +26,7 @@ index dc9f2b3ef53d1d194bf4e60fa90df7bccba73538..658555523a2ecbfd243ecd374c8aa402
          }
          return Blocks.AIR.getBlockData();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 3a1abe0030fcd75b0d53af67b89af5294fcd6043..7d45d52ae66b8dd030aa3dfd5c78ff4a1cad5c58 100644
+index 17a93e82d7f20480b8f49290e226706c3ec0cd99..a46f0d0e27c27600a31f64fac66eb6b914649a35 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -73,7 +73,7 @@ public abstract class World implements IBlockAccess {

@@ -6,10 +6,10 @@ Subject: [PATCH] Add Server#getEntity(UUID), World#getEntity(int) and
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 4d181f12570be1bbbeb9221b6c7d1f7aa9c06718..631c56d2cbc2d97d73c12595f3920a733c291f23 100644
+index 61b580563a2225d114d5f99bcb6b1ec817a66efb..7126191179906b68d563464eb936748d79e69f62 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -2950,6 +2950,7 @@ public abstract class World implements IBlockAccess {
+@@ -2946,6 +2946,7 @@ public abstract class World implements IBlockAccess {
          return (T) entity; // CraftBukkit fix decompile error
      }
  

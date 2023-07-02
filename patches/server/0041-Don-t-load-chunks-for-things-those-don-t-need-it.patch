@@ -345,7 +345,7 @@ index 1e1d08b547884241811ad4eb6d730930e7e3d8be..66690e688ce470dba4c28d902daf8afa
  
      public void b(NBTTagCompound nbttagcompound) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 7d45d52ae66b8dd030aa3dfd5c78ff4a1cad5c58..9037968d1719cb7699a4eb92ae9fa9ecbcd6979f 100644
+index a46f0d0e27c27600a31f64fac66eb6b914649a35..cd44a979861c4b976e5cf807468f3a2952e428f2 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -685,7 +685,8 @@ public abstract class World implements IBlockAccess {
@@ -388,7 +388,7 @@ index 7d45d52ae66b8dd030aa3dfd5c78ff4a1cad5c58..9037968d1719cb7699a4eb92ae9fa9ec
                      Block block1 = iblockdata1.getBlock();
  
                      if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
-@@ -2732,8 +2738,11 @@ public abstract class World implements IBlockAccess {
+@@ -2728,8 +2734,11 @@ public abstract class World implements IBlockAccess {
  
          for (int i1 = i; i1 <= j; ++i1) {
              for (int j1 = k; j1 <= l; ++j1) {

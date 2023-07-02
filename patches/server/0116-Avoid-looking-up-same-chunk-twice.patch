@@ -66,7 +66,7 @@ index 63f682da626c474eb878c4e97f55d8e869d9b9df..4180113e323650ed45bb60e7fc910332
  
              if (list.size() > 0) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010defee915ab 100644
+index 08165f29eed2121aaa35ac1bcc20fa8d689e703c..7e4b99a2954886594ac7faefad841ab984b61863 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -266,9 +266,10 @@ public abstract class World implements IBlockAccess {
@@ -145,7 +145,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
  
                  chunk.a(enumskyblock, blockposition, i);
                  this.n(blockposition);
-@@ -1734,8 +1748,11 @@ public abstract class World implements IBlockAccess {
+@@ -1733,8 +1747,11 @@ public abstract class World implements IBlockAccess {
                  tilesThisCycle--;
                  this.tileEntityList.remove(tileTickPosition--);
                  //this.h.remove(tileentity); // PaperSpigot - Remove unused list
@@ -159,7 +159,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
                  }
              }
          }
-@@ -1760,8 +1777,11 @@ public abstract class World implements IBlockAccess {
+@@ -1759,8 +1776,11 @@ public abstract class World implements IBlockAccess {
                      }
                      // CraftBukkit end */
  
@@ -173,7 +173,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
                      }
  
                      this.notify(tileentity1.getPosition());
-@@ -2888,8 +2908,11 @@ public abstract class World implements IBlockAccess {
+@@ -2884,8 +2904,11 @@ public abstract class World implements IBlockAccess {
      }
  
      public void b(BlockPosition blockposition, TileEntity tileentity) {
@@ -187,7 +187,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
          }
  
      }
-@@ -3394,9 +3417,10 @@ public abstract class World implements IBlockAccess {
+@@ -3390,9 +3413,10 @@ public abstract class World implements IBlockAccess {
              EnumDirection enumdirection = (EnumDirection) iterator.next();
              BlockPosition blockposition1 = blockposition.shift(enumdirection);
  
@@ -201,7 +201,7 @@ index bc39c7d05ec7a73f017e5ea369c70bc1cd8d5343..faf6dd894c23752f612d053310d010de
                  if (Blocks.UNPOWERED_COMPARATOR.e(iblockdata.getBlock())) {
                      iblockdata.getBlock().doPhysics(this, blockposition1, iblockdata, block);
                  } else if (iblockdata.getBlock().isOccluding()) {
-@@ -3415,9 +3439,12 @@ public abstract class World implements IBlockAccess {
+@@ -3411,9 +3435,12 @@ public abstract class World implements IBlockAccess {
          long i = 0L;
          float f = 0.0F;
  

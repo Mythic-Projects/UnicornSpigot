@@ -49,7 +49,7 @@ index b16807ed94c128718b840dbd905e259ecf5b9c3b..5c5785c603e1a709f0916eeae23f995c
 +    // Unicorn end
  }
 diff --git a/src/main/java/org/bukkit/command/SimpleCommandMap.java b/src/main/java/org/bukkit/command/SimpleCommandMap.java
-index e0f1fedfb5f39e0fd686a2775d91f1166d88568c..a9b709272b89cf7b1a7ea2b83720593e0b4186b2 100644
+index 956c65e1384d845166c15e529de7f8b91f01340d..b0e4eb742e27fc5b20482a2029987bf6abade41e 100644
 --- a/src/main/java/org/bukkit/command/SimpleCommandMap.java
 +++ b/src/main/java/org/bukkit/command/SimpleCommandMap.java
 @@ -12,6 +12,7 @@ import java.util.Map;

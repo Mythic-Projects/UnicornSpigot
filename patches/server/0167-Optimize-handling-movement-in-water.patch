@@ -5,10 +5,10 @@ Subject: [PATCH] Optimize handling movement in water
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 6216238561c22c57faaf6b73f2887987ab869ca6..45bfb2932d236fc0087c578881bee0668bf9e8ef 100644
+index f22e4f2de1f1ed8aa6ceea2c4244c32b0f6de9a5..b93e2cd130b775c3fb3387b9e325cabfb6d4cee9 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -2036,15 +2036,17 @@ public abstract class World implements IBlockAccess {
+@@ -2032,15 +2032,17 @@ public abstract class World implements IBlockAccess {
              for (int k1 = i; k1 < j; ++k1) {
                  for (int l1 = k; l1 < l; ++l1) {
                      for (int i2 = i1; i2 < j1; ++i2) {

@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize World#rayTrace
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 631c56d2cbc2d97d73c12595f3920a733c291f23..227f550cff5b95d353983a53acecf8610a733d31 100644
+index 7126191179906b68d563464eb936748d79e69f62..07d343c6e16bc26469db1d9c7767bfc702b67f3f 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1027,16 +1027,18 @@ public abstract class World implements IBlockAccess {

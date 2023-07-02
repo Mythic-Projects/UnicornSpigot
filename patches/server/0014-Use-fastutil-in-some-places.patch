@@ -275,7 +275,7 @@ index 749df5212616daa73ab2adb961e4c31635ce828f..b0fe7d8671eeffc54c6c582ac696a186
                  if (portaltravelagent_chunkcoordinatesportal == null || portaltravelagent_chunkcoordinatesportal.c < j) {
                      iterator.remove();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 41f7df5da651d1fc47366e7bda3229f69fae19d2..36be537dfd2656ebdd2db1c17dd9b6b528f6c615 100644
+index e38862636f4596b54b4cbe1b514b6203054e79f0..71719c0e728500f4582242ab42491e00cd5182e8 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -39,7 +39,7 @@ public abstract class World implements IBlockAccess {
@@ -299,10 +299,10 @@ index 41f7df5da651d1fc47366e7bda3229f69fae19d2..36be537dfd2656ebdd2db1c17dd9b6b5
      private long d = 16777215L;
      private int I;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 469545559f9eb0fc6b50c30d93ad86bfa2a35122..7b542969577b543668ac6e6731263923ca06d0bd 100644
+index f209d604b75a80f923193a18fed30fa30831a6e6..396a19c932baa766cc948214e88d8811e3ff39f8 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -382,7 +382,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -380,7 +380,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  int chunkX = World.keyToX( chunkCoord );
                  int chunkZ = World.keyToZ( chunkCoord );
                  // If unloaded, or in procedd of being unloaded, drop it

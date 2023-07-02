@@ -34,7 +34,7 @@ index 2ea4a5fd32629a7931189786f86dce99d1db6d63..75ca5e8c78a7c998ee5d2ae85219753f
              super.g(f, f1);
          }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 1dfec834a18ebb749c42a35a6323808accd3880c..2cc95f6795fefc73c9bfebdb75f4ee3894f67ac8 100644
+index a3befc6a359e20d873e91ec1e78b69e47517162a..28930b905f0e6f84f5772852352186662f19f7e1 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1456,6 +1456,7 @@ public abstract class World implements IBlockAccess {

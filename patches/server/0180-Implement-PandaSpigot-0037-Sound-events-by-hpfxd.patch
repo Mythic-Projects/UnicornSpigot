@@ -5,7 +5,7 @@ Subject: [PATCH] Implement [PandaSpigot-0037] Sound events by hpfxd
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 45bfb2932d236fc0087c578881bee0668bf9e8ef..4d181f12570be1bbbeb9221b6c7d1f7aa9c06718 100644
+index b93e2cd130b775c3fb3387b9e325cabfb6d4cee9..61b580563a2225d114d5f99bcb6b1ec817a66efb 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1166,20 +1166,54 @@ public abstract class World implements IBlockAccess {

@@ -282,7 +282,7 @@ index 7a552d04cb5a3bba7ce89d6d80f0fe91d0dcb5f7..339430411f7efe022d0a1601599ba4eb
          // CraftBukkit end
      }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f69fae19d2 100644
+index 1bccc92fd6e9487ed2c870843caf6379cfb47529..e38862636f4596b54b4cbe1b514b6203054e79f0 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -1411,7 +1411,6 @@ public abstract class World implements IBlockAccess {
@@ -293,7 +293,7 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
          this.entityList.removeAll(this.g);
  
          int j;
-@@ -1432,10 +1431,8 @@ public abstract class World implements IBlockAccess {
+@@ -1432,13 +1431,10 @@ public abstract class World implements IBlockAccess {
          // Paper end
  
          this.g.clear();
@@ -303,8 +303,11 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
 -        timings.entityTick.startTiming(); // Spigot
          guardEntityList = true; // Spigot
          // CraftBukkit start - Use field for loop variable
-         co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
-@@ -1458,12 +1455,9 @@ public abstract class World implements IBlockAccess {
+-        co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
+         int entitiesThisCycle = 0;
+         // PaperSpigot start - Disable tick limiters
+         //if (tickPosition < 0) tickPosition = 0;
+@@ -1458,12 +1454,9 @@ public abstract class World implements IBlockAccess {
  
              if (!entity.dead) {
                  try {
@@ -317,7 +320,7 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
                      String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
                      System.err.println(msg);
                      throwable1.printStackTrace();
-@@ -1489,8 +1483,6 @@ public abstract class World implements IBlockAccess {
+@@ -1489,8 +1482,6 @@ public abstract class World implements IBlockAccess {
          }
          guardEntityList = false; // Spigot
  
@@ -326,7 +329,7 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
          this.M = true;
          // CraftBukkit start - From below, clean up tile entities before ticking them
          if (!this.c.isEmpty()) {
-@@ -1519,11 +1511,9 @@ public abstract class World implements IBlockAccess {
+@@ -1519,11 +1510,9 @@ public abstract class World implements IBlockAccess {
  
                  if (this.isLoaded(blockposition) && this.N.a(blockposition)) {
                      try {
@@ -338,7 +341,7 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
                          String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
                          System.err.println(msg);
                          throwable2.printStackTrace();
-@@ -1535,7 +1525,7 @@ public abstract class World implements IBlockAccess {
+@@ -1535,7 +1524,7 @@ public abstract class World implements IBlockAccess {
                      }
                      // Spigot start
                      finally {
@@ -347,7 +350,7 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
                      }
                      // Spigot end
                  }
-@@ -1551,8 +1541,6 @@ public abstract class World implements IBlockAccess {
+@@ -1551,8 +1540,6 @@ public abstract class World implements IBlockAccess {
              }
          }
  
@@ -356,16 +359,26 @@ index 1bccc92fd6e9487ed2c870843caf6379cfb47529..41f7df5da651d1fc47366e7bda3229f6
          this.M = false;
          /* CraftBukkit start - Moved up
          if (!this.c.isEmpty()) {
-@@ -1584,7 +1572,6 @@ public abstract class World implements IBlockAccess {
+@@ -1583,9 +1570,6 @@ public abstract class World implements IBlockAccess {
+ 
              this.b.clear();
          }
- 
+-
 -        timings.tileEntityPending.stopTiming(); // Spigot
-         co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityList.size(); // Spigot
+-        co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityList.size(); // Spigot
      }
  
+     public boolean a(TileEntity tileentity) {
+@@ -1646,7 +1630,6 @@ public abstract class World implements IBlockAccess {
+             entity.lastPitch = entity.pitch;
+             if (flag && entity.ad) {
+                 ++entity.ticksLived;
+-                ++co.aikar.timings.TimingHistory.activatedEntityTicks; // Spigot
+                 if (entity.vehicle != null) {
+                     entity.ak();
+                 } else {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bfa2a35122 100644
+index d9db9d2d49208e07640b84759eb6ab9e2710a121..f209d604b75a80f923193a18fed30fa30831a6e6 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -224,13 +224,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
@@ -382,7 +395,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
          this.chunkProvider.unloadChunks();
          int j = this.a(1.0F);
  
-@@ -243,29 +240,18 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -243,29 +240,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
          }
  
@@ -392,9 +405,9 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
 -        timings.scheduledBlocks.stopTiming(); // Spigot
 -        timings.chunkTicks.startTiming(); // Spigot
          this.h();
-         timings.chunkTicks.stopTiming(); // Spigot
+-        timings.chunkTicks.stopTiming(); // Spigot
          this.antiXray.flushUpdates(this); // PaperSpigot
-         timings.doChunkMap.startTiming(); // Spigot
+-        timings.doChunkMap.startTiming(); // Spigot
          this.manager.flush();
 -        timings.doChunkMap.stopTiming(); // Spigot
 -        timings.doVillages.startTiming(); // Spigot
@@ -412,7 +425,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
      }
  
      public BiomeBase.BiomeMeta a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
-@@ -460,7 +446,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -460,7 +444,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      }
                  }
  
@@ -420,7 +433,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
                  i1 = this.getGameRules().c("randomTickSpeed");
                  if (i1 > 0) {
                      ChunkSection[] achunksection = chunk.getSections();
-@@ -489,7 +474,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -489,7 +472,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                          }
                      }
                  }
@@ -428,7 +441,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
              }
  
          }
-@@ -619,7 +603,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -619,7 +601,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -436,7 +449,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
                  NextTickListEntry nextticklistentry;
  
                  for (int j = 0; j < i; ++j) {
-@@ -632,7 +615,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -632,7 +613,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      this.M.remove(nextticklistentry);
                      this.V.add(nextticklistentry);
                  }
@@ -444,7 +457,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
  
                  // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
                  if (paperConfigUnicorn.tickNextTickListCapIgnoresRedstone) {
-@@ -651,7 +633,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -651,7 +631,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  }
                  // PaperSpigot end
  
@@ -452,7 +465,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
                  Iterator iterator = this.V.iterator();
  
                  while (iterator.hasNext()) {
-@@ -662,7 +643,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -662,7 +641,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                      if (this.areChunksLoadedBetween(nextticklistentry.a.a(-b0, -b0, -b0), nextticklistentry.a.a(b0, b0, b0))) {
                          IBlockData iblockdata = this.getType(nextticklistentry.a);
                          co.aikar.timings.Timing timing = iblockdata.getBlock().getTiming(); // Spigot
@@ -460,7 +473,7 @@ index d9db9d2d49208e07640b84759eb6ab9e2710a121..469545559f9eb0fc6b50c30d93ad86bf
  
                          if (iblockdata.getBlock().getMaterial() != Material.AIR && Block.a(iblockdata.getBlock(), nextticklistentry.a())) {
                              try {
-@@ -675,12 +655,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -675,12 +653,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                                  throw new ReportedException(crashreport);
                              }
                          }

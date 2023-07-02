@@ -18,7 +18,7 @@ index 7cae186e3fd5ca52186da56cdb6b8532264f291b..f72f13d0cdb739542b8214a061658376
                  /* Drop global time updates
                  if (this.ticks % 20 == 0) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ccf9f1a886845ccb1e7392709e8cd468413d6b1f..75298e9c089d9239b2d3f95bd2533b797ec7ad7a 100644
+index c4b906780fb7df6d76a1d41910861e3457199717..2d2c8caf6086f8bf4de38ac43f09e4465c94d87d 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -691,7 +691,7 @@ public abstract class World implements IBlockAccess {
@@ -31,7 +31,7 @@ index ccf9f1a886845ccb1e7392709e8cd468413d6b1f..75298e9c089d9239b2d3f95bd2533b79
                      this.getServer().getPluginManager().callEvent(event);
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index a62d801a2022bd8aa8c954f4946ea3bba9c14430..0a5f9929268ba9a378380851dfb37ea5a318d2e3 100644
+index 4056c9094ba8b33b01e70761e688e60277aeeede..9f55e7a9e0005ba8ac31005e2dc358e5f47d8a0c 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -50,6 +50,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {

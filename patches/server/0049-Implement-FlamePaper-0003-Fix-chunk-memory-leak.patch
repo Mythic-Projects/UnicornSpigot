@@ -79,7 +79,7 @@ index 2a93fee0880834efd1689ff14dd64caa7b753544..39f199480183e9e076b9e37b18a4c813
      private boolean e = false;
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 7b542969577b543668ac6e6731263923ca06d0bd..a62d801a2022bd8aa8c954f4946ea3bba9c14430 100644
+index 396a19c932baa766cc948214e88d8811e3ff39f8..4056c9094ba8b33b01e70761e688e60277aeeede 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -228,7 +228,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {

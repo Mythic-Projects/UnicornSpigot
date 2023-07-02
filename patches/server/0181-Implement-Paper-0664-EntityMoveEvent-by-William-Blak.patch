@@ -45,7 +45,7 @@ index c0b9935392d44a348b38db005aaf4ae1484996a8..01100b9002e872c192dd3bd01b0084b3
                  /* Drop global time updates
                  if (this.ticks % 20 == 0) {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index c53ffb12b3c0bb103ff31ad02872283ffb619c8b..3d57aa1d0970d0e293930c4e97fea5e43f2901c1 100644
+index 2fa1ddafd4ef387cb9b4c93fb3d2d1e0cd3894f5..612522d6d1ea2931e33af6df06ba73e785ae96f0 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -52,6 +52,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
