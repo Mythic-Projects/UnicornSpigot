@@ -5,13 +5,13 @@ Subject: [PATCH] Use Paper's CachedSizeConcurrentLinkedQueue with constant
  size()
 
 
-diff --git a/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
+diff --git a/src/main/java/com/destroystokyo/paper/util/CachedSizeConcurrentLinkedQueue.java b/src/main/java/com/destroystokyo/paper/util/CachedSizeConcurrentLinkedQueue.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..54bd172a17bc3646ace433c645308845d08d114d
+index 0000000000000000000000000000000000000000..aa0b37d3830610d73d4713357ac99717d2654a46
 --- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
++++ b/src/main/java/com/destroystokyo/paper/util/CachedSizeConcurrentLinkedQueue.java
 @@ -0,0 +1,34 @@
-+package com.destroystokyo.paper.utils;
++package com.destroystokyo.paper.util;
 +
 +import java.util.concurrent.ConcurrentLinkedQueue;
 +import java.util.concurrent.atomic.LongAdder;
@@ -46,7 +46,7 @@ index 0000000000000000000000000000000000000000..54bd172a17bc3646ace433c645308845
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c5f4a11f1bf8ca9fa222462cf90f4f7348b0280d..152271518414a1ae81223ae27ad99479478bd48e 100644
+index c5f4a11f1bf8ca9fa222462cf90f4f7348b0280d..98c1e544c71309c5532a631ecfad8acb36e03a80 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -100,7 +100,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
@@ -54,7 +54,7 @@ index c5f4a11f1bf8ca9fa222462cf90f4f7348b0280d..152271518414a1ae81223ae27ad99479
      private final GameProfileRepository Y;
      private final UserCache Z;
 -    protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename
-+    protected final Queue<FutureTask<?>> j = new com.destroystokyo.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Spigot, PAIL: Rename // Paper - Make size() constant-time
++    protected final Queue<FutureTask<?>> j = new com.destroystokyo.paper.util.CachedSizeConcurrentLinkedQueue<>(); // Spigot, PAIL: Rename // Paper - Make size() constant-time
      private Thread serverThread;
      private long ab = az();
  

@@ -320,7 +320,7 @@ index 4bdfe8ee4e4f90a928ef39c9075de07c45ef32c9..001fd557df9a34a1a1968a66bb1d13b8
      public EntityFishingHook hookedFish;
      public boolean affectsSpawning = true; // PaperSpigot
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0017a93d31aa31d0dbe19102d770bc2c9c4a22a3..15e39959a1c15ce8d6a9fb76f3368d33af9674b3 100644
+index c5e85620f8fe18c88727fd9aa020e231768de7b0..25841b9310cde9a5ce2b5c9172fbe2a4c5552bc7 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1608,6 +1608,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t

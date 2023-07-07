@@ -5,7 +5,7 @@ Subject: [PATCH] Add time updates frequency config option
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 152271518414a1ae81223ae27ad99479478bd48e..0017a93d31aa31d0dbe19102d770bc2c9c4a22a3 100644
+index 98c1e544c71309c5532a631ecfad8acb36e03a80..c5e85620f8fe18c88727fd9aa020e231768de7b0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -884,7 +884,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
@@ -18,7 +18,7 @@ index 152271518414a1ae81223ae27ad99479478bd48e..0017a93d31aa31d0dbe19102d770bc2c
              for (i = 0; i < this.worlds.size(); ++i) {
                  WorldServer world = this.worlds.get(i);
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index 0ffec14e1239a9ec47c9a641be4b89ff3553c19c..cd009a43cf7bc4a381f0f6a34e19cd3cdf5e748b 100644
+index 1d9a21d65e2bb657708e9a3dbfc72328c24a4d73..4708b9213d7fa201a9197628670a4b2863d842d0 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 @@ -60,6 +60,12 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {

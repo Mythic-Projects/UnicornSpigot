@@ -28,7 +28,7 @@ index 5b12994918d3b0c416134e9c489a60f5deb09349..e69f326fa04b033467070467b6961794
 +    }
  }
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index cd009a43cf7bc4a381f0f6a34e19cd3cdf5e748b..a53583afffd3c8f76a9ada578022fe004f83c8a9 100644
+index 4708b9213d7fa201a9197628670a4b2863d842d0..0f1587ff5e44d91938f8e148f6d53241d8c6894d 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 @@ -13,6 +13,7 @@ import java.util.Map;
@@ -58,7 +58,7 @@ index cd009a43cf7bc4a381f0f6a34e19cd3cdf5e748b..a53583afffd3c8f76a9ada578022fe00
      }
  
      @Comment("Optimizations that could improve performance, but may cause some issues.")
-@@ -159,6 +163,11 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+@@ -143,6 +147,11 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
          return this;
      }
  

@@ -5,7 +5,7 @@ Subject: [PATCH] Backport ServerShutdownEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a43cc294ff8037d614ac69ef284ac397a7e131aa..c0b9935392d44a348b38db005aaf4ae1484996a8 100644
+index 6be075c817833756dd407ba964b07596bf4096e8..556624acf60c47ea0411897a3d1e8772f42be9cb 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -478,6 +478,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t

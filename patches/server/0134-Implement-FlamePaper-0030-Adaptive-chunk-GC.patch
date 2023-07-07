@@ -35,13 +35,18 @@ index 329b9e18020db9c8d8ae5ac84ab8f2318b0a3548..7843c47aac839818feab1c682308cfa8
          } else if (chunkGCTickCount >= server.chunkGCPeriod && server.chunkGCPeriod > 0) {
              chunkGCTickCount = 0;
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index cf83103cf4d3520350926149dbbe56b5f65c0b7d..422f7385f1639da2b81812f4fec6d86b00013ee1 100644
+index f0bf074df9d1a3025521aa44bfec4caaba47c982..b85be171d299c48cb9ebc6946c1497562f504bee 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-@@ -105,6 +105,13 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
+@@ -100,6 +100,20 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {
  
-     public static class Chunks extends UnicornConfigSection {
+     }
  
++    @Comment("Configuration of systems related to chunks.")
++    public Chunks chunks = new Chunks();
++
++    public static class Chunks extends UnicornConfigSection {
++
 +        @Comment("Normally server uses bukkit.chunk-gc.load-threshold - it's define how many chunks could be loaded before GC will be triggered.")
 +        @Comment("This option make that value more flexible and change it dynamically.")
 +        @Comment("As a factor, it uses the amount of players online and multiply it by square of view-distance.")
@@ -49,6 +54,8 @@ index cf83103cf4d3520350926149dbbe56b5f65c0b7d..422f7385f1639da2b81812f4fec6d86b
 +        @Comment("However if there are 100 players online and view-distance is 10, server will store up to 10000 chunks in memory.")
 +        public boolean adaptiveChunkGC = false;
 +
-         @Comment("Configuration of chunks I/O loadings.")
-         @Comment("If you're using CPU with more threads, you can try to increase this value.")
-         public IO io = new IO();
++    }
++
+     @Comment("Per world settings.")
+     public Map<String, UnicornWorldConfig> worldSettings = new HashMap<>();
+ 

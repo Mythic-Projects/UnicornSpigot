@@ -31,7 +31,7 @@ index 997b0dd1c733edda1a1e8dc7f4c1e89f58439e8c..39aa21c3fcee6346079b2fa3fb68491b
              this.a(this.getBoundingBox().c(d0, d1, d2));
              this.recalcPosition();
 diff --git a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
-index 422f7385f1639da2b81812f4fec6d86b00013ee1..0ffec14e1239a9ec47c9a641be4b89ff3553c19c 100644
+index b85be171d299c48cb9ebc6946c1497562f504bee..1d9a21d65e2bb657708e9a3dbfc72328c24a4d73 100644
 --- a/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 +++ b/src/main/java/org/mythicprojects/unicornspigot/config/UnicornConfig.java
 @@ -105,6 +105,9 @@ public final class UnicornConfig extends EngineConfig<UnicornWorldConfig> {

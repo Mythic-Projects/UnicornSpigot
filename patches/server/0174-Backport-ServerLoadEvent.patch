@@ -5,7 +5,7 @@ Subject: [PATCH] Backport ServerLoadEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index cc4941d471a6baf268cb63b54e8e99db91a3d370..a43cc294ff8037d614ac69ef284ac397a7e131aa 100644
+index 1cbaf3742aad0de3ea50f0e22d45ee623803c60e..6be075c817833756dd407ba964b07596bf4096e8 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -34,6 +34,7 @@ import java.util.concurrent.Callable;

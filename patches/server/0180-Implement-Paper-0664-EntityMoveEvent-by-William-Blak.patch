@@ -33,7 +33,7 @@ index 5c1f5f6cf879a9fe442f7c0cb216bdd661c214a3..e5e671baba116b58a92298de8ba0d87e
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c0b9935392d44a348b38db005aaf4ae1484996a8..01100b9002e872c192dd3bd01b0084b3cd8cdb3a 100644
+index 556624acf60c47ea0411897a3d1e8772f42be9cb..97e22a541ec8c79aa7f0b857d6e82543f84835e2 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -919,6 +919,7 @@ public abstract class MinecraftServer extends org.mythicprojects.unicornspigot.t
