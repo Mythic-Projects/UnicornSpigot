@@ -1118,7 +1118,7 @@ index 3ed55f49d0a6e41ba7149bf989ccfb8eb7b3f5a2..a6263029e8df8d66ee78646e6cb5f452
              this.b = biomebase == BiomeBase.DESERT || biomebase == BiomeBase.DESERT_HILLS;
              this.a(this.b);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 0f68df0205a6b61d2f5ce9a086605c2263470bee..8aa9820681e2aef386575852fae43030a8701ec9 100644
+index 0f68df0205a6b61d2f5ce9a086605c2263470bee..446260dfa07db1d6ad90fa1762cb4f5ec8aa6765 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -95,15 +95,12 @@ public class CraftWorld implements World {
@@ -1126,7 +1126,7 @@ index 0f68df0205a6b61d2f5ce9a086605c2263470bee..8aa9820681e2aef386575852fae43030
  
      public int getBlockTypeIdAt(int x, int y, int z) {
 -        return CraftMagicNumbers.getId(world.getType(new BlockPosition(x, y, z)).getBlock());
-+        return CraftMagicNumbers.getId(world.getType(x, y, z).getBlock());
++        return CraftMagicNumbers.getId(world.getType(x, y, z).getBlock()); // Unicorn
      }
  
      public int getHighestBlockYAt(int x, int z) {
@@ -1141,7 +1141,7 @@ index 0f68df0205a6b61d2f5ce9a086605c2263470bee..8aa9820681e2aef386575852fae43030
  
      public Location getSpawnLocation() {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 22a80551b5df5920499767a66a9932b9e77b5fb1..096315ecbbbc1932dd35c537007f1a28129df243 100644
+index 22a80551b5df5920499767a66a9932b9e77b5fb1..9bdd8b9210e0aa9eb8e7557a0bc42aa48d11dcc5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 @@ -151,19 +151,19 @@ public class CraftBlock implements Block {
@@ -1149,12 +1149,12 @@ index 22a80551b5df5920499767a66a9932b9e77b5fb1..096315ecbbbc1932dd35c537007f1a28
      @Override
      public int getTypeId() {
 -        return CraftMagicNumbers.getId(chunk.getHandle().getType(new BlockPosition(this.x, this.y, this.z)));
-+        return CraftMagicNumbers.getId(chunk.getHandle().getTypeAbs(this.x, this.y, this.z));
++        return CraftMagicNumbers.getId(chunk.getHandle().getBlockData(this.x, this.y, this.z).getBlock()); // Unicorn
      }
  
      public byte getLightLevel() {
 -        return (byte) chunk.getHandle().getWorld().getLightLevel(new BlockPosition(this.x, this.y, this.z));
-+        return (byte) chunk.getHandle().getWorld().getLightLevel(this.x, this.y, this.z);
++        return (byte) chunk.getHandle().getWorld().getLightLevel(this.x, this.y, this.z); // Unicorn
      }
  
      public byte getLightFromSky() {
