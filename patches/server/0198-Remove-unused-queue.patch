@@ -5,7 +5,7 @@ Subject: [PATCH] Remove unused queue
 
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 02538a214c843d4949267c9e0203d5e9c127dd3b..d53d489b4dcf92bc817e06e556af9165bb351bcc 100644
+index 40b6457afdb58a317f092349641c911186abf282..f4da8c24052b99639c3d8bcdbaebf895b347ffff 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -54,7 +54,7 @@ public class Chunk {
@@ -40,7 +40,7 @@ index 02538a214c843d4949267c9e0203d5e9c127dd3b..d53d489b4dcf92bc817e06e556af9165
          } else if (tileentity.x()) {
              this.tileEntities.remove(blockposition);
              return null;
-@@ -1281,7 +1283,8 @@ public class Chunk {
+@@ -1287,7 +1289,8 @@ public class Chunk {
              this.n();
          }
  
@@ -50,7 +50,7 @@ index 02538a214c843d4949267c9e0203d5e9c127dd3b..d53d489b4dcf92bc817e06e556af9165
              BlockPosition blockposition = (BlockPosition) this.w.poll();
  
              if (this.a(blockposition, Chunk.EnumTileEntityState.CHECK) == null && this.getType(blockposition).isTileEntity()) {
-@@ -1290,7 +1293,8 @@ public class Chunk {
+@@ -1296,7 +1299,8 @@ public class Chunk {
                  this.world.setTileEntity(blockposition, tileentity);
                  this.world.b(blockposition, blockposition);
              }

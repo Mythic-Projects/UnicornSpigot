@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize world decorating
 
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index bc662644cfc21871b037ef6a61bce6cc383ca814..02538a214c843d4949267c9e0203d5e9c127dd3b 100644
+index 8571c5ed374ba64566022ee93363d4dc313fdf68..40b6457afdb58a317f092349641c911186abf282 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -558,6 +558,12 @@ public class Chunk {
@@ -35,10 +35,10 @@ index d96cef96fd20d9676e234ecf7a8037a4b022efdf..26dbf487f987777d3bd2a327085f1a3b
          this.y = new WorldGenHellLava(Blocks.FLOWING_LAVA, false);
          this.z = new WorldGenMushrooms(Blocks.BROWN_MUSHROOM);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 7eb214d697e3085b008eaf05b610a8cd9608a42d..7144310be2b6df8c5cdc2eedb7e6f43d78306ca7 100644
+index 5bc12e37e4e5b855263208e69ae69466ce18c148..b5a0c501272510a7b22ed23cb051fc2425be01d0 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -524,7 +524,7 @@ public abstract class World implements IBlockAccess {
+@@ -530,7 +530,7 @@ public abstract class World implements IBlockAccess {
          Block block1 = iblockdata1.getBlock();
  
          if (block.p() != block1.p() || block.r() != block1.r()) {
@@ -47,7 +47,7 @@ index 7eb214d697e3085b008eaf05b610a8cd9608a42d..7144310be2b6df8c5cdc2eedb7e6f43d
          }
  
          // CraftBukkit start
-@@ -2633,15 +2633,22 @@ public abstract class World implements IBlockAccess {
+@@ -2700,15 +2700,22 @@ public abstract class World implements IBlockAccess {
      }
  
      public boolean x(BlockPosition blockposition) {

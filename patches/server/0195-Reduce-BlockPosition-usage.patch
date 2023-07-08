@@ -27,6 +27,111 @@ index cb1ce9a828003104059b7c7d68af4326bba68157..cb795188fb2e16fe0227837903db339b
          } else {
              return this.temperature;
          }
+diff --git a/src/main/java/net/minecraft/server/Block.java b/src/main/java/net/minecraft/server/Block.java
+index 3bd0506894b457d16332e22820043d1c5aeb44ee..7dcd120a91d080d64f88b486511862240c71ed79 100644
+--- a/src/main/java/net/minecraft/server/Block.java
++++ b/src/main/java/net/minecraft/server/Block.java
+@@ -500,18 +500,32 @@ public class Block {
+ 
+     public void wasExploded(World world, BlockPosition blockposition, Explosion explosion) {}
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection, ItemStack itemstack) {
+-        return this.canPlace(world, blockposition, enumdirection);
++    // Unicorn start
++    public final boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection, ItemStack itemstack) {
++        return this.canPlace(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection, itemstack);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return this.canPlace(world, blockposition);
++    public final boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
++        return this.canPlace(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public final boolean canPlace(World world, BlockPosition blockposition) {
+         return world.getType(blockposition).getBlock().material.isReplaceable();
+     }
+ 
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection, ItemStack itemstack) {
++        return this.canPlace(world, x, y, z, enumdirection);
++    }
++
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) {
++        return this.canPlace(world, x, y, z);
++    }
++
++    public boolean canPlace(World world, int x, int y, int z) {
++        return world.getType(x, y, z).getBlock().material.isReplaceable();
++    }
++    // Unicorn end
++
+     public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
+         return false;
+     }
+@@ -554,9 +568,14 @@ public class Block {
+         return this.maxZ;
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public final int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    // Unicorn start
++        return this.a(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ(), iblockdata, enumdirection);
++    }
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
+         return 0;
+     }
++    // Unicorn end
+ 
+     public boolean isPowerSource() {
+         return false;
+@@ -564,9 +583,14 @@ public class Block {
+ 
+     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, Entity entity) {}
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public final int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    // Unicorn start
++        return this.b(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ(), iblockdata, enumdirection);
++    }
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
+         return 0;
+     }
++    // Unicorn end
+ 
+     public void j() {}
+ 
+@@ -661,7 +685,11 @@ public class Block {
+ 
+     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman) {}
+ 
+-    public void k(World world, BlockPosition blockposition) {}
++    public void k(World world, int x, int y, int z) {}
++
++    public void k(World world, BlockPosition blockposition) {
++        this.k(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
+ 
+     public boolean N() {
+         return true;
+diff --git a/src/main/java/net/minecraft/server/BlockBanner.java b/src/main/java/net/minecraft/server/BlockBanner.java
+index e1fe30ff376e02540e9a3bbb28a55c4272a0fcc5..fccb120364a7ab6896a8840fcc1975b7168a58a4 100644
+--- a/src/main/java/net/minecraft/server/BlockBanner.java
++++ b/src/main/java/net/minecraft/server/BlockBanner.java
+@@ -68,9 +68,11 @@ public class BlockBanner extends BlockContainer {
+ 
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return !this.e(world, blockposition) && super.canPlace(world, blockposition);
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z) {
++        return !this.e(world, x, y, z) && super.canPlace(world, x, y, z);
+     }
++    // Unicorn end
+ 
+     public void a(World world, EntityHuman entityhuman, BlockPosition blockposition, IBlockData iblockdata, TileEntity tileentity) {
+         if (tileentity instanceof TileEntityBanner) {
 diff --git a/src/main/java/net/minecraft/server/BlockBeacon.java b/src/main/java/net/minecraft/server/BlockBeacon.java
 index b4289c43d0efe0b3e571f989bc2a69cfededfd46..aca15616ff40f1fc6a3addb3bf96b2f58ea70d19 100644
 --- a/src/main/java/net/minecraft/server/BlockBeacon.java
@@ -66,6 +171,352 @@ index b4289c43d0efe0b3e571f989bc2a69cfededfd46..aca15616ff40f1fc6a3addb3bf96b2f5
  
                              /*}
                          });*/ // Paper
+diff --git a/src/main/java/net/minecraft/server/BlockButtonAbstract.java b/src/main/java/net/minecraft/server/BlockButtonAbstract.java
+index 0cccb53cc269a2bd8e729d00fb193cb61b16da10..6705bc2feb5a65cd39cfa7e4a4a3258e2b4a2ff1 100644
+--- a/src/main/java/net/minecraft/server/BlockButtonAbstract.java
++++ b/src/main/java/net/minecraft/server/BlockButtonAbstract.java
+@@ -38,18 +38,20 @@ public abstract class BlockButtonAbstract extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return a(world, blockposition, enumdirection.opposite());
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) {
++        return a(world, x, y, z, enumdirection.opposite());
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world,  int x, int y, int z) {
++    // Unicorn end
+         EnumDirection[] aenumdirection = EnumDirection.values();
+         int i = aenumdirection.length;
+ 
+         for (int j = 0; j < i; ++j) {
+             EnumDirection enumdirection = aenumdirection[j];
+ 
+-            if (a(world, blockposition, enumdirection)) {
++            if (a(world, x, y, z, enumdirection)) {
+                 return true;
+             }
+         }
+@@ -58,10 +60,18 @@ public abstract class BlockButtonAbstract extends Block {
+     }
+ 
+     protected static boolean a(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        BlockPosition blockposition1 = blockposition.shift(enumdirection);
++    // Unicorn start
++        return a(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
++
++    protected static boolean a(World world, int x, int y, int z, EnumDirection enumdirection) {
++        int x1 = x + enumdirection.getAdjacentX();
++        int y1 = y + enumdirection.getAdjacentY();
++        int z1 = z + enumdirection.getAdjacentZ();
+ 
+-        return enumdirection == EnumDirection.DOWN ? World.a((IBlockAccess) world, blockposition1) : world.getType(blockposition1).getBlock().isOccluding();
++        return enumdirection == EnumDirection.DOWN ? World.a((IBlockAccess) world, x1, y1, z1) : world.getType(x1, y1, z1).getBlock().isOccluding();
+     }
++    // Unicorn end
+ 
+     public IBlockData getPlacedState(World world, BlockPosition blockposition, EnumDirection enumdirection, float f, float f1, float f2, int i, EntityLiving entityliving) {
+         return a(world, blockposition, enumdirection.opposite()) ? this.getBlockData().set(BlockButtonAbstract.FACING, enumdirection).set(BlockButtonAbstract.POWERED, Boolean.valueOf(false)) : this.getBlockData().set(BlockButtonAbstract.FACING, EnumDirection.DOWN).set(BlockButtonAbstract.POWERED, Boolean.valueOf(false));
+@@ -159,11 +169,11 @@ public abstract class BlockButtonAbstract extends Block {
+         super.remove(world, blockposition, iblockdata);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return ((Boolean) iblockdata.get(BlockButtonAbstract.POWERED)).booleanValue() ? 15 : 0;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return !((Boolean) iblockdata.get(BlockButtonAbstract.POWERED)).booleanValue() ? 0 : (iblockdata.get(BlockButtonAbstract.FACING) == enumdirection ? 15 : 0);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockCactus.java b/src/main/java/net/minecraft/server/BlockCactus.java
+index a2582ebf526ed01a60c2c040051b48dffc3f24d3..4b5d1795b9247298f8cda258307e76ba3c6725b9 100644
+--- a/src/main/java/net/minecraft/server/BlockCactus.java
++++ b/src/main/java/net/minecraft/server/BlockCactus.java
+@@ -58,9 +58,11 @@ public class BlockCactus extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) ? this.e(world, blockposition) : false;
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z) {
++        return super.canPlace(world, x, y, z) && this.e(world, x, y, z);
+     }
++    // Unicorn end
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+         if (!this.e(world, blockposition)) {
+@@ -70,17 +72,27 @@ public class BlockCactus extends Block {
+     }
+ 
+     public boolean e(World world, BlockPosition blockposition) {
++    // Unicorn start
++        return this.e(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    public boolean e(World world, int x, int y, int z) {
++    // Unicorn end
+         Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
+ 
+         while (iterator.hasNext()) {
+             EnumDirection enumdirection = (EnumDirection) iterator.next();
+-
+-            if (world.getType(blockposition.shift(enumdirection)).getBlock().getMaterial().isBuildable()) {
++            // Unicorn start
++            int shiftX = x + enumdirection.getAdjacentX();
++            int shiftY = y + enumdirection.getAdjacentY();
++            int shiftZ = z + enumdirection.getAdjacentZ();
++            if (world.getType(shiftX, shiftY, shiftZ).getBlock().getMaterial().isBuildable()) {
++            // Unicorn end
+                 return false;
+             }
+         }
+ 
+-        Block block = world.getType(blockposition.down()).getBlock();
++        Block block = world.getType(x, y - 1, z).getBlock(); // Unicorn
+ 
+         return block == Blocks.CACTUS || block == Blocks.SAND;
+     }
+diff --git a/src/main/java/net/minecraft/server/BlockCake.java b/src/main/java/net/minecraft/server/BlockCake.java
+index 11a7eaf17847dd08ef47d4ffee92f2cb208c5ac9..0976dd5c70f4781daaa299008bbdb48f34ed9843 100644
+--- a/src/main/java/net/minecraft/server/BlockCake.java
++++ b/src/main/java/net/minecraft/server/BlockCake.java
+@@ -78,9 +78,11 @@ public class BlockCake extends Block {
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) ? this.e(world, blockposition) : false;
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z) {
++        return super.canPlace(world, x, y, z) && this.e(world, x, y, z);
+     }
++    // Unicorn end
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+         if (!this.e(world, blockposition)) {
+@@ -90,9 +92,15 @@ public class BlockCake extends Block {
+     }
+ 
+     private boolean e(World world, BlockPosition blockposition) {
+-        return world.getType(blockposition.down()).getBlock().getMaterial().isBuildable();
++    // Unicorn start
++        return this.e(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
+     }
+ 
++    private boolean e(World world, int x, int y, int z) {
++        return world.getType(x, y - 1, z).getBlock().getMaterial().isBuildable();
++    }
++    // Unicorn end
++
+     public int a(Random random) {
+         return 0;
+     }
+diff --git a/src/main/java/net/minecraft/server/BlockCarpet.java b/src/main/java/net/minecraft/server/BlockCarpet.java
+index b34ff4341d4b10861065eeecd69fcadc31c03f17..67ff7faff45ec005fcc4feb63f77e6f00c61538b 100644
+--- a/src/main/java/net/minecraft/server/BlockCarpet.java
++++ b/src/main/java/net/minecraft/server/BlockCarpet.java
+@@ -40,16 +40,24 @@ public class BlockCarpet extends Block {
+         this.a(0.0F, 0.0F, 0.0F, 1.0F, f, 1.0F);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) && this.e(world, blockposition);
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z) {
++        return super.canPlace(world, x, y, z) && this.e(world, x, y, z);
+     }
++    // Unicorn end
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+         this.e(world, blockposition, iblockdata);
+     }
+ 
+     private boolean e(World world, BlockPosition blockposition, IBlockData iblockdata) {
+-        if (!this.e(world, blockposition)) {
++    // Unicorn start
++        return this.e(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), iblockdata);
++    }
++    private boolean e(World world, int x, int y, int z, IBlockData iblockdata) {
++        if (!this.e(world, x, y, z)) {
++            BlockPosition blockposition = new BlockPosition(x, y, z);
++    // Unicorn end
+             this.b(world, blockposition, iblockdata, 0);
+             world.setAir(blockposition);
+             return false;
+@@ -59,7 +67,12 @@ public class BlockCarpet extends Block {
+     }
+ 
+     private boolean e(World world, BlockPosition blockposition) {
+-        return !world.isEmpty(blockposition.down());
++    // Unicorn start
++        return this.e(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    private boolean e(World world, int x, int y, int z) {
++        return !world.isEmpty(x, y - 1, z);
++    // Unicorn end
+     }
+ 
+     public int getDropData(IBlockData iblockdata) {
+diff --git a/src/main/java/net/minecraft/server/BlockCauldron.java b/src/main/java/net/minecraft/server/BlockCauldron.java
+index 5a4d5f7c24e93bc83f7f8751de6594d917ec410c..ac42ef2bfa152eba02482950aa7fb9647444385a 100644
+--- a/src/main/java/net/minecraft/server/BlockCauldron.java
++++ b/src/main/java/net/minecraft/server/BlockCauldron.java
+@@ -148,12 +148,12 @@ public class BlockCauldron extends Block {
+         world.updateAdjacentComparators(blockposition, this);
+     }
+ 
+-    public void k(World world, BlockPosition blockposition) {
++    public void k(World world, int x, int y, int z) { // Unicorn
+         if (world.random.nextInt(20) == 1) {
+-            IBlockData iblockdata = world.getType(blockposition);
++            IBlockData iblockdata = world.getType(x, y, z); // Unicorn
+ 
+             if (((Integer) iblockdata.get(BlockCauldron.LEVEL)).intValue() < 3) {
+-                world.setTypeAndData(blockposition, iblockdata.a(BlockCauldron.LEVEL), 2);
++                world.setTypeAndData(new BlockPosition(x, y, z), iblockdata.a(BlockCauldron.LEVEL), 2); // Unicorn
+             }
+ 
+         }
+diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
+index 66c91744a9d35ae5bc005ebc7c235c1975e2b96b..e7d5c7f1d7bcd1619167bb7b606864915c175074 100644
+--- a/src/main/java/net/minecraft/server/BlockChest.java
++++ b/src/main/java/net/minecraft/server/BlockChest.java
+@@ -237,39 +237,36 @@ public class BlockChest extends BlockContainer {
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    // Unicorn start
++    public boolean canPlace(World world, int x, int y, int z) {
+         int i = 0;
+-        BlockPosition blockposition1 = blockposition.west();
+-        BlockPosition blockposition2 = blockposition.east();
+-        BlockPosition blockposition3 = blockposition.north();
+-        BlockPosition blockposition4 = blockposition.south();
+ 
+-        if (world.getType(blockposition1).getBlock() == this) {
+-            if (this.m(world, blockposition1)) {
++        if (world.getType(x - 1, y, z).getBlock() == this) {
++            if (this.m(world, x - 1, y, z)) {
+                 return false;
+             }
+ 
+             ++i;
+         }
+ 
+-        if (world.getType(blockposition2).getBlock() == this) {
+-            if (this.m(world, blockposition2)) {
++        if (world.getType(x + 1, y, z).getBlock() == this) {
++            if (this.m(world, x + 1, y, z)) {
+                 return false;
+             }
+ 
+             ++i;
+         }
+ 
+-        if (world.getType(blockposition3).getBlock() == this) {
+-            if (this.m(world, blockposition3)) {
++        if (world.getType(x, y, z - 1).getBlock() == this) {
++            if (this.m(world, x, y, z - 1)) {
+                 return false;
+             }
+ 
+             ++i;
+         }
+ 
+-        if (world.getType(blockposition4).getBlock() == this) {
+-            if (this.m(world, blockposition4)) {
++        if (world.getType(x, y, z + 1).getBlock() == this) {
++            if (this.m(world, x, y, z + 1)) {
+                 return false;
+             }
+ 
+@@ -279,8 +276,9 @@ public class BlockChest extends BlockContainer {
+         return i <= 1;
+     }
+ 
+-    private boolean m(World world, BlockPosition blockposition) {
+-        if (world.getType(blockposition).getBlock() != this) {
++    private boolean m(World world, int x, int y, int z) {
++        if (world.getType(x, y, z).getBlock() != this) {
++    // Unicorn end
+             return false;
+         } else {
+             Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
+@@ -293,7 +291,7 @@ public class BlockChest extends BlockContainer {
+                 }
+ 
+                 enumdirection = (EnumDirection) iterator.next();
+-            } while (world.getType(blockposition.shift(enumdirection)).getBlock() != this);
++            } while (world.getType(x, y, z, enumdirection).getBlock() != this); // Unicorn
+ 
+             return true;
+         }
+@@ -387,12 +385,12 @@ public class BlockChest extends BlockContainer {
+         return this.b == 1;
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         if (!this.isPowerSource()) {
+             return 0;
+         } else {
+             int i = 0;
+-            TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
++            TileEntity tileentity = iblockaccess.getTileEntity(x, y, z); // Unicorn
+ 
+             if (tileentity instanceof TileEntityChest) {
+                 i = ((TileEntityChest) tileentity).l;
+@@ -402,8 +400,8 @@ public class BlockChest extends BlockContainer {
+         }
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
+-        return enumdirection == EnumDirection.UP ? this.a(iblockaccess, blockposition, iblockdata, enumdirection) : 0;
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++        return enumdirection == EnumDirection.UP ? this.a(iblockaccess, x, y, z, iblockdata, enumdirection) : 0;
+     }
+ 
+     private boolean n(World world, BlockPosition blockposition) {
+diff --git a/src/main/java/net/minecraft/server/BlockContainer.java b/src/main/java/net/minecraft/server/BlockContainer.java
+index c51f6c652592abde0fd3d7d1b26d1c50a4a611a0..9080a0c436f9e4b99264aa11f1ae18037aca188b 100644
+--- a/src/main/java/net/minecraft/server/BlockContainer.java
++++ b/src/main/java/net/minecraft/server/BlockContainer.java
+@@ -12,12 +12,24 @@ public abstract class BlockContainer extends Block implements IContainer {
+     }
+ 
+     protected boolean a(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return world.getType(blockposition.shift(enumdirection)).getBlock().getMaterial() == Material.CACTUS;
++    // Unicorn start
++        return this.a(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
+     }
+ 
++    protected boolean a(World world, int x, int y, int z, EnumDirection enumdirection) {
++        return world.getType(x, y, z, enumdirection).getBlock().getMaterial() == Material.CACTUS;
++    }
++    // Unicorn end
++
+     protected boolean e(World world, BlockPosition blockposition) {
+-        return this.a(world, blockposition, EnumDirection.NORTH) || this.a(world, blockposition, EnumDirection.SOUTH) || this.a(world, blockposition, EnumDirection.WEST) || this.a(world, blockposition, EnumDirection.EAST);
++    // Unicorn start
++        return this.e(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    protected boolean e(World world, int x, int y, int z) {
++        return this.a(world, x, y, z, EnumDirection.NORTH) || this.a(world, x, y, z, EnumDirection.SOUTH) || this.a(world, x, y, z, EnumDirection.WEST) || this.a(world, x, y, z, EnumDirection.EAST);
+     }
++    // Unicorn end
+ 
+     public int b() {
+         return -1;
 diff --git a/src/main/java/net/minecraft/server/BlockCrops.java b/src/main/java/net/minecraft/server/BlockCrops.java
 index 81a9085993a915abbb150cc046eac75b6d24e310..ffd4c995658b1b94195bff209c6d5f113a990774 100644
 --- a/src/main/java/net/minecraft/server/BlockCrops.java
@@ -93,6 +544,191 @@ index 81a9085993a915abbb150cc046eac75b6d24e310..ffd4c995658b1b94195bff209c6d5f11
      }
  
      protected Item l() {
+diff --git a/src/main/java/net/minecraft/server/BlockDaylightDetector.java b/src/main/java/net/minecraft/server/BlockDaylightDetector.java
+index 45df7c9adfb73b623465e4e42abccb4395a9e011..97c7299842d181966867c0d39da6c6b441f2c63b 100644
+--- a/src/main/java/net/minecraft/server/BlockDaylightDetector.java
++++ b/src/main/java/net/minecraft/server/BlockDaylightDetector.java
+@@ -22,7 +22,7 @@ public class BlockDaylightDetector extends BlockContainer {
+         this.a(0.0F, 0.0F, 0.0F, 1.0F, 0.375F, 1.0F);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return ((Integer) iblockdata.get(BlockDaylightDetector.POWER)).intValue();
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockDiodeAbstract.java b/src/main/java/net/minecraft/server/BlockDiodeAbstract.java
+index ced7a6b8fa9e0cd832b99645ea97e7efda2da7d7..9025c53c4d4cd2c273c150d54af053ab5e59ebbc 100644
+--- a/src/main/java/net/minecraft/server/BlockDiodeAbstract.java
++++ b/src/main/java/net/minecraft/server/BlockDiodeAbstract.java
+@@ -18,8 +18,8 @@ public abstract class BlockDiodeAbstract extends BlockDirectional {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return World.a((IBlockAccess) world, blockposition.down()) ? super.canPlace(world, blockposition) : false;
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return World.a(world, x, y - 1, z) && super.canPlace(world, x, y, z); // Unicorn
+     }
+ 
+     public boolean e(World world, BlockPosition blockposition) {
+@@ -58,13 +58,15 @@ public abstract class BlockDiodeAbstract extends BlockDirectional {
+         return this.N;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
+-        return this.a(iblockaccess, blockposition, iblockdata, enumdirection);
++    // Unicorn start
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++        return this.a(iblockaccess, x, y, z, iblockdata, enumdirection);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
+-        return !this.l(iblockdata) ? 0 : (iblockdata.get(BlockDiodeAbstract.FACING) == enumdirection ? this.a(iblockaccess, blockposition, iblockdata) : 0);
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++        return !this.l(iblockdata) ? 0 : (iblockdata.get(BlockDiodeAbstract.FACING) == enumdirection ? this.a(iblockaccess, x, y, z, iblockdata) : 0);
+     }
++    // Unicorn end
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+         if (this.e(world, blockposition)) {
+@@ -212,7 +214,13 @@ public abstract class BlockDiodeAbstract extends BlockDirectional {
+         return block.isPowerSource();
+     }
+ 
+-    protected int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {
++    protected final int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {
++    // Unicorn start
++        return this.a(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ(), iblockdata);
++    }
++
++    protected int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata) {
++    // Unicorn end
+         return 15;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockDispenser.java b/src/main/java/net/minecraft/server/BlockDispenser.java
+index fcf48538d07b88f06008e7066b0866ca2f21c1a4..2323aec01a4bccbd07ebc5d1568ed93e7cfeabcb 100644
+--- a/src/main/java/net/minecraft/server/BlockDispenser.java
++++ b/src/main/java/net/minecraft/server/BlockDispenser.java
+@@ -100,7 +100,7 @@ public class BlockDispenser extends BlockContainer {
+     }
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+-        boolean flag = world.isBlockIndirectlyPowered(blockposition) || world.isBlockIndirectlyPowered(blockposition.up());
++        boolean flag = world.isBlockIndirectlyPowered(blockposition) || world.isBlockIndirectlyPowered(blockposition.getX(), blockposition.getY() + 1, blockposition.getZ()); // Unicorn
+         boolean flag1 = ((Boolean) iblockdata.get(BlockDispenser.TRIGGERED)).booleanValue();
+ 
+         if (flag && !flag1) {
+diff --git a/src/main/java/net/minecraft/server/BlockDoor.java b/src/main/java/net/minecraft/server/BlockDoor.java
+index bbaa2b5a450d83bed68edd3c05747d0c69e52e19..656325be4cfea3e189a16a6a602dd4d547654292 100644
+--- a/src/main/java/net/minecraft/server/BlockDoor.java
++++ b/src/main/java/net/minecraft/server/BlockDoor.java
+@@ -195,8 +195,8 @@ public class BlockDoor extends Block {
+         return super.a(world, blockposition, vec3d, vec3d1);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return blockposition.getY() >= 255 ? false : World.a((IBlockAccess) world, blockposition.down()) && super.canPlace(world, blockposition) && super.canPlace(world, blockposition.up());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return y < 255 && World.a(world, x, y - 1, z) && super.canPlace(world, x, y, z) && super.canPlace(world, x, y + 1, z); // Unicorn
+     }
+ 
+     public int k() {
+diff --git a/src/main/java/net/minecraft/server/BlockFenceGate.java b/src/main/java/net/minecraft/server/BlockFenceGate.java
+index c02281293752224f4e47fcfcb1378a7391387db1..122875914057ac31adfab85ba1e2e4c94efd29c9 100644
+--- a/src/main/java/net/minecraft/server/BlockFenceGate.java
++++ b/src/main/java/net/minecraft/server/BlockFenceGate.java
+@@ -22,8 +22,8 @@ public class BlockFenceGate extends BlockDirectional {
+         return iblockdata;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return world.getType(blockposition.down()).getBlock().getMaterial().isBuildable() ? super.canPlace(world, blockposition) : false;
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return world.getType(x, y - 1, z).getBlock().getMaterial().isBuildable() && super.canPlace(world, x, y, z); // Unicorn
+     }
+ 
+     public AxisAlignedBB a(World world, BlockPosition blockposition, IBlockData iblockdata) {
+diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
+index 398f08e77ddf4e292870e17904520f125df3aec4..673a59bd562c71268b88e94052a3d59deb826a3f 100644
+--- a/src/main/java/net/minecraft/server/BlockFire.java
++++ b/src/main/java/net/minecraft/server/BlockFire.java
+@@ -138,7 +138,7 @@ public class BlockFire extends Block {
+ 
+                 world.a(blockposition, (Block) this, this.a(world) + random.nextInt(10));
+                 if (!flag) {
+-                    if (!this.f(world, blockposition)) {
++                    if (!this.f(world, blockposition.getX(), blockposition.getY(), blockposition.getZ())) { // Unicorn
+                         if (!World.a((IBlockAccess) world, blockposition.down()) || i > 3) {
+                             fireExtinguished(world, blockposition); // CraftBukkit
+                         }
+@@ -284,14 +284,14 @@ public class BlockFire extends Block {
+ 
+     }
+ 
+-    private boolean f(World world, BlockPosition blockposition) {
++    private boolean f(World world, int x, int y, int z) { // Unicorn
+         EnumDirection[] aenumdirection = EnumDirection.values();
+         int i = aenumdirection.length;
+ 
+         for (int j = 0; j < i; ++j) {
+             EnumDirection enumdirection = aenumdirection[j];
+ 
+-            if (this.e((IBlockAccess) world, blockposition.shift(enumdirection))) {
++            if (this.e((IBlockAccess) world, x + enumdirection.getAdjacentX(), y + enumdirection.getAdjacentY(), z + enumdirection.getAdjacentZ())) { // Unicorn
+                 return true;
+             }
+         }
+@@ -326,15 +326,20 @@ public class BlockFire extends Block {
+     }
+ 
+     public boolean e(IBlockAccess iblockaccess, BlockPosition blockposition) {
+-        return this.d(iblockaccess.getType(blockposition).getBlock()) > 0;
++    // Unicorn start
++        return this.e(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ());
+     }
++    public boolean e(IBlockAccess iblockaccess, int x, int y, int z) {
++        return this.d(iblockaccess.getType(x, y, z).getBlock()) > 0;
++    }
++    // Unicorn end
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return World.a((IBlockAccess) world, blockposition.down()) || this.f(world, blockposition);
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return World.a((IBlockAccess) world, x, y - 1, z) || this.f(world, x, y, z); // Unicorn
+     }
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+-        if (!World.a((IBlockAccess) world, blockposition.down()) && !this.f(world, blockposition)) {
++        if (!World.a((IBlockAccess) world, blockposition.down()) && !this.f(world, blockposition.getX(), blockposition.getY(), blockposition.getZ())) { // Unicorn
+             fireExtinguished(world, blockposition); // CraftBukkit - fuel block gone
+         }
+ 
+@@ -342,7 +347,7 @@ public class BlockFire extends Block {
+ 
+     public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         if (world.worldProvider.getDimension() > 0 || !Blocks.PORTAL.e(world, blockposition)) {
+-            if (!World.a((IBlockAccess) world, blockposition.down()) && !this.f(world, blockposition)) {
++            if (!World.a((IBlockAccess) world, blockposition.down()) && !this.f(world, blockposition.getX(), blockposition.getY(), blockposition.getZ())) { // Unicorn
+                 fireExtinguished(world, blockposition); // CraftBukkit - fuel block broke
+             } else {
+                 world.a(blockposition, (Block) this, this.a(world) + world.random.nextInt(10));
+diff --git a/src/main/java/net/minecraft/server/BlockFlowerPot.java b/src/main/java/net/minecraft/server/BlockFlowerPot.java
+index ce461387b9c5fa3cb35467535dfb4df475d09f8b..f19bc8fdc2684d3c9c10e3ffaf3e503c2a313b34 100644
+--- a/src/main/java/net/minecraft/server/BlockFlowerPot.java
++++ b/src/main/java/net/minecraft/server/BlockFlowerPot.java
+@@ -78,8 +78,8 @@ public class BlockFlowerPot extends BlockContainer {
+         return tileentityflowerpot != null && tileentityflowerpot.b() != null ? tileentityflowerpot.c() : 0;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) && World.a((IBlockAccess) world, blockposition.down());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return super.canPlace(world, x, y, z) && World.a(world, x, y - 1, z); // Unicorn
+     }
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
 diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
 index b0d7926e13555a36c0fc587492ae71e6bc46caaa..18691bf27660bb02d0e95ae4fc7dbc0aed1c67bd 100644
 --- a/src/main/java/net/minecraft/server/BlockGrass.java
@@ -160,6 +796,143 @@ index b0d7926e13555a36c0fc587492ae71e6bc46caaa..18691bf27660bb02d0e95ae4fc7dbc0a
                              world.getServer().getPluginManager().callEvent(event);
  
                              if (!event.isCancelled()) {
+diff --git a/src/main/java/net/minecraft/server/BlockLadder.java b/src/main/java/net/minecraft/server/BlockLadder.java
+index 529aff232015b11d9bcb7cc6e2124ed0588f03a4..45a379f0844c2067b442359e70bf63971a0e73d0 100644
+--- a/src/main/java/net/minecraft/server/BlockLadder.java
++++ b/src/main/java/net/minecraft/server/BlockLadder.java
+@@ -53,8 +53,8 @@ public class BlockLadder extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return world.getType(blockposition.west()).getBlock().isOccluding() ? true : (world.getType(blockposition.east()).getBlock().isOccluding() ? true : (world.getType(blockposition.north()).getBlock().isOccluding() ? true : world.getType(blockposition.south()).getBlock().isOccluding()));
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return world.getType(x - 1, y, z).getBlock().isOccluding() || (world.getType(x + 1, y, z).getBlock().isOccluding() || (world.getType(x, y, z - 1).getBlock().isOccluding() || world.getType(x, y, z + 1).getBlock().isOccluding())); // Unicorn
+     }
+ 
+     public IBlockData getPlacedState(World world, BlockPosition blockposition, EnumDirection enumdirection, float f, float f1, float f2, int i, EntityLiving entityliving) {
+diff --git a/src/main/java/net/minecraft/server/BlockLever.java b/src/main/java/net/minecraft/server/BlockLever.java
+index c9015eb97dabfba253437068deb0285bf515da8f..be40b2a219757dc0defcd8d93a2ab82f7f8d8874 100644
+--- a/src/main/java/net/minecraft/server/BlockLever.java
++++ b/src/main/java/net/minecraft/server/BlockLever.java
+@@ -27,18 +27,18 @@ public class BlockLever extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return a(world, blockposition, enumdirection.opposite());
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
++        return a(world, x, y, z, enumdirection.opposite()); // Unicorn
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
+         EnumDirection[] aenumdirection = EnumDirection.values();
+         int i = aenumdirection.length;
+ 
+         for (int j = 0; j < i; ++j) {
+             EnumDirection enumdirection = aenumdirection[j];
+ 
+-            if (a(world, blockposition, enumdirection)) {
++            if (a(world, x, y, z, enumdirection)) { // Unicorn
+                 return true;
+             }
+         }
+@@ -50,6 +50,12 @@ public class BlockLever extends Block {
+         return BlockButtonAbstract.a(world, blockposition, enumdirection);
+     }
+ 
++    // Unicorn start
++    protected static boolean a(World world, int x, int y, int z, EnumDirection enumdirection) {
++        return BlockButtonAbstract.a(world, x, y, z, enumdirection);
++    }
++    // Unicorn end
++
+     public IBlockData getPlacedState(World world, BlockPosition blockposition, EnumDirection enumdirection, float f, float f1, float f2, int i, EntityLiving entityliving) {
+         IBlockData iblockdata = this.getBlockData().set(BlockLever.POWERED, Boolean.valueOf(false));
+ 
+@@ -193,11 +199,11 @@ public class BlockLever extends Block {
+         super.remove(world, blockposition, iblockdata);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return ((Boolean) iblockdata.get(BlockLever.POWERED)).booleanValue() ? 15 : 0;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return !((Boolean) iblockdata.get(BlockLever.POWERED)).booleanValue() ? 0 : (((BlockLever.EnumLeverPosition) iblockdata.get(BlockLever.FACING)).c() == enumdirection ? 15 : 0);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockMinecartDetector.java b/src/main/java/net/minecraft/server/BlockMinecartDetector.java
+index f3ce4a9c0ceddd9cbee943607ea00d2def213670..9b55430dc690052bbd121e7988d0b1e816a51a0d 100644
+--- a/src/main/java/net/minecraft/server/BlockMinecartDetector.java
++++ b/src/main/java/net/minecraft/server/BlockMinecartDetector.java
+@@ -49,11 +49,11 @@ public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
+         }
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return ((Boolean) iblockdata.get(BlockMinecartDetector.POWERED)).booleanValue() ? 15 : 0;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return !((Boolean) iblockdata.get(BlockMinecartDetector.POWERED)).booleanValue() ? 0 : (enumdirection == EnumDirection.UP ? 15 : 0);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockMinecartTrackAbstract.java b/src/main/java/net/minecraft/server/BlockMinecartTrackAbstract.java
+index ec42421c03b101b4e20356150e8fdda6e82e53ca..89bbe78c296a68c0bb1c3155b8b0f6c5dfc97924 100644
+--- a/src/main/java/net/minecraft/server/BlockMinecartTrackAbstract.java
++++ b/src/main/java/net/minecraft/server/BlockMinecartTrackAbstract.java
+@@ -54,8 +54,8 @@ public abstract class BlockMinecartTrackAbstract extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return World.a((IBlockAccess) world, blockposition.down());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return World.a((IBlockAccess) world, x, y - 1, z); // Unicorn
+     }
+ 
+     public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+diff --git a/src/main/java/net/minecraft/server/BlockMushroom.java b/src/main/java/net/minecraft/server/BlockMushroom.java
+index 78f8799ce629bbe2992adbca9e76ffeac7bd1949..af33c9a4a7efbe5ca0c31708334ffdc834cd3222 100644
+--- a/src/main/java/net/minecraft/server/BlockMushroom.java
++++ b/src/main/java/net/minecraft/server/BlockMushroom.java
+@@ -64,9 +64,8 @@ public class BlockMushroom extends BlockPlant implements IBlockFragilePlantEleme
+         }
+ 
+     }
+-
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) && this.f(world, blockposition, this.getBlockData());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return super.canPlace(world, x, y, z) && this.f(world, x, y, z, this.getBlockData()); // Unicorn
+     }
+ 
+     protected boolean c(Block block) {
+@@ -74,10 +73,15 @@ public class BlockMushroom extends BlockPlant implements IBlockFragilePlantEleme
+     }
+ 
+     public boolean f(World world, BlockPosition blockposition, IBlockData iblockdata) {
+-        if (blockposition.getY() >= 0 && blockposition.getY() < 256) {
+-            IBlockData iblockdata1 = world.getType(blockposition.down());
++    // Unicorn start
++        return this.f(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), iblockdata);
++    }
++    public boolean f(World world, int x, int y, int z, IBlockData iblockdata) {
++        if (y >= 0 && y < 256) {
++            IBlockData iblockdata1 = world.getType(x, y - 1, z);
+ 
+-            return iblockdata1.getBlock() == Blocks.MYCELIUM ? true : (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.PODZOL ? true : world.k(blockposition) < 13 && this.c(iblockdata1.getBlock()));
++            return iblockdata1.getBlock() == Blocks.MYCELIUM ? true : (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.PODZOL ? true : world.k(x, y, z) < 13 && this.c(iblockdata1.getBlock()));
++    // Unicorn end
+         } else {
+             return false;
+         }
 diff --git a/src/main/java/net/minecraft/server/BlockMycel.java b/src/main/java/net/minecraft/server/BlockMycel.java
 index a05412491412b5a6acffd6b49a894702e920dbb0..7c3a49038f418cc9b1ab1eb151a5a4128c9c01fb 100644
 --- a/src/main/java/net/minecraft/server/BlockMycel.java
@@ -180,6 +953,331 @@ index a05412491412b5a6acffd6b49a894702e920dbb0..7c3a49038f418cc9b1ab1eb151a5a412
                              // CraftBukkit start
                              // world.setTypeUpdate(blockposition1, this.getBlockData());
                              org.bukkit.World bworld = world.getWorld();
+diff --git a/src/main/java/net/minecraft/server/BlockPiston.java b/src/main/java/net/minecraft/server/BlockPiston.java
+index b582f4bcd3396f0d826e82ca122918191969a9a8..b21129eb9ac4a8dda67ac26cb56b334d6840807c 100644
+--- a/src/main/java/net/minecraft/server/BlockPiston.java
++++ b/src/main/java/net/minecraft/server/BlockPiston.java
+@@ -91,18 +91,23 @@ public class BlockPiston extends Block {
+ 
+         int j;
+ 
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        // Unicorn end
+         for (j = 0; j < i; ++j) {
+             EnumDirection enumdirection1 = aenumdirection[j];
+ 
+-            if (enumdirection1 != enumdirection && world.isBlockFacePowered(blockposition.shift(enumdirection1), enumdirection1)) {
++            if (enumdirection1 != enumdirection && world.isBlockFacePowered(x + enumdirection1.getAdjacentX(), y + enumdirection1.getAdjacentY(), z + enumdirection1.getAdjacentZ(), enumdirection1)) { // Unicorn
+                 return true;
+             }
+         }
+ 
+-        if (world.isBlockFacePowered(blockposition, EnumDirection.DOWN)) {
++        if (world.isBlockFacePowered(x, y, z, EnumDirection.DOWN)) { // Unicorn
+             return true;
+         } else {
+-            BlockPosition blockposition1 = blockposition.up();
++            //BlockPosition blockposition1 = blockposition.up(); // Unicorn
+             EnumDirection[] aenumdirection1 = EnumDirection.values();
+ 
+             j = aenumdirection1.length;
+@@ -110,7 +115,7 @@ public class BlockPiston extends Block {
+             for (int k = 0; k < j; ++k) {
+                 EnumDirection enumdirection2 = aenumdirection1[k];
+ 
+-                if (enumdirection2 != EnumDirection.DOWN && world.isBlockFacePowered(blockposition1.shift(enumdirection2), enumdirection2)) {
++                if (enumdirection2 != EnumDirection.DOWN && world.isBlockFacePowered(x + enumdirection2.getAdjacentX(), y + 1 + enumdirection2.getAdjacentY(), z + enumdirection2.getAdjacentZ(), enumdirection2)) { // Unicorn
+                     return true;
+                 }
+             }
+diff --git a/src/main/java/net/minecraft/server/BlockPistonExtension.java b/src/main/java/net/minecraft/server/BlockPistonExtension.java
+index 371d104d519637a1cdd0178fc9ea3c2d6ab8f387..820e2c149a10672c038eb7a330822093eb7274fc 100644
+--- a/src/main/java/net/minecraft/server/BlockPistonExtension.java
++++ b/src/main/java/net/minecraft/server/BlockPistonExtension.java
+@@ -55,11 +55,11 @@ public class BlockPistonExtension extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
+         return false;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockPistonMoving.java b/src/main/java/net/minecraft/server/BlockPistonMoving.java
+index 3b3334365bf927ca595dfbffb640606c8da2e676..7d008a738253a4406a77378af478e98da825f23d 100644
+--- a/src/main/java/net/minecraft/server/BlockPistonMoving.java
++++ b/src/main/java/net/minecraft/server/BlockPistonMoving.java
+@@ -32,11 +32,11 @@ public class BlockPistonMoving extends BlockContainer {
+ 
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
+         return false;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockPlant.java b/src/main/java/net/minecraft/server/BlockPlant.java
+index c1110242136e8fd98661886920b765bb5367c37d..9d241b5042288976b2a065e434b601732cc7ae73 100644
+--- a/src/main/java/net/minecraft/server/BlockPlant.java
++++ b/src/main/java/net/minecraft/server/BlockPlant.java
+@@ -25,8 +25,8 @@ public class BlockPlant extends Block {
+         this.a(CreativeModeTab.c);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) && this.c(world.getType(blockposition.down()).getBlock());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return super.canPlace(world, x, y, z) && this.c(world.getType(x, y - 1, z).getBlock()); // Unicorn
+     }
+ 
+     protected boolean c(Block block) {
+diff --git a/src/main/java/net/minecraft/server/BlockPowered.java b/src/main/java/net/minecraft/server/BlockPowered.java
+index 798ae26ff7cb956866f9c0f7b987a678266ea048..31b115b2a559abe542e2d5049a5d606ebfba120e 100644
+--- a/src/main/java/net/minecraft/server/BlockPowered.java
++++ b/src/main/java/net/minecraft/server/BlockPowered.java
+@@ -10,7 +10,7 @@ public class BlockPowered extends Block {
+         return true;
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return 15;
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/BlockPressurePlateAbstract.java b/src/main/java/net/minecraft/server/BlockPressurePlateAbstract.java
+index 6da1fcc5fed2846d0282b6fe7091989f28d05e7e..758811b3e203f75c148d3394980000f5efb78912 100644
+--- a/src/main/java/net/minecraft/server/BlockPressurePlateAbstract.java
++++ b/src/main/java/net/minecraft/server/BlockPressurePlateAbstract.java
+@@ -56,20 +56,20 @@ public abstract class BlockPressurePlateAbstract extends Block {
+         return true;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return this.m(world, blockposition.down());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return this.m(world, x, y - 1, z); // Unicorn
+     }
+ 
+     public void doPhysics(World world, BlockPosition blockposition, IBlockData iblockdata, Block block) {
+-        if (!this.m(world, blockposition.down())) {
++        if (!this.m(world, blockposition.getX(), blockposition.getY() - 1, blockposition.getZ())) { // Unicorn
+             this.b(world, blockposition, iblockdata, 0);
+             world.setAir(blockposition);
+         }
+ 
+     }
+ 
+-    private boolean m(World world, BlockPosition blockposition) {
+-        return World.a((IBlockAccess) world, blockposition) || world.getType(blockposition).getBlock() instanceof BlockFence;
++    private boolean m(World world, int x, int y, int z) { // Unicorn
++        return World.a((IBlockAccess) world, x, y, z) || world.getType(x, y, z).getBlock() instanceof BlockFence; // Unicorn
+     }
+ 
+     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {}
+@@ -152,11 +152,11 @@ public abstract class BlockPressurePlateAbstract extends Block {
+         world.applyPhysics(blockposition.down(), this);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return this.e(iblockdata);
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return enumdirection == EnumDirection.UP ? this.e(iblockdata) : 0;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockPumpkin.java b/src/main/java/net/minecraft/server/BlockPumpkin.java
+index 12958201ab533266860e858c61dad2bbe4182570..d6c2adc96b15d00bdbf1809b9dc9f4f083460c74 100644
+--- a/src/main/java/net/minecraft/server/BlockPumpkin.java
++++ b/src/main/java/net/minecraft/server/BlockPumpkin.java
+@@ -113,8 +113,8 @@ public class BlockPumpkin extends BlockDirectional {
+ 
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return world.getType(blockposition).getBlock().material.isReplaceable() && World.a((IBlockAccess) world, blockposition.down());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return world.getType(x, y, z).getBlock().material.isReplaceable() && World.a((IBlockAccess) world, x, y - 1 ,z); // Unicorn
+     }
+ 
+     public IBlockData getPlacedState(World world, BlockPosition blockposition, EnumDirection enumdirection, float f, float f1, float f2, int i, EntityLiving entityliving) {
+diff --git a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
+index 71aaf47559cd8916b857286862f44996566babbb..52817fa4ecc20f053c1077c4ff8b7d35f0428c85 100644
+--- a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
++++ b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
+@@ -47,9 +47,8 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+         return this.N || ((Boolean) iblockdata.get(BlockRedstoneComparator.POWERED)).booleanValue();
+     }
+ 
+-    protected int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {
+-        TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
+-
++    protected int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata) { // Unicorn
++        TileEntity tileentity = iblockaccess.getTileEntity(x, y, z); // Unicorn
+         return tileentity instanceof TileEntityComparator ? ((TileEntityComparator) tileentity).b() : 0;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockRedstoneTorch.java b/src/main/java/net/minecraft/server/BlockRedstoneTorch.java
+index ff2a47fae7cade811eb44e1121e11cc9f422de01..511d4b4c4766e0e65c0314e24aa2d235579cf049 100644
+--- a/src/main/java/net/minecraft/server/BlockRedstoneTorch.java
++++ b/src/main/java/net/minecraft/server/BlockRedstoneTorch.java
+@@ -100,7 +100,7 @@ public class BlockRedstoneTorch extends BlockTorch {
+ 
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return this.isOn && iblockdata.get(BlockRedstoneTorch.FACING) != enumdirection ? 15 : 0;
+     }
+ 
+@@ -186,9 +186,11 @@ public class BlockRedstoneTorch extends BlockTorch {
+         }
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
+-        return enumdirection == EnumDirection.DOWN ? this.a(iblockaccess, blockposition, iblockdata, enumdirection) : 0;
++    // Unicorn start
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++        return enumdirection == EnumDirection.DOWN ? this.a(iblockaccess, x, y, z, iblockdata, enumdirection) : 0;
+     }
++    // Unicorn end
+ 
+     public Item getDropType(IBlockData iblockdata, Random random, int i) {
+         return Item.getItemOf(Blocks.REDSTONE_TORCH);
+diff --git a/src/main/java/net/minecraft/server/BlockRedstoneWire.java b/src/main/java/net/minecraft/server/BlockRedstoneWire.java
+index d9edeff2423a576efe7ea238b12715b418a47532..955e002812160a5824f79011621125402e40c69a 100644
+--- a/src/main/java/net/minecraft/server/BlockRedstoneWire.java
++++ b/src/main/java/net/minecraft/server/BlockRedstoneWire.java
+@@ -59,8 +59,8 @@ public class BlockRedstoneWire extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return World.a((IBlockAccess) world, blockposition.down()) || world.getType(blockposition.down()).getBlock() == Blocks.GLOWSTONE;
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return World.a((IBlockAccess) world, x, y - 1, z) || world.getType(x, y - 1, z).getBlock() == Blocks.GLOWSTONE; // Unicorn
+     }
+ 
+     private IBlockData e(World world, BlockPosition blockposition, IBlockData iblockdata) {
+@@ -266,10 +266,15 @@ public class BlockRedstoneWire extends Block {
+     }
+ 
+     public int getPower(World world, BlockPosition blockposition, int i) {
+-        if (world.getType(blockposition).getBlock() != this) {
++    // Unicorn start
++        return this.getPower(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), i);
++    }
++    public int getPower(World world, int x, int y, int z, int i) {
++        if (world.getType(x, y, z).getBlock() != this) {
++    // Unicorn end
+             return i;
+         } else {
+-            int j = ((Integer) world.getType(blockposition).get(BlockRedstoneWire.POWER)).intValue();
++            int j = ((Integer) world.getType(x, y, z).get(BlockRedstoneWire.POWER)).intValue(); // Unicorn
+ 
+             return j > i ? j : i;
+         }
+@@ -291,11 +296,13 @@ public class BlockRedstoneWire extends Block {
+         return Items.REDSTONE;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
+-        return !this.Q ? 0 : this.a(iblockaccess, blockposition, iblockdata, enumdirection);
++    // Unicorn start
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++        return !this.Q ? 0 : this.a(iblockaccess, x, y, z, iblockdata, enumdirection);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) {
++    // Unicorn end
+         if (!this.Q) {
+             return 0;
+         } else {
+@@ -312,7 +319,7 @@ public class BlockRedstoneWire extends Block {
+                 while (iterator.hasNext()) {
+                     EnumDirection enumdirection1 = (EnumDirection) iterator.next();
+ 
+-                    if (this.d(iblockaccess, blockposition, enumdirection1)) {
++                    if (this.d(iblockaccess, x, y, z, enumdirection1)) { // Unicorn
+                         enumset.add(enumdirection1);
+                     }
+                 }
+@@ -329,18 +336,30 @@ public class BlockRedstoneWire extends Block {
+     }
+ 
+     private boolean d(IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
+-        BlockPosition blockposition1 = blockposition.shift(enumdirection);
+-        IBlockData iblockdata = iblockaccess.getType(blockposition1);
++    // Unicorn start
++        return this.d(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
++    private boolean d(IBlockAccess iblockaccess, int x, int y, int z, EnumDirection enumdirection) {
++        int x1 = x + enumdirection.getAdjacentX();
++        int y1 = y + enumdirection.getAdjacentY();
++        int z1 = z + enumdirection.getAdjacentZ();
++        IBlockData iblockdata = iblockaccess.getType(x1, y1, z1);
++    // Unicorn
+         Block block = iblockdata.getBlock();
+         boolean flag = block.isOccluding();
+-        boolean flag1 = iblockaccess.getType(blockposition.up()).getBlock().isOccluding();
++        boolean flag1 = iblockaccess.getType(x, y + 1, z).getBlock().isOccluding(); // Unicorn
+ 
+-        return !flag1 && flag && e(iblockaccess, blockposition1.up()) ? true : (a(iblockdata, enumdirection) ? true : (block == Blocks.POWERED_REPEATER && iblockdata.get(BlockDiodeAbstract.FACING) == enumdirection ? true : !flag && e(iblockaccess, blockposition1.down())));
++        return !flag1 && flag && e(iblockaccess, x1, y1 + 1, z1) || (a(iblockdata, enumdirection) || (block == Blocks.POWERED_REPEATER && iblockdata.get(BlockDiodeAbstract.FACING) == enumdirection || !flag && e(iblockaccess, x1, y1 - 1, z1))); // Unicorn
+     }
+ 
+     protected static boolean e(IBlockAccess iblockaccess, BlockPosition blockposition) {
+-        return d(iblockaccess.getType(blockposition));
++    // Unicorn start
++        return e(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    protected static boolean e(IBlockAccess iblockaccess, int x, int y, int z) {
++        return d(iblockaccess.getType(x, y, z));
+     }
++    // Unicorn end
+ 
+     protected static boolean d(IBlockData iblockdata) {
+         return a(iblockdata, (EnumDirection) null);
+diff --git a/src/main/java/net/minecraft/server/BlockReed.java b/src/main/java/net/minecraft/server/BlockReed.java
+index 134d0d48f95ca91445c84cb5ca214e320cb3ed77..c1c94d8cedf3fecfed47dd118b796e8de6ed4fc8 100644
+--- a/src/main/java/net/minecraft/server/BlockReed.java
++++ b/src/main/java/net/minecraft/server/BlockReed.java
+@@ -44,8 +44,8 @@ public class BlockReed extends Block {
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        Block block = world.getType(blockposition.down()).getBlock();
++    public boolean canPlace(World world, int x, int y, int z) { // Unicron
++        Block block = world.getType(x, y - 1, z).getBlock(); // Unicron
+ 
+         if (block == this) {
+             return true;
+@@ -62,7 +62,7 @@ public class BlockReed extends Block {
+                 }
+ 
+                 enumdirection = (EnumDirection) iterator.next();
+-            } while (world.getType(blockposition.shift(enumdirection).down()).getBlock().getMaterial() != Material.WATER);
++            } while (world.getType(x, y, z, enumdirection).getBlock().getMaterial() != Material.WATER); // Unicorn
+ 
+             return true;
+         }
 diff --git a/src/main/java/net/minecraft/server/BlockSapling.java b/src/main/java/net/minecraft/server/BlockSapling.java
 index 9069dd15f518bd4c43a2e818911e01e628f28e3f..47221ae8db24e8e4ff59ae34ce52a11569894bc2 100644
 --- a/src/main/java/net/minecraft/server/BlockSapling.java
@@ -193,6 +1291,50 @@ index 9069dd15f518bd4c43a2e818911e01e628f28e3f..47221ae8db24e8e4ff59ae34ce52a115
                  // CraftBukkit start
                  world.captureTreeGeneration = true;
                  // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/BlockSign.java b/src/main/java/net/minecraft/server/BlockSign.java
+index 61cad569bf71d5290072a7c357e1bcd854bd9d93..1ed9b374135a19eff1a1c333f643b9f44066b3e7 100644
+--- a/src/main/java/net/minecraft/server/BlockSign.java
++++ b/src/main/java/net/minecraft/server/BlockSign.java
+@@ -50,7 +50,7 @@ public class BlockSign extends BlockContainer {
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return !this.e(world, blockposition) && super.canPlace(world, blockposition);
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return !this.e(world, x, y, z) && super.canPlace(world, x, y, z); // Unicorn
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/BlockSnow.java b/src/main/java/net/minecraft/server/BlockSnow.java
+index 03b1a8bc8ec1f2cbc4f97fc5dd00b09a337a738b..d61f14caef6424780a047f1d9c752b195eb906cf 100644
+--- a/src/main/java/net/minecraft/server/BlockSnow.java
++++ b/src/main/java/net/minecraft/server/BlockSnow.java
+@@ -48,8 +48,8 @@ public class BlockSnow extends Block {
+         this.a(0.0F, 0.0F, 0.0F, 1.0F, (float) i / 8.0F, 1.0F);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        IBlockData iblockdata = world.getType(blockposition.down());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        IBlockData iblockdata = world.getType(x, y - 1, z); // Unicorn
+         Block block = iblockdata.getBlock();
+ 
+         return block != Blocks.ICE && block != Blocks.PACKED_ICE ? (block.getMaterial() == Material.LEAVES ? true : (block == this && ((Integer) iblockdata.get(BlockSnow.LAYERS)).intValue() >= 7 ? true : block.c() && block.material.isSolid())) : false;
+diff --git a/src/main/java/net/minecraft/server/BlockStairs.java b/src/main/java/net/minecraft/server/BlockStairs.java
+index 09ac41bd04bb05ea06b964f0cadcdb2f3624cdf3..8b514f2856669c3ae295eefb6b56bff3707bf9c9 100644
+--- a/src/main/java/net/minecraft/server/BlockStairs.java
++++ b/src/main/java/net/minecraft/server/BlockStairs.java
+@@ -415,8 +415,8 @@ public class BlockStairs extends Block {
+         return this.P.a(iblockdata, flag);
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return this.P.canPlace(world, blockposition);
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return this.P.canPlace(world, x, y, z); // Unicorn
+     }
+ 
+     public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
 diff --git a/src/main/java/net/minecraft/server/BlockStem.java b/src/main/java/net/minecraft/server/BlockStem.java
 index 41046f718030df6a018f39334f4c602a574440ae..5eb953ec4a04917841320f67eed23f452325f070 100644
 --- a/src/main/java/net/minecraft/server/BlockStem.java
@@ -206,8 +1348,140 @@ index 41046f718030df6a018f39334f4c602a574440ae..5eb953ec4a04917841320f67eed23f45
              float f = BlockCrops.a((Block) this, world, blockposition);
  
              if (random.nextInt((int) (world.growthOdds / (this == Blocks.PUMPKIN_STEM? world.spigotConfigUnicorn.growth.pumpkinModifier : world.spigotConfigUnicorn.growth.melonModifier) * (25.0F / f)) + 1) == 0) { // Spigot
+diff --git a/src/main/java/net/minecraft/server/BlockTallPlant.java b/src/main/java/net/minecraft/server/BlockTallPlant.java
+index 3fd33e59c3592d56327c9de17dec4c8855ea7e66..f60c0ad86229e19f540782fdcdb1497568a87c31 100644
+--- a/src/main/java/net/minecraft/server/BlockTallPlant.java
++++ b/src/main/java/net/minecraft/server/BlockTallPlant.java
+@@ -31,8 +31,8 @@ public class BlockTallPlant extends BlockPlant implements IBlockFragilePlantElem
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return super.canPlace(world, blockposition) && world.isEmpty(blockposition.up());
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
++        return super.canPlace(world, x, y, z) && world.isEmpty(x, y + 1, z); // Unicorn
+     }
+ 
+     public boolean a(World world, BlockPosition blockposition) {
+@@ -97,6 +97,12 @@ public class BlockTallPlant extends BlockPlant implements IBlockFragilePlantElem
+         world.setTypeAndData(blockposition, this.getBlockData().set(BlockTallPlant.HALF, BlockTallPlant.EnumTallPlantHalf.LOWER).set(BlockTallPlant.VARIANT, blocktallplant_enumtallflowervariants), i);
+         world.setTypeAndData(blockposition.up(), this.getBlockData().set(BlockTallPlant.HALF, BlockTallPlant.EnumTallPlantHalf.UPPER), i);
+     }
++    // Unicorn start
++    public void a(World world, int x, int y, int z, BlockTallPlant.EnumTallFlowerVariants blocktallplant_enumtallflowervariants, int i) {
++        world.setTypeAndData(new BlockPosition(x, y, z), this.getBlockData().set(BlockTallPlant.HALF, BlockTallPlant.EnumTallPlantHalf.LOWER).set(BlockTallPlant.VARIANT, blocktallplant_enumtallflowervariants), i);
++        world.setTypeAndData(new BlockPosition(x, y + 1, z), this.getBlockData().set(BlockTallPlant.HALF, BlockTallPlant.EnumTallPlantHalf.UPPER), i);
++    }
++    // Unicorn end
+ 
+     public void postPlace(World world, BlockPosition blockposition, IBlockData iblockdata, EntityLiving entityliving, ItemStack itemstack) {
+         world.setTypeAndData(blockposition.up(), this.getBlockData().set(BlockTallPlant.HALF, BlockTallPlant.EnumTallPlantHalf.UPPER), 2);
+diff --git a/src/main/java/net/minecraft/server/BlockTorch.java b/src/main/java/net/minecraft/server/BlockTorch.java
+index db8a918dfa74680b51e0fa3b6b27fe58460a5f3d..043bb98b695c10c6b417bafb40a055753caa644e 100644
+--- a/src/main/java/net/minecraft/server/BlockTorch.java
++++ b/src/main/java/net/minecraft/server/BlockTorch.java
+@@ -44,7 +44,7 @@ public class BlockTorch extends Block {
+         }
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
+         Iterator iterator = BlockTorch.FACING.c().iterator();
+ 
+         EnumDirection enumdirection;
+@@ -55,7 +55,7 @@ public class BlockTorch extends Block {
+             }
+ 
+             enumdirection = (EnumDirection) iterator.next();
+-        } while (!this.a(world, blockposition, enumdirection));
++        } while (!this.a(world, new BlockPosition(x, y, z), enumdirection)); // Unicorn
+ 
+         return true;
+     }
+diff --git a/src/main/java/net/minecraft/server/BlockTrapdoor.java b/src/main/java/net/minecraft/server/BlockTrapdoor.java
+index 1a2cdd1bcf1dc399aa4e6927afc0586245f35e53..fffb7d720823d5d7e96c342dd7ba008210f899a5 100644
+--- a/src/main/java/net/minecraft/server/BlockTrapdoor.java
++++ b/src/main/java/net/minecraft/server/BlockTrapdoor.java
+@@ -144,8 +144,8 @@ public class BlockTrapdoor extends Block {
+         return iblockdata;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return !enumdirection.k().b() && c(world.getType(blockposition.shift(enumdirection.opposite())).getBlock());
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
++        return !enumdirection.k().b() && c(world.getType(x, y, z, enumdirection.opposite()).getBlock()); // Unicorn
+     }
+ 
+     protected static EnumDirection b(int i) {
+diff --git a/src/main/java/net/minecraft/server/BlockTripwireHook.java b/src/main/java/net/minecraft/server/BlockTripwireHook.java
+index d50655a9776565b8d400c6efc850ff82e2cef29c..f97e43058f120bb418614de8471f2c63c9dfecf8 100644
+--- a/src/main/java/net/minecraft/server/BlockTripwireHook.java
++++ b/src/main/java/net/minecraft/server/BlockTripwireHook.java
+@@ -37,11 +37,11 @@ public class BlockTripwireHook extends Block {
+         return false;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
+-        return enumdirection.k().c() && world.getType(blockposition.shift(enumdirection.opposite())).getBlock().isOccluding();
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
++        return enumdirection.k().c() && world.getType(x, y, z, enumdirection.opposite()).getBlock().isOccluding(); // Unicorn
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition) {
++    public boolean canPlace(World world, int x, int y, int z) { // Unicorn
+         Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
+ 
+         EnumDirection enumdirection;
+@@ -52,7 +52,7 @@ public class BlockTripwireHook extends Block {
+             }
+ 
+             enumdirection = (EnumDirection) iterator.next();
+-        } while (!world.getType(blockposition.shift(enumdirection)).getBlock().isOccluding());
++        } while (!world.getType(x, y, z, enumdirection).getBlock().isOccluding()); // Unicorn
+ 
+         return true;
+     }
+@@ -247,11 +247,11 @@ public class BlockTripwireHook extends Block {
+         super.remove(world, blockposition, iblockdata);
+     }
+ 
+-    public int a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int a(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return ((Boolean) iblockdata.get(BlockTripwireHook.POWERED)).booleanValue() ? 15 : 0;
+     }
+ 
+-    public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
++    public int b(IBlockAccess iblockaccess, int x, int y, int z, IBlockData iblockdata, EnumDirection enumdirection) { // Unicorn
+         return !((Boolean) iblockdata.get(BlockTripwireHook.POWERED)).booleanValue() ? 0 : (iblockdata.get(BlockTripwireHook.FACING) == enumdirection ? 15 : 0);
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/BlockVine.java b/src/main/java/net/minecraft/server/BlockVine.java
+index 25d19c4c2b110d94d952f33a9a6e8e5f7f2cc1cf..58af9c7c8b87cb63de813b366c4537c74ca90f5b 100644
+--- a/src/main/java/net/minecraft/server/BlockVine.java
++++ b/src/main/java/net/minecraft/server/BlockVine.java
+@@ -107,17 +107,16 @@ public class BlockVine extends Block {
+         return null;
+     }
+ 
+-    public boolean canPlace(World world, BlockPosition blockposition, EnumDirection enumdirection) {
++    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection) { // Unicorn
+         switch (BlockVine.SyntheticClass_1.a[enumdirection.ordinal()]) {
+         case 1:
+-            return this.c(world.getType(blockposition.up()).getBlock());
++            return this.c(world.getType(x, y + 1, z).getBlock()); // Unicorn
+ 
+         case 2:
+         case 3:
+         case 4:
+         case 5:
+-            return this.c(world.getType(blockposition.shift(enumdirection.opposite())).getBlock());
+-
++            return this.c(world.getType(x, y, z, enumdirection.opposite()).getBlock()); // Unicorn
+         default:
+             return false;
+         }
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index fc6369a0bcc5bf359061abbf32fbcdcee0100c0d..bc662644cfc21871b037ef6a61bce6cc383ca814 100644
+index fc6369a0bcc5bf359061abbf32fbcdcee0100c0d..8571c5ed374ba64566022ee93363d4dc313fdf68 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -259,7 +259,7 @@ public class Chunk {
@@ -383,7 +1657,59 @@ index fc6369a0bcc5bf359061abbf32fbcdcee0100c0d..bc662644cfc21871b037ef6a61bce6cc
  
      private TileEntity i(BlockPosition blockposition) {
          Block block = this.getType(blockposition);
-@@ -1329,13 +1353,17 @@ public class Chunk {
+@@ -1213,33 +1237,39 @@ public class Chunk {
+     // Unicorn end
+ 
+     public BlockPosition h(BlockPosition blockposition) {
+-        int i = blockposition.getX() & 15;
+-        int j = blockposition.getZ() & 15;
+-        int k = i | j << 4;
+-        BlockPosition blockposition1 = new BlockPosition(blockposition.getX(), this.f[k], blockposition.getZ());
++    // Unicorn start
++        int x = blockposition.getX();
++        int z = blockposition.getZ();
++        return new BlockPosition(x, this.hY(x, z), z);
++    }
+ 
+-        if (blockposition1.getY() == -999) {
+-            int l = this.g() + 15;
++    public int hY(int x, int z) {
++        int i = x & 15;
++        int j = z & 15;
++        int k = i | j << 4;
+ 
+-            blockposition1 = new BlockPosition(blockposition.getX(), l, blockposition.getZ());
++        int y = this.f[k];
++        if (y == -999) {
++            y = this.g() + 15;
+             int i1 = -1;
+ 
+-            while (blockposition1.getY() > 0 && i1 == -1) {
+-                Block block = this.getType(blockposition1);
++            while (y > 0 && i1 == -1) {
++                Block block = this.getType(i, y, j);
+                 Material material = block.getMaterial();
+ 
+                 if (!material.isSolid() && !material.isLiquid()) {
+-                    blockposition1 = blockposition1.down();
++                    --y;
+                 } else {
+-                    i1 = blockposition1.getY() + 1;
++                    i1 = y + 1;
+                 }
+             }
+ 
+             this.f[k] = i1;
+         }
+ 
+-        return new BlockPosition(blockposition.getX(), this.f[k], blockposition.getZ());
++        return y;
+     }
++    // Unicorn end
+ 
+     public void b(boolean flag) {
+         if (this.k && !this.world.worldProvider.o() && !flag) {
+@@ -1329,13 +1359,17 @@ public class Chunk {
      }
  
      public BiomeBase getBiome(BlockPosition blockposition, WorldChunkManager worldchunkmanager) {
@@ -404,7 +1730,7 @@ index fc6369a0bcc5bf359061abbf32fbcdcee0100c0d..bc662644cfc21871b037ef6a61bce6cc
              k = biomebase.id;
              this.e[j << 4 | i] = (byte) (k & 255);
          }
-@@ -1343,6 +1371,7 @@ public class Chunk {
+@@ -1343,6 +1377,7 @@ public class Chunk {
          biomebase = BiomeBase.getBiome(k);
          return biomebase == null ? BiomeBase.PLAINS : biomebase;
      }
@@ -412,6 +1738,66 @@ index fc6369a0bcc5bf359061abbf32fbcdcee0100c0d..bc662644cfc21871b037ef6a61bce6cc
  
      public byte[] getBiomeIndex() {
          return this.e;
+diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
+index 15e73525298596832912905c20e7d6a939e0cb37..31bb51163f901dba3bdc96692494be69c34720c8 100644
+--- a/src/main/java/net/minecraft/server/ChunkCache.java
++++ b/src/main/java/net/minecraft/server/ChunkCache.java
+@@ -46,30 +46,47 @@ public class ChunkCache implements IBlockAccess {
+         return this.c[i][j].a(blockposition, Chunk.EnumTileEntityState.IMMEDIATE);
+     }
+ 
++    // Unicorn start
++    @Override
++    public TileEntity getTileEntity(int x, int y, int z) {
++        int i = (x >> 4) - this.a;
++        int j = (z >> 4) - this.b;
++
++        return this.c[i][j].a(new BlockPosition(x, y, z), Chunk.EnumTileEntityState.IMMEDIATE);
++    }
++
+     public IBlockData getType(BlockPosition blockposition) {
+-        if (blockposition.getY() >= 0 && blockposition.getY() < 256) {
+-            int i = (blockposition.getX() >> 4) - this.a;
+-            int j = (blockposition.getZ() >> 4) - this.b;
++        return this.getType(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    @Override
++    public IBlockData getType(int x, int y, int z) {
++        if (y >= 0 && y < 256) {
++            int i = (x >> 4) - this.a;
++            int j = (z >> 4) - this.b;
++    // Unicorn end
+ 
+             if (i >= 0 && i < this.c.length && j >= 0 && j < this.c[i].length) {
+                 Chunk chunk = this.c[i][j];
+ 
+                 if (chunk != null) {
+-                    return chunk.getBlockData(blockposition);
++                    return chunk.getBlockData(x, y, z ); // Unicorn
+                 }
+             }
+         }
+ 
+         return Blocks.AIR.getBlockData();
+     }
++    // Unicorn end
+ 
+     public boolean isEmpty(BlockPosition blockposition) {
+         return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
+     }
+ 
+-    public int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection) {
+-        IBlockData iblockdata = this.getType(blockposition);
+-
+-        return iblockdata.getBlock().b((IBlockAccess) this, blockposition, iblockdata, enumdirection);
++    // Unicorn start
++    public int getBlockPower(int x, int y, int z, EnumDirection enumdirection) {
++        IBlockData iblockdata = this.getType(x, y, z);
++        return iblockdata.getBlock().b((IBlockAccess) this, x, y, z, iblockdata, enumdirection);
+     }
++    // Unicorn end
+ }
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderFlat.java b/src/main/java/net/minecraft/server/ChunkProviderFlat.java
 index 1fc952d11525f7a1e1b1c7b96c9b7fe5e0975dbb..b070933dba4729c9f5472211fc48c20b9183e336 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderFlat.java
@@ -537,7 +1923,7 @@ index 743c5c322c7a0cf31423be12d43d9b2a882a9bb1..7182f196a30ef76a39f52e83f74883a7
          AchievementSet achievementset = (AchievementSet) this.getStatisticManager().b((Statistic) AchievementList.L);
  
 diff --git a/src/main/java/net/minecraft/server/EntitySnowman.java b/src/main/java/net/minecraft/server/EntitySnowman.java
-index cb875c75d76635f956e5fca7e89b716823654028..326f668b749a5662a981cd4b771323d3de207f09 100644
+index cb875c75d76635f956e5fca7e89b716823654028..b1e378b2e3f8f13ddef392a4c61a03c0784a6c9e 100644
 --- a/src/main/java/net/minecraft/server/EntitySnowman.java
 +++ b/src/main/java/net/minecraft/server/EntitySnowman.java
 @@ -36,7 +36,7 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
@@ -556,7 +1942,7 @@ index cb875c75d76635f956e5fca7e89b716823654028..326f668b749a5662a981cd4b771323d3
 -                BlockPosition blockposition = new BlockPosition(i, j, k);
  
 -                if (this.world.getType(blockposition).getBlock().getMaterial() == Material.AIR && this.world.getBiome(new BlockPosition(i, 0, k)).a(blockposition) < 0.8F && Blocks.SNOW_LAYER.canPlace(this.world, blockposition)) {
-+                if (this.world.getType(i, j, k).getBlock().getMaterial() == Material.AIR && this.world.getBiome(i, k).getTemperature(i, j, k) < 0.8F && Blocks.SNOW_LAYER.canPlace(this.world, new BlockPosition(i, j, k))) { // Unicorn
++                if (this.world.getType(i, j, k).getBlock().getMaterial() == Material.AIR && this.world.getBiome(i, k).getTemperature(i, j, k) < 0.8F && Blocks.SNOW_LAYER.canPlace(this.world, i, j, k)) { // Unicorn
                      // CraftBukkit start
                      org.bukkit.block.BlockState blockState = this.world.getWorld().getBlockAt(i, j, k).getState();
                      blockState.setType(CraftMagicNumbers.getMaterial(Blocks.SNOW_LAYER));
@@ -573,8 +1959,147 @@ index ca612d14f957e4b5f1f3a32d19264d7d17c7c472..dd53eddfc48348c81a5ee204813f1208
                          entityzombie.setPosition((double) i1, (double) j1, (double) k1);
                          if (!this.world.isPlayerNearby((double) i1, (double) j1, (double) k1, 7.0D) && this.world.a(entityzombie.getBoundingBox(), (Entity) entityzombie) && this.world.getCubes(entityzombie, entityzombie.getBoundingBox()).isEmpty() && !this.world.containsLiquid(entityzombie.getBoundingBox())) {
                              this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit
+diff --git a/src/main/java/net/minecraft/server/IBlockAccess.java b/src/main/java/net/minecraft/server/IBlockAccess.java
+index dbffce329559a49f174b57af15513ae9c9401042..24e1da4d2fc8099f4f0328f15d0a5ec35fa98cfc 100644
+--- a/src/main/java/net/minecraft/server/IBlockAccess.java
++++ b/src/main/java/net/minecraft/server/IBlockAccess.java
+@@ -4,9 +4,19 @@ import org.jetbrains.annotations.Nullable;
+ 
+ public interface IBlockAccess {
+ 
+-    TileEntity getTileEntity(BlockPosition blockposition);
++    // Unicorn start
++    default TileEntity getTileEntity(BlockPosition blockposition) {
++        return this.getTileEntity(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    TileEntity getTileEntity(int x, int y, int z);
++
++    default IBlockData getType(BlockPosition blockposition) {
++        return this.getType(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
+ 
+-    IBlockData getType(BlockPosition blockposition);
++    IBlockData getType(int x, int y, int z);
++    // Unicorn end
+ 
+     // Unicorn start
+     default @Nullable IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+@@ -16,5 +26,11 @@ public interface IBlockAccess {
+ 
+     boolean isEmpty(BlockPosition blockposition);
+ 
+-    int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection);
++    // Unicorn start
++    default int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection) {
++        return this.getBlockPower(blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
++
++    int getBlockPower(int x, int y, int z, EnumDirection enumdirection);
++    // Unicorn end
+ }
+diff --git a/src/main/java/net/minecraft/server/IWorldAccess.java b/src/main/java/net/minecraft/server/IWorldAccess.java
+index 30709259194f6ba86d706b7cffbbf508ecf26c96..8209c6bf1b5b69253e3990e1082d225409e513ef 100644
+--- a/src/main/java/net/minecraft/server/IWorldAccess.java
++++ b/src/main/java/net/minecraft/server/IWorldAccess.java
+@@ -2,7 +2,13 @@ package net.minecraft.server;
+ 
+ public interface IWorldAccess {
+ 
+-    void a(BlockPosition blockposition);
++    // Unicorn start
++    void a(int x, int y, int z);
++
++    default void a(BlockPosition blockposition) {
++        this.a(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    // Unicorn end
+ 
+     void b(BlockPosition blockposition);
+ 
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index dcd4cec4369a3b4301266181810afdde66f01945..432a963769e2508d946b80b7fcb7699157b12623 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -111,15 +111,19 @@ public class PlayerChunkMap {
+     // CraftBukkit end
+ 
+     public void flagDirty(BlockPosition blockposition) {
+-        int i = blockposition.getX() >> 4;
+-        int j = blockposition.getZ() >> 4;
+-        PlayerChunkMap.PlayerChunk playerchunkmap_playerchunk = this.a(i, j, false);
++    // Unicorn start
++        this.flagDirty(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
+ 
++    public void flagDirty(int x, int y, int z) {
++        int chunkX = x >> 4;
++        int chunkZ = z >> 4;
++        PlayerChunkMap.PlayerChunk playerchunkmap_playerchunk = this.a(chunkX, chunkZ, false);
+         if (playerchunkmap_playerchunk != null) {
+-            playerchunkmap_playerchunk.a(blockposition.getX() & 15, blockposition.getY(), blockposition.getZ() & 15);
++            playerchunkmap_playerchunk.a(x & 15, y, z & 15);
+         }
+-
+     }
++    // Unicorn end
+ 
+     public void addPlayer(EntityPlayer entityplayer) {
+         int i = (int) entityplayer.locX >> 4;
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 70c27392f14319f1372a0466a3c909c4e518aa32..9ea3cd9dd6a834a5bc67cf3128ab210c260216b0 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1903,9 +1903,14 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         PlayerConnectionUtils.ensureMainThread(packetplayinupdatesign, this, this.player.u());
+         this.player.resetIdleTimer();
+         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
++        // Unicorn start
+         BlockPosition blockposition = packetplayinupdatesign.a();
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
+ 
+-        if (worldserver.isLoaded(blockposition)) {
++        if (worldserver.getChunkIfLoaded(x >> 4, z >> 4) != null) {
++        // Unicorn end
+             TileEntity tileentity = worldserver.getTileEntity(blockposition);
+ 
+             if (!(tileentity instanceof TileEntitySign)) {
+@@ -1916,7 +1921,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+             if (!tileentitysign.b() || tileentitysign.c() != this.player) {
+                 this.minecraftServer.warning("Player " + this.player.getName() + " just tried to change non-editable sign");
+-                this.sendPacket(new PacketPlayOutUpdateSign(tileentity.world, packetplayinupdatesign.a(), tileentitysign.lines)); // CraftBukkit
++                this.sendPacket(new PacketPlayOutUpdateSign(tileentity.world, blockposition, tileentitysign.lines)); // CraftBukkit // Unicorn
+                 return;
+             }
+ 
+@@ -1924,9 +1929,11 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+             // CraftBukkit start
+             Player player = this.server.getPlayer(this.player);
+-            int x = packetplayinupdatesign.a().getX();
++            // Unicorn start - moved up
++            /*int x = packetplayinupdatesign.a().getX();
+             int y = packetplayinupdatesign.a().getY();
+-            int z = packetplayinupdatesign.a().getZ();
++            int z = packetplayinupdatesign.a().getZ();*/
++            // Unicorn end
+             String[] lines = new String[4];
+ 
+             for (int i = 0; i < aichatbasecomponent.length; ++i) {
+@@ -1942,7 +1949,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             // CraftBukkit end
+ 
+             tileentitysign.update();
+-            worldserver.notify(blockposition);
++            worldserver.notify(x, y, z); // Unicorn
+         }
+ 
+     }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd9608a42d 100644
+index e0a636935920c3d095f76dd9002c3a30f851dcab..5bc12e37e4e5b855263208e69ae69466ce18c148 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -14,12 +14,10 @@ import org.bukkit.craftbukkit.CraftServer;
@@ -627,7 +2152,24 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
          }
      }
  
-@@ -421,18 +424,22 @@ public abstract class World implements IBlockAccess {
+@@ -326,9 +329,15 @@ public abstract class World implements IBlockAccess {
+     // Unicorn end
+ 
+     public boolean isEmpty(BlockPosition blockposition) {
+-        return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
++    // Unicorn start
++        return this.isEmpty(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+     }
+ 
++    public boolean isEmpty(int x, int y, int z) {
++        return this.getType(x, y, z).getBlock().getMaterial() == Material.AIR;
++    }
++    // Unicorn end
++
+     public boolean isLoaded(BlockPosition blockposition) {
+     // Unicorn start
+         return this.isLoaded(blockposition.getX(), blockposition.getZ());
+@@ -421,18 +430,22 @@ public abstract class World implements IBlockAccess {
  
      // Unicorn start
      private void setCapturedBlockType(BlockPosition blockposition, IBlockData iblockdata, int i) {
@@ -652,7 +2194,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
          }
          blockstate.setTypeId(CraftMagicNumbers.getId(iblockdata.getBlock()));
          blockstate.setRawData((byte) iblockdata.getBlock().toLegacyData(iblockdata));
-@@ -440,16 +447,49 @@ public abstract class World implements IBlockAccess {
+@@ -440,16 +453,49 @@ public abstract class World implements IBlockAccess {
      }
  
      public boolean setTypeAndDataIfLoaded(BlockPosition blockposition, IBlockData iblockdata, int i) {
@@ -704,7 +2246,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
          if (chunk == null) {
              return false;
          }
-@@ -471,7 +511,6 @@ public abstract class World implements IBlockAccess {
+@@ -471,7 +517,6 @@ public abstract class World implements IBlockAccess {
              this.capturedBlockStates.add(blockstate);
          }
          // CraftBukkit end
@@ -712,7 +2254,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
          IBlockData iblockdata1 = chunk.a(blockposition, iblockdata);
  
          if (iblockdata1 == null) {
-@@ -497,71 +536,7 @@ public abstract class World implements IBlockAccess {
+@@ -497,71 +542,7 @@ public abstract class World implements IBlockAccess {
  
          return true;
      }
@@ -785,7 +2327,26 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
  
      // CraftBukkit start - Split off from original setTypeAndData(int i, int j, int k, Block block, int l, int i1) method in order to directly send client and physic updates
      public void notifyAndUpdatePhysics(BlockPosition blockposition, Chunk chunk, Block oldBlock, Block newBLock, int flag) {
-@@ -743,7 +718,12 @@ public abstract class World implements IBlockAccess {
+@@ -609,11 +590,16 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public void notify(BlockPosition blockposition) {
++    // Unicorn start
++        this.notify(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public void notify(int x, int y, int z) {
+         for (int i = 0; i < this.u.size(); ++i) {
+-            ((IWorldAccess) this.u.get(i)).a(blockposition);
++            this.u.get(i).a(x, y, z);
+         }
+-
+     }
++    // Unicorn end
++
+ 
+     public void update(BlockPosition blockposition, Block block) {
+         if (this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
+@@ -743,7 +729,12 @@ public abstract class World implements IBlockAccess {
      }
  
      public boolean i(BlockPosition blockposition) {
@@ -799,7 +2360,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
      }
  
      public boolean j(BlockPosition blockposition) {
-@@ -769,65 +749,82 @@ public abstract class World implements IBlockAccess {
+@@ -769,65 +760,82 @@ public abstract class World implements IBlockAccess {
      }
  
      public int k(BlockPosition blockposition) {
@@ -910,7 +2471,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
  
                  if (j > i) {
                      i = j;
-@@ -846,16 +843,18 @@ public abstract class World implements IBlockAccess {
+@@ -846,16 +854,18 @@ public abstract class World implements IBlockAccess {
                  }
  
                  return i;
@@ -934,7 +2495,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
              }
          } else {
              return 15;
-@@ -863,26 +862,21 @@ public abstract class World implements IBlockAccess {
+@@ -863,26 +873,21 @@ public abstract class World implements IBlockAccess {
      }
  
      public BlockPosition getHighestBlockYAt(BlockPosition blockposition) {
@@ -970,7 +2531,7 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
  
      public int b(int i, int j) {
          if (isInWorldBounds(i, j)) { // Unicorn
-@@ -902,43 +896,56 @@ public abstract class World implements IBlockAccess {
+@@ -902,43 +907,56 @@ public abstract class World implements IBlockAccess {
      }
  
      public int b(EnumSkyBlock enumskyblock, BlockPosition blockposition) {
@@ -1038,7 +2599,350 @@ index e0a636935920c3d095f76dd9002c3a30f851dcab..7eb214d697e3085b008eaf05b610a8cd
  
      }
  
-@@ -3269,13 +3276,19 @@ public abstract class World implements IBlockAccess {
+@@ -983,11 +1001,16 @@ public abstract class World implements IBlockAccess {
+     public IBlockData getType(BlockPosition blockposition) {
+         return getType(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+     }
++
+     public IBlockData getType(int x, int y, int z) {
+         return getType(x, y, z, true);
+-    // Unicorn end
+     }
+ 
++    public IBlockData getType(int x, int y, int z, EnumDirection direction) {
++        return getType(x + direction.getAdjacentX(), y + direction.getAdjacentY(), z + direction.getAdjacentZ());
++    }
++    // Unicorn end
++
+     // Unicorn start
+     public IBlockData getType(BlockPosition blockposition, boolean useCaptured) {
+         return getType(blockposition.getX(), blockposition.getY(), blockposition.getZ(), useCaptured);
+@@ -1623,8 +1646,15 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public BlockPosition q(BlockPosition blockposition) {
+-        return this.getChunkAtWorldCoords(blockposition).h(blockposition);
++    // Unicorn start
++        int x = blockposition.getX();
++        int z = blockposition.getZ();
++        return new BlockPosition(x, this.qY(x, z), z);
++    }
++    public int qY(int x, int z) {
++        return this.getChunkAt(x >> 4, z >> 4).hY(x, z);
+     }
++    // Unicorn end
+ 
+     public BlockPosition r(BlockPosition blockposition) {
+         Chunk chunk = this.getChunkAtWorldCoords(blockposition);
+@@ -1783,15 +1813,20 @@ public abstract class World implements IBlockAccess {
+             }
+             // Spigot end
+ 
++            // Unicorn start
++            BlockPosition blockposition = tileentity.getPosition();
++            int x = blockposition.getX();
++            int y = blockposition.getY();
++            int z = blockposition.getZ();
+             if (!tileentity.x() && tileentity.t()) {
+-                BlockPosition blockposition = tileentity.getPosition();
+ 
+-                if (this.isLoaded(blockposition) && this.N.a(blockposition)) {
++                if (this.isLoaded(x, z) && this.N.isInBoundsCords(x, z)) {
++            // Unicorn end
+                     try {
+                         ((IUpdatePlayerListBox) tileentity).c();
+                     } catch (Throwable throwable2) {
+                         // PaperSpigot start - Prevent tile entity and entity crashes
+-                        String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
++                        String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + x + "," + y + "," + z; // Unicorn
+                         System.err.println(msg);
+                         throwable2.printStackTrace();
+                         getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable2)));
+@@ -1813,9 +1848,9 @@ public abstract class World implements IBlockAccess {
+                 this.tileEntityList.remove(tileTickPosition--);
+                 //this.h.remove(tileentity); // PaperSpigot - Remove unused list
+                 // Unicorn start - don't look chunk twice
+-                Chunk chunk = this.getChunkIfLoaded(tileentity.getPosition());
++                Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4); // Unicorn
+                 if (chunk != null) {
+-                    chunk.e(tileentity.getPosition());
++                    chunk.e(blockposition);
+                 // Unicorn end
+                 }
+             }
+@@ -1841,14 +1876,20 @@ public abstract class World implements IBlockAccess {
+                     }
+                     // CraftBukkit end */
+ 
++                    // Unicorn start
++                    BlockPosition blockposition1 = tileentity1.getPosition();
++                    int x = blockposition1.getX();
++                    int y = blockposition1.getY();
++                    int z = blockposition1.getZ();
+                     // Unicorn start - don't look chunk twice
+-                    Chunk chunk = this.getChunkIfLoaded(tileentity1.getPosition());
++                    Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
+                     if (chunk != null) {
+-                        chunk.a(tileentity1.getPosition(), tileentity1);
++                        chunk.a(blockposition1, tileentity1);
+                     // Unicorn end
+                     }
+ 
+-                    this.notify(tileentity1.getPosition());
++                    this.notify(x, y, z);
++                    // Unicorn end
+                 }
+             }
+ 
+@@ -2235,11 +2276,12 @@ public abstract class World implements IBlockAccess {
+     public boolean capturedTileEntitiesEmpty = false; // Unicorn
+     public Map<BlockPosition, TileEntity> capturedTileEntities = Maps.newHashMap();
+ 
+-    public TileEntity getTileEntity(BlockPosition blockposition) {
+-        if (!this.isValidLocation(blockposition)) {
++    public TileEntity getTileEntity(int x, int y, int z) { // Unicorn
++        if (!this.isValidLocation(x, y, z)) { // Unicorn
+             return null;
+         } else {
+             // CraftBukkit start
++            BlockPosition blockposition = new BlockPosition(x, y, z); // Unicorn
+             // Paper start - Optimize Captured TileEntity Lookup
+             TileEntity tileentity = null;
+             if (!this.capturedTileEntitiesEmpty && !capturedTileEntities.isEmpty() && (tileentity = capturedTileEntities.get(blockposition)) != null) { // Unicorn
+@@ -2263,7 +2305,7 @@ public abstract class World implements IBlockAccess {
+             }
+ 
+             if (tileentity == null) {
+-                tileentity = this.getChunkAtWorldCoords(blockposition).a(blockposition, Chunk.EnumTileEntityState.IMMEDIATE);
++                tileentity = this.getChunkAtWorldCoords(x, z).a(blockposition, Chunk.EnumTileEntityState.IMMEDIATE);
+             }
+ 
+             if (tileentity == null) {
+@@ -2344,7 +2386,12 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public static boolean a(IBlockAccess iblockaccess, BlockPosition blockposition) {
+-        IBlockData iblockdata = iblockaccess.getType(blockposition);
++    // Unicorn start
++        return a(iblockaccess, blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public static boolean a(IBlockAccess iblockaccess, int x, int y, int z) {
++        IBlockData iblockdata = iblockaccess.getType(x, y, z);
++    // Unicorn end
+         Block block = iblockdata.getBlock();
+ 
+         return block.getMaterial().k() && block.d() ? true : (block instanceof BlockStairs ? iblockdata.get(BlockStairs.HALF) == BlockStairs.EnumHalf.TOP : (block instanceof BlockStepAbstract ? iblockdata.get(BlockStepAbstract.HALF) == BlockStepAbstract.EnumSlabHalf.TOP : (block instanceof BlockHopper ? true : (block instanceof BlockSnow ? ((Integer) iblockdata.get(BlockSnow.LAYERS)).intValue() == 7 : false))));
+@@ -2536,12 +2583,16 @@ public abstract class World implements IBlockAccess {
+             int l = k & 15;
+             int i1 = k >> 8 & 15;
+             int j1 = k >> 16 & 255;
+-            BlockPosition blockposition = new BlockPosition(l, j1, i1);
+-            Block block = chunk.getType(blockposition);
++            // Unicorn start
++            int x = l;
++            int y = j1;
++            int z = i1;
++            Block block = chunk.getTypeAbs(x, y, z);
++            // Unicorn end
+ 
+             l += i;
+             i1 += j;
+-            if (block.getMaterial() == Material.AIR && this.k(blockposition) <= this.random.nextInt(8) && this.b(EnumSkyBlock.SKY, blockposition) <= 0) {
++            if (block.getMaterial() == Material.AIR && this.k(x, y, z) <= this.random.nextInt(8) && this.b(EnumSkyBlock.SKY, x, y, z) <= 0) { // Unicorn
+                 EntityHuman entityhuman = this.findNearbyPlayer((double) l + 0.5D, (double) j1 + 0.5D, (double) i1 + 0.5D, 8.0D);
+ 
+                 if (entityhuman != null && entityhuman.e((double) l + 0.5D, (double) j1 + 0.5D, (double) i1 + 0.5D) > 4.0D) {
+@@ -2567,20 +2618,35 @@ public abstract class World implements IBlockAccess {
+     public boolean v(BlockPosition blockposition) {
+         return this.e(blockposition, false);
+     }
++    // Unicorn start
++    public boolean v(int x, int y, int z) {
++        return this.e(x, y, z, false);
++    }
++    // Unicorn end
+ 
+     public boolean w(BlockPosition blockposition) {
+         return this.e(blockposition, true);
+     }
++    // Unicorn start
++    public boolean w(int x, int y, int z) {
++        return this.e(x, y, z, true);
++    }
++    // Unicorn end
+ 
+     public boolean e(BlockPosition blockposition, boolean flag) {
+-        BiomeBase biomebase = this.getBiome(blockposition);
+-        float f = biomebase.a(blockposition);
++    // Unicorn start
++        return this.e(blockposition.getX(), blockposition.getY(), blockposition.getZ(), flag);
++    }
++    public boolean e(int x, int y, int z, boolean flag) {
++        BiomeBase biomebase = this.getBiome(x, z);
++        float f = biomebase.getTemperature(x, y, z);
++    // Unicorn end
+ 
+         if (f > 0.15F) {
+             return false;
+         } else {
+-            if (blockposition.getY() >= 0 && blockposition.getY() < 256 && this.b(EnumSkyBlock.BLOCK, blockposition) < 10) {
+-                IBlockData iblockdata = this.getType(blockposition);
++            if (y >= 0 && y < 256 && this.b(EnumSkyBlock.BLOCK, x, y, z) < 10) { // Unicorn
++                IBlockData iblockdata = this.getType(x, y, z); // Unicorn
+                 Block block = iblockdata.getBlock();
+ 
+                 if ((block == Blocks.WATER || block == Blocks.FLOWING_WATER) && ((Integer) iblockdata.get(BlockFluids.LEVEL)).intValue() == 0) {
+@@ -2588,11 +2654,7 @@ public abstract class World implements IBlockAccess {
+                         return true;
+                     }
+ 
+-                    boolean flag1 = this.F(blockposition.west()) && this.F(blockposition.east()) && this.F(blockposition.north()) && this.F(blockposition.south());
+-
+-                    if (!flag1) {
+-                        return true;
+-                    }
++                    return !(this.F(x - 1, y, z) && this.F(x + 1, y, z) && this.F(x, y, z - 1) && this.F(x, y, z + 1)); // Unicorn
+                 }
+             }
+ 
+@@ -2601,22 +2663,34 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     private boolean F(BlockPosition blockposition) {
+-        return this.getType(blockposition).getBlock().getMaterial() == Material.WATER;
++    // Unicorn start
++        return this.F(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    private boolean F(int x, int y, int z) {
++        return this.getType(x, y, z).getBlock().getMaterial() == Material.WATER;
+     }
++    // Unicorn end
+ 
+     public boolean f(BlockPosition blockposition, boolean flag) {
+-        BiomeBase biomebase = this.getBiome(blockposition);
+-        float f = biomebase.a(blockposition);
++    // Unicorn start
++        return this.f(blockposition.getX(), blockposition.getY(), blockposition.getZ(), flag);
++    }
++    public boolean f(int x, int y, int z, boolean flag) {
++        BiomeBase biomebase = this.getBiome(x, z);
++        float f = biomebase.getTemperature(x, y, z);
++    // Unicorn end
+ 
+         if (f > 0.15F) {
+             return false;
+         } else if (!flag) {
+             return true;
+         } else {
+-            if (blockposition.getY() >= 0 && blockposition.getY() < 256 && this.b(EnumSkyBlock.BLOCK, blockposition) < 10) {
+-                Block block = this.getType(blockposition).getBlock();
++            // Unicorn start
++            if (y >= 0 && y < 256 && this.b(EnumSkyBlock.BLOCK, x, y, z) < 10) {
++                Block block = this.getType(x, y, z).getBlock();
++            // Unicorn end
+ 
+-                if (block.getMaterial() == Material.AIR && Blocks.SNOW_LAYER.canPlace(this, blockposition)) {
++                if (block.getMaterial() == Material.AIR && Blocks.SNOW_LAYER.canPlace(this, x, y, z)) { // Unicorn
+                     return true;
+                 }
+             }
+@@ -3055,39 +3129,49 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public int getBlockPower(BlockPosition blockposition, EnumDirection enumdirection) {
+-        IBlockData iblockdata = this.getType(blockposition);
++    // Unicorn start
++        return this.getBlockPower(blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
+ 
+-        return iblockdata.getBlock().b((IBlockAccess) this, blockposition, iblockdata, enumdirection);
++    public int getBlockPower(int x, int y, int z, EnumDirection enumdirection) {
++        IBlockData iblockdata = this.getTypeIfLoaded(x, y, z);
++        return iblockdata.getBlock().b(this, x, y, z, iblockdata, enumdirection);
+     }
++    // Unicorn end
+ 
+     public WorldType G() {
+         return this.worldData.getType();
+     }
+ 
+     public int getBlockPower(BlockPosition blockposition) {
++    // Unicorn start
++        return this.getBlockPower(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public int getBlockPower(int x, int y, int z) {
++    // Unicorn end
+         byte b0 = 0;
+-        int i = Math.max(b0, this.getBlockPower(blockposition.down(), EnumDirection.DOWN));
++        int i = Math.max(b0, this.getBlockPower(x, y - 1, z, EnumDirection.DOWN)); // Unicorn
+ 
+         if (i >= 15) {
+             return i;
+         } else {
+-            i = Math.max(i, this.getBlockPower(blockposition.up(), EnumDirection.UP));
++            i = Math.max(i, this.getBlockPower(x, y + 1, z, EnumDirection.UP)); // Unicorn
+             if (i >= 15) {
+                 return i;
+             } else {
+-                i = Math.max(i, this.getBlockPower(blockposition.north(), EnumDirection.NORTH));
++                i = Math.max(i, this.getBlockPower(x, y, z -1, EnumDirection.NORTH)); // Unicorn
+                 if (i >= 15) {
+                     return i;
+                 } else {
+-                    i = Math.max(i, this.getBlockPower(blockposition.south(), EnumDirection.SOUTH));
++                    i = Math.max(i, this.getBlockPower(x, y, z + 1, EnumDirection.SOUTH)); // Unicorn
+                     if (i >= 15) {
+                         return i;
+                     } else {
+-                        i = Math.max(i, this.getBlockPower(blockposition.west(), EnumDirection.WEST));
++                        i = Math.max(i, this.getBlockPower(x - 1, y, z, EnumDirection.WEST)); // Unicorn
+                         if (i >= 15) {
+                             return i;
+                         } else {
+-                            i = Math.max(i, this.getBlockPower(blockposition.east(), EnumDirection.EAST));
++                            i = Math.max(i, this.getBlockPower(x + 1, y, z, EnumDirection.EAST)); // Unicorn
+                             return i >= 15 ? i : i;
+                         }
+                     }
+@@ -3097,18 +3181,33 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public boolean isBlockFacePowered(BlockPosition blockposition, EnumDirection enumdirection) {
+-        return this.getBlockFacePower(blockposition, enumdirection) > 0;
++    // Unicorn start
++        return this.isBlockFacePowered(blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
++    public boolean isBlockFacePowered(int x, int y, int z, EnumDirection enumdirection) {
++        return this.getBlockFacePower(x, y, z, enumdirection) > 0;
+     }
++    // Unicorn end
+ 
+     public int getBlockFacePower(BlockPosition blockposition, EnumDirection enumdirection) {
+-        IBlockData iblockdata = this.getType(blockposition);
++    // Unicorn start
++        return this.getBlockFacePower(blockposition.getX(), blockposition.getY(), blockposition.getZ(), enumdirection);
++    }
++    public int getBlockFacePower(int x, int y, int z, EnumDirection enumdirection) {
++        IBlockData iblockdata = this.getType(x, y, z);
++    // Unicorn end
+         Block block = iblockdata.getBlock();
+ 
+-        return block.isOccluding() ? this.getBlockPower(blockposition) : block.a((IBlockAccess) this, blockposition, iblockdata, enumdirection);
++        return block.isOccluding() ? this.getBlockPower(x, y, z) : block.a((IBlockAccess) this, x, y, z, iblockdata, enumdirection);
+     }
+ 
+     public boolean isBlockIndirectlyPowered(BlockPosition blockposition) {
+-        return this.getBlockFacePower(blockposition.down(), EnumDirection.DOWN) > 0 ? true : (this.getBlockFacePower(blockposition.up(), EnumDirection.UP) > 0 ? true : (this.getBlockFacePower(blockposition.north(), EnumDirection.NORTH) > 0 ? true : (this.getBlockFacePower(blockposition.south(), EnumDirection.SOUTH) > 0 ? true : (this.getBlockFacePower(blockposition.west(), EnumDirection.WEST) > 0 ? true : this.getBlockFacePower(blockposition.east(), EnumDirection.EAST) > 0))));
++    // Unicorn start
++        return this.isBlockIndirectlyPowered(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++    public boolean isBlockIndirectlyPowered(int x, int y, int z) {
++        return this.getBlockFacePower(x, y - 1, z, EnumDirection.DOWN) > 0 || (this.getBlockFacePower(x, y + 1, z, EnumDirection.UP) > 0 || (this.getBlockFacePower(x, y, z - 1, EnumDirection.NORTH) > 0 || (this.getBlockFacePower(x, y, z + 1, EnumDirection.SOUTH) > 0 || (this.getBlockFacePower(x - 1, y, z, EnumDirection.WEST) > 0 || this.getBlockFacePower(x + 1, y, z, EnumDirection.EAST) > 0))));
++    // Unicorn end
+     }
+ 
+     public int A(BlockPosition blockposition) {
+@@ -3269,13 +3368,19 @@ public abstract class World implements IBlockAccess {
      }
  
      public BlockPosition getSpawn() {
@@ -1091,6 +2995,32 @@ index 56afc55db8f2d252b021e1f74b3a2dab5f1ada43..a3b9079ca07bd714b1f7fe805c38f8b9
  
      public float[] getWetness(float[] afloat, int i, int j, int k, int l) {
          IntCache.a();
+diff --git a/src/main/java/net/minecraft/server/WorldGenMelon.java b/src/main/java/net/minecraft/server/WorldGenMelon.java
+index 69c1920707844be2d8bbdaacb6e53ff74a18abac..00069b13e678b848f0a2de22a54e19e3fef978c5 100644
+--- a/src/main/java/net/minecraft/server/WorldGenMelon.java
++++ b/src/main/java/net/minecraft/server/WorldGenMelon.java
+@@ -7,11 +7,18 @@ public class WorldGenMelon extends WorldGenerator {
+     public WorldGenMelon() {}
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
+         for (int i = 0; i < 64; ++i) {
+-            BlockPosition blockposition1 = blockposition.a(random.nextInt(8) - random.nextInt(8), random.nextInt(4) - random.nextInt(4), random.nextInt(8) - random.nextInt(8));
++            int x1 = x + random.nextInt(8) - random.nextInt(8);
++            int y1 = y + random.nextInt(4) - random.nextInt(4);
++            int z1 = z + random.nextInt(8) - random.nextInt(8);
+ 
+-            if (Blocks.MELON_BLOCK.canPlace(world, blockposition1) && world.getType(blockposition1.down()).getBlock() == Blocks.GRASS) {
+-                world.setTypeAndData(blockposition1, Blocks.MELON_BLOCK.getBlockData(), 2);
++            if (Blocks.MELON_BLOCK.canPlace(world, x1, y1, z1) && world.getType(x1, y1 - 1, z1).getBlock() == Blocks.GRASS) {
++                world.setTypeAndData(new BlockPosition(x1, y1, z1), Blocks.MELON_BLOCK.getBlockData(), 2);
++            // Unicorn end
+             }
+         }
+ 
 diff --git a/src/main/java/net/minecraft/server/WorldGenMonument.java b/src/main/java/net/minecraft/server/WorldGenMonument.java
 index 7f2738cd5c561bd1b33e7989d0960ac16af44bef..13ae5da92e0b72f25ae20a1c4b1129aba3be4ef4 100644
 --- a/src/main/java/net/minecraft/server/WorldGenMonument.java
@@ -1104,6 +3034,58 @@ index 7f2738cd5c561bd1b33e7989d0960ac16af44bef..13ae5da92e0b72f25ae20a1c4b1129ab
                  return false;
              }
  
+diff --git a/src/main/java/net/minecraft/server/WorldGenPumpkin.java b/src/main/java/net/minecraft/server/WorldGenPumpkin.java
+index 4e8531823ebeaf0c63939bbec34a9343d5be42b0..7d60c54c8e746238e15e27e3143c661b4f07b73d 100644
+--- a/src/main/java/net/minecraft/server/WorldGenPumpkin.java
++++ b/src/main/java/net/minecraft/server/WorldGenPumpkin.java
+@@ -7,11 +7,18 @@ public class WorldGenPumpkin extends WorldGenerator {
+     public WorldGenPumpkin() {}
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
+         for (int i = 0; i < 64; ++i) {
+-            BlockPosition blockposition1 = blockposition.a(random.nextInt(8) - random.nextInt(8), random.nextInt(4) - random.nextInt(4), random.nextInt(8) - random.nextInt(8));
++            int x1 = x + random.nextInt(8) - random.nextInt(8);
++            int y1 = y + random.nextInt(4) - random.nextInt(4);
++            int z1 = z + random.nextInt(8) - random.nextInt(8);
+ 
+-            if (world.isEmpty(blockposition1) && world.getType(blockposition1.down()).getBlock() == Blocks.GRASS && Blocks.PUMPKIN.canPlace(world, blockposition1)) {
+-                world.setTypeAndData(blockposition1, Blocks.PUMPKIN.getBlockData().set(BlockPumpkin.FACING, EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random)), 2);
++            if (world.isEmpty(x1, y1, z1) && world.getType(x1, y1 - 1, z1).getBlock() == Blocks.GRASS && Blocks.PUMPKIN.canPlace(world, x1, y1, z1)) {
++                world.setTypeAndData(new BlockPosition(x1, y1, z1), Blocks.PUMPKIN.getBlockData().set(BlockPumpkin.FACING, EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random)), 2);
++        // Unicorn end
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldGenTallPlant.java b/src/main/java/net/minecraft/server/WorldGenTallPlant.java
+index c0c61a1ff074485cef8eceb2dd56b59721933db2..49e69ccbad343d60d495d1634cd315c2d9d3453a 100644
+--- a/src/main/java/net/minecraft/server/WorldGenTallPlant.java
++++ b/src/main/java/net/minecraft/server/WorldGenTallPlant.java
+@@ -15,11 +15,18 @@ public class WorldGenTallPlant extends WorldGenerator {
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
+         boolean flag = false;
+ 
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
+         for (int i = 0; i < 64; ++i) {
+-            BlockPosition blockposition1 = blockposition.a(random.nextInt(8) - random.nextInt(8), random.nextInt(4) - random.nextInt(4), random.nextInt(8) - random.nextInt(8));
++            int x1 = x + random.nextInt(8) - random.nextInt(8);
++            int y1 = y + random.nextInt(4) - random.nextInt(4);
++            int z1 = z + random.nextInt(8) - random.nextInt(8);
+ 
+-            if (world.isEmpty(blockposition1) && (!world.worldProvider.o() || blockposition1.getY() < 254) && Blocks.DOUBLE_PLANT.canPlace(world, blockposition1)) {
+-                Blocks.DOUBLE_PLANT.a(world, blockposition1, this.a, 2);
++            if (world.isEmpty(x1, y1, z1) && (!world.worldProvider.o() || y1 < 254) && Blocks.DOUBLE_PLANT.canPlace(world, x1, y1, z1)) {
++                Blocks.DOUBLE_PLANT.a(world, x1, y1, z1, this.a, 2);
++        // Unicorn end
+                 flag = true;
+             }
+         }
 diff --git a/src/main/java/net/minecraft/server/WorldGenVillagePieces.java b/src/main/java/net/minecraft/server/WorldGenVillagePieces.java
 index 3ed55f49d0a6e41ba7149bf989ccfb8eb7b3f5a2..a6263029e8df8d66ee78646e6cb5f452468ecef4 100644
 --- a/src/main/java/net/minecraft/server/WorldGenVillagePieces.java
@@ -1117,8 +3099,140 @@ index 3ed55f49d0a6e41ba7149bf989ccfb8eb7b3f5a2..a6263029e8df8d66ee78646e6cb5f452
  
              this.b = biomebase == BiomeBase.DESERT || biomebase == BiomeBase.DESERT_HILLS;
              this.a(this.b);
+diff --git a/src/main/java/net/minecraft/server/WorldGenVines.java b/src/main/java/net/minecraft/server/WorldGenVines.java
+index 392a6905ddf51cb01f798621373ba425ce172c18..c790ae6bd895acc30ef7f53e493492911d58132e 100644
+--- a/src/main/java/net/minecraft/server/WorldGenVines.java
++++ b/src/main/java/net/minecraft/server/WorldGenVines.java
+@@ -7,23 +7,31 @@ public class WorldGenVines extends WorldGenerator {
+     public WorldGenVines() {}
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
+-        for (; blockposition.getY() < 128; blockposition = blockposition.up()) {
+-            if (world.isEmpty(blockposition)) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        for (; y < 128; y++) {
++            if (world.isEmpty(x, y, z)) {
++        // Unicorn end
+                 EnumDirection[] aenumdirection = EnumDirection.EnumDirectionLimit.HORIZONTAL.a();
+                 int i = aenumdirection.length;
+ 
+                 for (int j = 0; j < i; ++j) {
+                     EnumDirection enumdirection = aenumdirection[j];
+ 
+-                    if (Blocks.VINE.canPlace(world, blockposition, enumdirection)) {
++                    if (Blocks.VINE.canPlace(world, x, y, z, enumdirection)) { // Unicorn
+                         IBlockData iblockdata = Blocks.VINE.getBlockData().set(BlockVine.NORTH, Boolean.valueOf(enumdirection == EnumDirection.NORTH)).set(BlockVine.EAST, Boolean.valueOf(enumdirection == EnumDirection.EAST)).set(BlockVine.SOUTH, Boolean.valueOf(enumdirection == EnumDirection.SOUTH)).set(BlockVine.WEST, Boolean.valueOf(enumdirection == EnumDirection.WEST));
+ 
+-                        world.setTypeAndData(blockposition, iblockdata, 2);
++                        world.setTypeAndData(new BlockPosition(x, y, z), iblockdata, 2); // Unicorn
+                         break;
+                     }
+                 }
+             } else {
+-                blockposition = blockposition.a(random.nextInt(4) - random.nextInt(4), 0, random.nextInt(4) - random.nextInt(4));
++                // Unicorn start
++                x += random.nextInt(4) - random.nextInt(4);
++                z += random.nextInt(4) - random.nextInt(4);
++                // Unicorn end
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldGenWaterLily.java b/src/main/java/net/minecraft/server/WorldGenWaterLily.java
+index 0d875a3e91af169837d71ea54e8e2e0bbed2f7bd..2e2d54cac0ec082cb1c18fb3099519bd2465f27c 100644
+--- a/src/main/java/net/minecraft/server/WorldGenWaterLily.java
++++ b/src/main/java/net/minecraft/server/WorldGenWaterLily.java
+@@ -7,12 +7,17 @@ public class WorldGenWaterLily extends WorldGenerator {
+     public WorldGenWaterLily() {}
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
+         for (int i = 0; i < 10; ++i) {
+-            int j = blockposition.getX() + random.nextInt(8) - random.nextInt(8);
+-            int k = blockposition.getY() + random.nextInt(4) - random.nextInt(4);
+-            int l = blockposition.getZ() + random.nextInt(8) - random.nextInt(8);
++            int j = x + random.nextInt(8) - random.nextInt(8);
++            int k = y + random.nextInt(4) - random.nextInt(4);
++            int l = z + random.nextInt(8) - random.nextInt(8);
++        // Unicorn end
+ 
+-            if (world.isEmpty(new BlockPosition(j, k, l)) && Blocks.WATERLILY.canPlace(world, new BlockPosition(j, k, l))) {
++            if (world.isEmpty(j, k, l) && Blocks.WATERLILY.canPlace(world, j, k, l)) { // Unicorn
+                 world.setTypeAndData(new BlockPosition(j, k, l), Blocks.WATERLILY.getBlockData(), 2);
+             }
+         }
+diff --git a/src/main/java/net/minecraft/server/WorldManager.java b/src/main/java/net/minecraft/server/WorldManager.java
+index 7a9027fc6d22989e6ec84c77c51ce3ded3a7310c..4dcbb01e9911e537f7e522a2543e0f30ae968b1c 100644
+--- a/src/main/java/net/minecraft/server/WorldManager.java
++++ b/src/main/java/net/minecraft/server/WorldManager.java
+@@ -35,9 +35,11 @@ public class WorldManager implements IWorldAccess {
+ 
+     public void a(int i, int j, int k, int l, int i1, int j1) {}
+ 
+-    public void a(BlockPosition blockposition) {
+-        this.world.getPlayerChunkMap().flagDirty(blockposition);
++    // Unicorn start
++    public void a(int x, int y, int z) {
++        this.world.getPlayerChunkMap().flagDirty(x, y, z);
+     }
++    // Unicorn end
+ 
+     public void b(BlockPosition blockposition) {}
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index bb9a3a2f6afad0f2e688be3bfb781f53441abab7..5d8057af2cc32f9de013288ff055f1d6287b0214 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -436,12 +436,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 if (!this.paperConfigUnicorn.disableIceAndSnow && this.random.nextInt(16) == 0) { // PaperSpigot - Disable ice and snow
+                     this.m = this.m * 3 + 1013904223;
+                     i1 = this.m >> 2;
+-                    blockposition = this.q(new BlockPosition(k + (i1 & 15), 0, l + (i1 >> 8 & 15)));
+-                    BlockPosition blockposition1 = blockposition.down();
+-
+-                    if (this.w(blockposition1)) {
++                    // Unicorn start
++                    int x = k + (i1 & 15);
++                    int z = l + (i1 >> 8 & 15);
++                    int y = this.qY(x, z);
++                    if (this.w(x, y - 1, z)) {
++                    // Unicorn end
+                         // CraftBukkit start
+-                        BlockState blockState = this.getWorld().getBlockAt(blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()).getState();
++                        BlockState blockState = this.getWorld().getBlockAt(x, y - 1, z).getState(); // Unicorn
+                         blockState.setTypeId(Block.getId(Blocks.ICE));
+ 
+                         BlockFormEvent iceBlockForm = new BlockFormEvent(blockState.getBlock(), blockState);
+@@ -452,9 +454,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                         // CraftBukkit end
+                     }
+ 
+-                    if (this.S() && this.f(blockposition, true)) {
++                    if (this.S() && this.f(x, y, z, true)) { // Unicorn
+                         // CraftBukkit start
+-                        BlockState blockState = this.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()).getState();
++                        BlockState blockState = this.getWorld().getBlockAt(x, y, z).getState(); // Unicorn
+                         blockState.setTypeId(Block.getId(Blocks.SNOW_LAYER));
+ 
+                         BlockFormEvent snow = new BlockFormEvent(blockState.getBlock(), blockState);
+@@ -465,8 +467,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                         // CraftBukkit end
+                     }
+ 
+-                    if (this.S() && this.getBiome(blockposition1).e()) {
+-                        this.getType(blockposition1).getBlock().k(this, blockposition1);
++                    if (this.S() && this.getBiome(x, z).e()) { // Unicorn
++                        this.getType(x, y - 1, z).getBlock().k(this, x, y - 1, z); // Unicorn
+                     }
+                 }
+ 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 0f68df0205a6b61d2f5ce9a086605c2263470bee..446260dfa07db1d6ad90fa1762cb4f5ec8aa6765 100644
+index 0f68df0205a6b61d2f5ce9a086605c2263470bee..9fd14e02b3eb8cabececc9409d7519cb7026f280 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -95,15 +95,12 @@ public class CraftWorld implements World {
@@ -1140,11 +3254,40 @@ index 0f68df0205a6b61d2f5ce9a086605c2263470bee..446260dfa07db1d6ad90fa1762cb4f5e
      }
  
      public Location getSpawnLocation() {
+@@ -253,9 +250,9 @@ public class CraftWorld implements World {
+         // This flags 65 blocks distributed across all the sections of the chunk, so that everything is sent, including biomes
+         int height = getMaxHeight() / 16;
+         for (int idx = 0; idx < 64; idx++) {
+-            world.notify(new BlockPosition(px + (idx / height), ((idx % height) * 16), pz));
++            world.notify(px + (idx / height), ((idx % height) * 16), pz); // Unicorn
+         }
+-        world.notify(new BlockPosition(px + 15, (height * 16) - 1, pz + 15));
++        world.notify(px + 15, (height * 16) - 1, pz + 15); // Unicorn
+ 
+         return true;
+     }
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-index 22a80551b5df5920499767a66a9932b9e77b5fb1..9bdd8b9210e0aa9eb8e7557a0bc42aa48d11dcc5 100644
+index 22a80551b5df5920499767a66a9932b9e77b5fb1..61fe52c35cc06612b7b8db7b35ec7f942506eca9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
-@@ -151,19 +151,19 @@ public class CraftBlock implements Block {
+@@ -133,12 +133,13 @@ public class CraftBlock implements Block {
+     public boolean setTypeIdAndData(final int type, final byte data, final boolean applyPhysics) {
+         IBlockData blockData = getNMSBlock(type).fromLegacyData(data);
+         BlockPosition position = new BlockPosition(x, y, z);
++        net.minecraft.server.World nmsWorld = chunk.getHandle().getWorld(); // Unicorn
+         if (applyPhysics) {
+-            return chunk.getHandle().getWorld().setTypeAndData(position, blockData, 3);
++            return nmsWorld.setTypeAndData(position, blockData, 3); // Unicorn
+         } else {
+-            boolean success = chunk.getHandle().getWorld().setTypeAndData(position, blockData, 2);
++            boolean success = nmsWorld.setTypeAndData(position, blockData, 2); // Unicorn
+             if (success) {
+-                chunk.getHandle().getWorld().notify(position);
++                nmsWorld.notify(x, y, z); // Unicorn
+             }
+             return success;
+         }
+@@ -151,19 +152,19 @@ public class CraftBlock implements Block {
      @Deprecated
      @Override
      public int getTypeId() {
@@ -1168,3 +3311,65 @@ index 22a80551b5df5920499767a66a9932b9e77b5fb1..9bdd8b9210e0aa9eb8e7557a0bc42aa4
      }
  
  
+@@ -321,11 +322,11 @@ public class CraftBlock implements Block {
+     }
+ 
+     public boolean isBlockPowered() {
+-        return chunk.getHandle().getWorld().getBlockPower(new BlockPosition(x, y, z)) > 0;
++        return chunk.getHandle().getWorld().getBlockPower(x, y, z) > 0; // Unicorn
+     }
+ 
+     public boolean isBlockIndirectlyPowered() {
+-        return chunk.getHandle().getWorld().isBlockIndirectlyPowered(new BlockPosition(x, y, z));
++        return chunk.getHandle().getWorld().isBlockIndirectlyPowered(x, y, z); // Unicorn
+     }
+ 
+     @Override
+@@ -343,11 +344,11 @@ public class CraftBlock implements Block {
+     }
+ 
+     public boolean isBlockFacePowered(BlockFace face) {
+-        return chunk.getHandle().getWorld().isBlockFacePowered(new BlockPosition(x, y, z), blockFaceToNotch(face));
++        return chunk.getHandle().getWorld().isBlockFacePowered(x, y, z, blockFaceToNotch(face));
+     }
+ 
+     public boolean isBlockFaceIndirectlyPowered(BlockFace face) {
+-        int power = chunk.getHandle().getWorld().getBlockFacePower(new BlockPosition(x, y, z), blockFaceToNotch(face));
++        int power = chunk.getHandle().getWorld().getBlockFacePower(x, y, z, blockFaceToNotch(face));
+ 
+         Block relative = getRelative(face);
+         if (relative.getType() == Material.REDSTONE_WIRE) {
+@@ -361,12 +362,14 @@ public class CraftBlock implements Block {
+         int power = 0;
+         BlockRedstoneWire wire = Blocks.REDSTONE_WIRE;
+         net.minecraft.server.World world = chunk.getHandle().getWorld();
+-        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y - 1, z), EnumDirection.DOWN)) power = wire.getPower(world, new BlockPosition(x, y - 1, z), power);
+-        if ((face == BlockFace.UP || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y + 1, z), EnumDirection.UP)) power = wire.getPower(world, new BlockPosition(x, y + 1, z), power);
+-        if ((face == BlockFace.EAST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x + 1, y, z), EnumDirection.EAST)) power = wire.getPower(world, new BlockPosition(x + 1, y, z), power);
+-        if ((face == BlockFace.WEST || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x - 1, y, z), EnumDirection.WEST)) power = wire.getPower(world, new BlockPosition(x - 1, y, z), power);
+-        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z - 1), EnumDirection.NORTH)) power = wire.getPower(world, new BlockPosition(x, y, z - 1), power);
+-        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && world.isBlockFacePowered(new BlockPosition(x, y, z + 1), EnumDirection.SOUTH)) power = wire.getPower(world, new BlockPosition(x, y, z - 1), power);
++        // Unicorn start
++        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && world.isBlockFacePowered(x, y - 1, z, EnumDirection.DOWN)) power = wire.getPower(world, x, y - 1, z, power);
++        if ((face == BlockFace.UP || face == BlockFace.SELF) && world.isBlockFacePowered(x, y + 1, z, EnumDirection.UP)) power = wire.getPower(world, x, y + 1, z, power);
++        if ((face == BlockFace.EAST || face == BlockFace.SELF) && world.isBlockFacePowered(x + 1, y, z, EnumDirection.EAST)) power = wire.getPower(world, x + 1, y, z, power);
++        if ((face == BlockFace.WEST || face == BlockFace.SELF) && world.isBlockFacePowered(x - 1, y, z, EnumDirection.WEST)) power = wire.getPower(world, x - 1, y, z, power);
++        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && world.isBlockFacePowered(x, y, z - 1, EnumDirection.NORTH)) power = wire.getPower(world, x, y, z - 1, power);
++        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && world.isBlockFacePowered(x, y, z + 1, EnumDirection.SOUTH)) power = wire.getPower(world, x, y, z - 1, power);
++        // Unicorn end
+         return power > 0 ? power : (face == BlockFace.SELF ? isBlockIndirectlyPowered() : isBlockFaceIndirectlyPowered(face)) ? 15 : 0;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
+index 4a8c8141b0fe7c43158d22a6f86b8412c2ca6df4..210d6a077377d9380e82c9ee0a1e7e5585e5d01f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlockState.java
+@@ -159,7 +159,7 @@ public class CraftBlockState implements BlockState {
+         }
+ 
+         block.setTypeIdAndData(getTypeId(), getRawData(), applyPhysics);
+-        world.getHandle().notify(new BlockPosition(x, y, z));
++        world.getHandle().notify(x, y, z); // Unicorn
+ 
+         return true;
+     }
