@@ -1255,7 +1255,7 @@ index d9edeff2423a576efe7ea238b12715b418a47532..955e002812160a5824f7901162112540
      protected static boolean d(IBlockData iblockdata) {
          return a(iblockdata, (EnumDirection) null);
 diff --git a/src/main/java/net/minecraft/server/BlockReed.java b/src/main/java/net/minecraft/server/BlockReed.java
-index 134d0d48f95ca91445c84cb5ca214e320cb3ed77..c1c94d8cedf3fecfed47dd118b796e8de6ed4fc8 100644
+index 134d0d48f95ca91445c84cb5ca214e320cb3ed77..0c28b340f34a9937699948b683c3ad03bb81dc92 100644
 --- a/src/main/java/net/minecraft/server/BlockReed.java
 +++ b/src/main/java/net/minecraft/server/BlockReed.java
 @@ -44,8 +44,8 @@ public class BlockReed extends Block {
@@ -1274,7 +1274,7 @@ index 134d0d48f95ca91445c84cb5ca214e320cb3ed77..c1c94d8cedf3fecfed47dd118b796e8d
  
                  enumdirection = (EnumDirection) iterator.next();
 -            } while (world.getType(blockposition.shift(enumdirection).down()).getBlock().getMaterial() != Material.WATER);
-+            } while (world.getType(x, y, z, enumdirection).getBlock().getMaterial() != Material.WATER); // Unicorn
++            } while (world.getType(x, y - 1, z, enumdirection).getBlock().getMaterial() != Material.WATER); // Unicorn
  
              return true;
          }
