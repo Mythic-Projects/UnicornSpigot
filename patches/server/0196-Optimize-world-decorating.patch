@@ -34,19 +34,83 @@ index d96cef96fd20d9676e234ecf7a8037a4b022efdf..26dbf487f987777d3bd2a327085f1a3b
          this.x = new WorldGenHellLava(Blocks.FLOWING_LAVA, true);
          this.y = new WorldGenHellLava(Blocks.FLOWING_LAVA, false);
          this.z = new WorldGenMushrooms(Blocks.BROWN_MUSHROOM);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 7eb214d697e3085b008eaf05b610a8cd9608a42d..7144310be2b6df8c5cdc2eedb7e6f43d78306ca7 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -524,7 +524,7 @@ public abstract class World implements IBlockAccess {
+         Block block1 = iblockdata1.getBlock();
+ 
+         if (block.p() != block1.p() || block.r() != block1.r()) {
+-            this.x(blockposition);
++            this.x(chunk, blockposition);
+         }
+ 
+         // CraftBukkit start
+@@ -2633,15 +2633,22 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public boolean x(BlockPosition blockposition) {
++    // Unicorn start
++        Chunk chunk = this.getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4);
++        return this.x(chunk, blockposition);
++    }
++
++    public boolean x(Chunk chunk, BlockPosition blockPosition) {
+         boolean flag = false;
+ 
+         if (!this.worldProvider.o()) {
+-            flag |= this.updateLight(EnumSkyBlock.SKY, blockposition); // PaperSpigot - Asynchronous lighting updates
++            flag |= this.updateBrightness(EnumSkyBlock.SKY, blockPosition, chunk); // PaperSpigot - Asynchronous lighting updates
+         }
+ 
+-        flag |= this.updateLight(EnumSkyBlock.BLOCK, blockposition); // PaperSpigot - Asynchronous lighting updates
++        flag |= this.updateBrightness(EnumSkyBlock.BLOCK, blockPosition, chunk); // PaperSpigot - Asynchronous lighting updates
+         return flag;
+     }
++    // Unicorn end
+ 
+     private int a(BlockPosition blockposition, EnumSkyBlock enumskyblock) {
+         if (enumskyblock == EnumSkyBlock.SKY && this.i(blockposition)) {
 diff --git a/src/main/java/net/minecraft/server/WorldGenAcaciaTree.java b/src/main/java/net/minecraft/server/WorldGenAcaciaTree.java
-index 9a70548bd2be62d391703f4ab72161a5e3ab0dfe..fcb77ba8becaefe3800e85e3b233bf3ce346cc01 100644
+index 9a70548bd2be62d391703f4ab72161a5e3ab0dfe..74043a0efb5254e9c63b4e629623e88e019bacd2 100644
 --- a/src/main/java/net/minecraft/server/WorldGenAcaciaTree.java
 +++ b/src/main/java/net/minecraft/server/WorldGenAcaciaTree.java
-@@ -30,14 +30,17 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+@@ -15,29 +15,37 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+         int i = random.nextInt(3) + random.nextInt(3) + 5;
+         boolean flag = true;
+ 
+-        if (blockposition.getY() >= 1 && blockposition.getY() + i + 1 <= 256) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        if (y >= 1 && y + i + 1 <= 256) {
++        // Unicorn end
+             int j;
+             int k;
+ 
+-            for (int l = blockposition.getY(); l <= blockposition.getY() + 1 + i; ++l) {
++            for (int l = y; l <= y + 1 + i; ++l) { // Unicorn
+                 byte b0 = 1;
+ 
+-                if (l == blockposition.getY()) {
++                if (l == y) { // Unicorn
+                     b0 = 0;
+                 }
+ 
+-                if (l >= blockposition.getY() + 1 + i - 2) {
++                if (l >= y + 1 + i - 2) { // Unicorn
                      b0 = 2;
                  }
  
 -                BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
 +                //BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition(); // Unicorn
  
-                 for (j = blockposition.getX() - b0; j <= blockposition.getX() + b0 && flag; ++j) {
-                     for (k = blockposition.getZ() - b0; k <= blockposition.getZ() + b0 && flag; ++k) {
+-                for (j = blockposition.getX() - b0; j <= blockposition.getX() + b0 && flag; ++j) {
+-                    for (k = blockposition.getZ() - b0; k <= blockposition.getZ() + b0 && flag; ++k) {
++                for (j = x - b0; j <= x + b0 && flag; ++j) { // Unicorn
++                    for (k = z - b0; k <= z + b0 && flag; ++k) { // Unicorn
                          if (l >= 0 && l < 256) {
 -                            if (!this.a(world.getType(blockposition_mutableblockposition.c(j, l, k)).getBlock())) {
 +                            // Unicorn start
@@ -58,21 +122,173 @@ index 9a70548bd2be62d391703f4ab72161a5e3ab0dfe..fcb77ba8becaefe3800e85e3b233bf3c
                          } else {
                              flag = false;
                          }
-@@ -48,7 +51,13 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+@@ -48,63 +56,77 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
              if (!flag) {
                  return false;
              } else {
 -                Block block = world.getType(blockposition.down()).getBlock();
 +                // Unicorn start
-+                IBlockData blockData = world.getTypeIfLoaded(blockposition.getX(), blockposition.getY() - 1, blockposition.getZ());
++                if (y >= 256 - i - 1) {
++                    return false;
++                }
++                IBlockData blockData = world.getTypeIfLoaded(x, y - 1, z);
 +                if (blockData == null) {
 +                    return false;
 +                }
 +                Block block = blockData.getBlock();
 +                // Unicorn end
  
-                 if ((block == Blocks.GRASS || block == Blocks.DIRT) && blockposition.getY() < 256 - i - 1) {
+-                if ((block == Blocks.GRASS || block == Blocks.DIRT) && blockposition.getY() < 256 - i - 1) {
++                if ((block == Blocks.GRASS || block == Blocks.DIRT)) { // Unicorn
                      this.a(world, blockposition.down());
+                     EnumDirection enumdirection = EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random);
+                     int i1 = i - random.nextInt(4) - 1;
+ 
+                     j = 3 - random.nextInt(3);
+-                    k = blockposition.getX();
+-                    int j1 = blockposition.getZ();
++                    k = x; // Unicorn
++                    int j1 = z; // Unicorn
+                     int k1 = 0;
+ 
+                     int l1;
+ 
+                     for (int i2 = 0; i2 < i; ++i2) {
+-                        l1 = blockposition.getY() + i2;
++                        l1 = y + i2;
+                         if (i2 >= i1 && j > 0) {
+                             k += enumdirection.getAdjacentX();
+                             j1 += enumdirection.getAdjacentZ();
+                             --j;
+                         }
+ 
+-                        BlockPosition blockposition1 = new BlockPosition(k, l1, j1);
+-                        Material material = world.getType(blockposition1).getBlock().getMaterial();
++                        // Unicorn start
++                        IBlockData blockData1 = world.getTypeIfLoaded(k, l1, j1);
++                        if (blockData1 == null) {
++                            continue;
++                        }
++                        Material material = blockData1.getBlock().getMaterial();
++                        // Unicorn end
+ 
+                         if (material == Material.AIR || material == Material.LEAVES) {
+-                            this.b(world, blockposition1);
++                            this.b(world, new BlockPosition(k, l1, j1)); // Unicorn
+                             k1 = l1;
+                         }
+                     }
+ 
+-                    BlockPosition blockposition2 = new BlockPosition(k, k1, j1);
++                    //BlockPosition blockposition2 = new BlockPosition(k, k1, j1); // Unicorn
+ 
+                     int j2;
+ 
+                     for (l1 = -3; l1 <= 3; ++l1) {
+                         for (j2 = -3; j2 <= 3; ++j2) {
+                             if (Math.abs(l1) != 3 || Math.abs(j2) != 3) {
+-                                this.c(world, blockposition2.a(l1, 0, j2));
++                                this.cIfLoaded(world, k + l1, k1, j1 + j2); // Unicorn
+                             }
+                         }
+                     }
+ 
+-                    blockposition2 = blockposition2.up();
++                    //blockposition2 = blockposition2.up(); // Unicorn
+ 
+                     for (l1 = -1; l1 <= 1; ++l1) {
+                         for (j2 = -1; j2 <= 1; ++j2) {
+-                            this.c(world, blockposition2.a(l1, 0, j2));
++                            this.cIfLoaded(world, k + l1, k1 + 1, j1 + j2); // Unicorn
+                         }
+                     }
+ 
+-                    this.c(world, blockposition2.east(2));
+-                    this.c(world, blockposition2.west(2));
+-                    this.c(world, blockposition2.south(2));
+-                    this.c(world, blockposition2.north(2));
+-                    k = blockposition.getX();
+-                    j1 = blockposition.getZ();
++                    this.cIfLoaded(world, k + 2, k1 + 1, j1); // Unicorn
++                    this.cIfLoaded(world, k - 2, k1 + 1, j1); // Unicorn
++                    this.cIfLoaded(world, k, k1 + 1, j1 + 2); // Unicorn
++                    this.cIfLoaded(world, k, k1 + 1, j1 - 2); // Unicorn
++                    k = x; // Unicorn
++                    j1 = z; // Unicorn
+                     EnumDirection enumdirection1 = EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random);
+ 
+                     if (enumdirection1 != enumdirection) {
+@@ -116,14 +138,19 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+ 
+                         for (int l2 = l1; l2 < i && j2 > 0; --j2) {
+                             if (l2 >= 1) {
+-                                k2 = blockposition.getY() + l2;
++                                k2 = y + l2;
+                                 k += enumdirection1.getAdjacentX();
+                                 j1 += enumdirection1.getAdjacentZ();
+-                                BlockPosition blockposition3 = new BlockPosition(k, k2, j1);
+-                                Material material1 = world.getType(blockposition3).getBlock().getMaterial();
++                                // Unicorn start
++                                IBlockData blockData2 = world.getTypeIfLoaded(k, k2, j1);
++                                if (blockData2 == null) {
++                                    continue;
++                                }
++                                Material material1 = blockData2.getBlock().getMaterial();
++                                // Unicorn end
+ 
+                                 if (material1 == Material.AIR || material1 == Material.LEAVES) {
+-                                    this.b(world, blockposition3);
++                                    this.b(world, new BlockPosition(k, k2, j1)); // Unicorn
+                                     k1 = k2;
+                                 }
+                             }
+@@ -132,23 +159,23 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+                         }
+ 
+                         if (k1 > 0) {
+-                            BlockPosition blockposition4 = new BlockPosition(k, k1, j1);
++                            //BlockPosition blockposition4 = new BlockPosition(k, k1, j1);
+ 
+                             int i3;
+ 
+                             for (k2 = -2; k2 <= 2; ++k2) {
+                                 for (i3 = -2; i3 <= 2; ++i3) {
+                                     if (Math.abs(k2) != 2 || Math.abs(i3) != 2) {
+-                                        this.c(world, blockposition4.a(k2, 0, i3));
++                                        this.cIfLoaded(world, k + k2, k1, j1 + i3); // Unicorn
+                                     }
+                                 }
+                             }
+ 
+-                            blockposition4 = blockposition4.up();
++                            //blockposition4 = blockposition4.up();
+ 
+                             for (k2 = -1; k2 <= 1; ++k2) {
+                                 for (i3 = -1; i3 <= 1; ++i3) {
+-                                    this.c(world, blockposition4.a(k2, 0, i3));
++                                    this.cIfLoaded(world, k + k2, k1 + 1, j1 + i3); // Unicorn
+                                 }
+                             }
+                         }
+@@ -176,4 +203,18 @@ public class WorldGenAcaciaTree extends WorldGenTreeAbstract {
+         }
+ 
+     }
++
++    // Unicorn start
++    private void cIfLoaded(World world, int x, int y, int z) {
++        IBlockData blockData = world.getTypeIfLoaded(x, y, z);
++        if (blockData != null) {
++            Material material = blockData.getBlock().getMaterial();
++
++            if (material == Material.AIR || material == Material.LEAVES) {
++                this.a(world, new BlockPosition(x, y, z), WorldGenAcaciaTree.b);
++            }
++        }
++    }
++    // Unicorn end
++
+ }
 diff --git a/src/main/java/net/minecraft/server/WorldGenGrass.java b/src/main/java/net/minecraft/server/WorldGenGrass.java
 index 2c84c05843017c96a00b33d3698876f3322e41b7..9699807892e715f59db45d41f3148fdef55f4431 100644
 --- a/src/main/java/net/minecraft/server/WorldGenGrass.java
@@ -334,3 +550,57 @@ index f53ff2bb24bbe0c9988c3a88cea050d56e9c4b85..483489aa1091a075da4a44f3005978ff
                          }
                      }
                  }
+diff --git a/src/main/java/net/minecraft/server/WorldGenSand.java b/src/main/java/net/minecraft/server/WorldGenSand.java
+index 4c4fe31daf9799cde6d48a7c961083716f820c59..34bbc57af9aa76b2ae5587a927925ddbd7de36de 100644
+--- a/src/main/java/net/minecraft/server/WorldGenSand.java
++++ b/src/main/java/net/minecraft/server/WorldGenSand.java
+@@ -13,24 +13,39 @@ public class WorldGenSand extends WorldGenerator {
+     }
+ 
+     public boolean generate(World world, Random random, BlockPosition blockposition) {
+-        if (world.getType(blockposition).getBlock().getMaterial() != Material.WATER) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        IBlockData blockData = world.getTypeIfLoaded(x, y, z);
++        if (blockData == null) {
++            return false;
++        }
++        if (blockData.getBlock().getMaterial() != Material.WATER) {
++        // Unicorn end
+             return false;
+         } else {
+             int i = random.nextInt(this.b - 2) + 2;
+             byte b0 = 2;
+ 
+-            for (int j = blockposition.getX() - i; j <= blockposition.getX() + i; ++j) {
+-                for (int k = blockposition.getZ() - i; k <= blockposition.getZ() + i; ++k) {
+-                    int l = j - blockposition.getX();
+-                    int i1 = k - blockposition.getZ();
++            // Unicorn start
++            for (int j = x - i; j <= x + i; ++j) {
++                for (int k = z - i; k <= z + i; ++k) {
++                    int l = j - x;
++                    int i1 = k - z;
++            // Unicorn end
+ 
+                     if (l * l + i1 * i1 <= i * i) {
+-                        for (int j1 = blockposition.getY() - b0; j1 <= blockposition.getY() + b0; ++j1) {
+-                            BlockPosition blockposition1 = new BlockPosition(j, j1, k);
+-                            Block block = world.getType(blockposition1).getBlock();
+-
++                        for (int j1 = y - b0; j1 <= y + b0; ++j1) {
++                            // Unicorn start
++                            Chunk chunk = world.getChunkIfLoaded(j >> 4, k >> 4);
++                            if (chunk == null) {
++                                continue;
++                            }
++                            Block block = chunk.getBlockData(j, j1, k).getBlock();
++                            // Unicorn end
+                             if (block == Blocks.DIRT || block == Blocks.GRASS) {
+-                                world.setTypeAndData(blockposition1, this.a.getBlockData(), 2);
++                                world.setTypeAndData(chunk, new BlockPosition(j, j1, k), this.a.getBlockData(), 2); // Unicorn
+                             }
+                         }
+                     }
