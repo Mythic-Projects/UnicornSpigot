@@ -1,0 +1,258 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 8 Jul 2023 14:18:39 +0200
+Subject: [PATCH] Optimize packet creations by using ObjectWEB ASM
+
+
+diff --git a/src/main/java/net/minecraft/server/EnumProtocol.java b/src/main/java/net/minecraft/server/EnumProtocol.java
+index 393ffc8f1b4e31562f701bceaac6678a4f919561..68db3aed654b1277512bcf83465f1f01a9427cce 100644
+--- a/src/main/java/net/minecraft/server/EnumProtocol.java
++++ b/src/main/java/net/minecraft/server/EnumProtocol.java
+@@ -5,13 +5,16 @@ import com.google.common.collect.HashBiMap;
+ import com.google.common.collect.Maps;
+ import java.util.Iterator;
+ import java.util.Map;
++import java.util.function.Supplier; // Universe
+ import org.apache.logging.log4j.LogManager;
++import org.mythicprojects.unicornspigot.packet.PacketSupplierGenerator; // Universe
+ 
+ public enum EnumProtocol {
+ 
+     HANDSHAKING(-1) {;
+         {
+             this.a(EnumProtocolDirection.SERVERBOUND, PacketHandshakingInSetProtocol.class);
++            this.init(); // Universe
+         }
+     }, PLAY(0) {;
+     {
+@@ -115,6 +118,7 @@ public enum EnumProtocol {
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketPlayInCustomPayload.class);
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketPlayInSpectate.class);
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketPlayInResourcePackStatus.class);
++        this.init(); // Universe
+     }
+ }, STATUS(1) {;
+     {
+@@ -122,6 +126,7 @@ public enum EnumProtocol {
+         this.a(EnumProtocolDirection.CLIENTBOUND, PacketStatusOutServerInfo.class);
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketStatusInPing.class);
+         this.a(EnumProtocolDirection.CLIENTBOUND, PacketStatusOutPong.class);
++        this.init(); // Universe
+     }
+ }, LOGIN(2) {;
+     {
+@@ -131,17 +136,45 @@ public enum EnumProtocol {
+         this.a(EnumProtocolDirection.CLIENTBOUND, PacketLoginOutSetCompression.class);
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketLoginInStart.class);
+         this.a(EnumProtocolDirection.SERVERBOUND, PacketLoginInEncryptionBegin.class);
++        this.init(); // Universe
+     }
+ };
+ 
+-    private static int e = -1;
+-    private static int f = 2;
++    // Universe start
++    private static final int e = -1;
++    private static final int f = 2;
++    // Universe end
+     private static final EnumProtocol[] g = new EnumProtocol[EnumProtocol.f - EnumProtocol.e + 1];
+     private static final Map<Class<? extends Packet>, EnumProtocol> h = Maps.newHashMap();
+     private final int i;
+     private final Map<EnumProtocolDirection, BiMap<Integer, Class<? extends Packet>>> j;
++    // Universe start
++    public static final EnumProtocol[] VALUES = values();
+ 
+-    private EnumProtocol(int i) {
++    void init() {
++        try {
++            for (EnumProtocolDirection direction : EnumProtocolDirection.VALUES) {
++                final BiMap<Integer, Class<? extends Packet>> biMap = this.j.get(direction);
++
++                if (biMap != null) {
++                    biMap.forEach((id, type) -> {
++                        Supplier<? extends Packet<?>> supplier = null;
++                        try {
++                            supplier = (Supplier<? extends Packet<?>>) PacketSupplierGenerator.generate(type);
++                        } catch (InstantiationException | IllegalAccessException ex) {
++                            ex.printStackTrace();
++                        }
++                        direction.add(this, id, supplier);
++                    });
++                }
++            }
++        } catch (Throwable throwable) {
++            throwable.printStackTrace();
++        }
++    }
++
++    EnumProtocol(int i) {
++    // Universe end
+         this.j = Maps.newEnumMap(EnumProtocolDirection.class);
+         this.i = i;
+     }
+@@ -165,9 +198,10 @@ public enum EnumProtocol {
+     }
+ 
+     public Packet a(EnumProtocolDirection enumprotocoldirection, int i) throws IllegalAccessException, InstantiationException {
+-        Class oclass = (Class) ((BiMap) this.j.get(enumprotocoldirection)).get(Integer.valueOf(i));
+-
+-        return oclass == null ? null : (Packet) oclass.newInstance();
++        // Universe start
++        final Supplier<? extends Packet<?>> supplier = enumprotocoldirection.find(this, i);
++        return supplier == null ? null : supplier.get();
++        // Universe end
+     }
+ 
+     public int a() {
+@@ -179,7 +213,7 @@ public enum EnumProtocol {
+     }
+ 
+     public static EnumProtocol a(Packet packet) {
+-        return (EnumProtocol) EnumProtocol.h.get(packet.getClass());
++        return EnumProtocol.h.get(packet.getClass()); // Universe
+     }
+ 
+     EnumProtocol(int i, Object object) {
+@@ -187,7 +221,7 @@ public enum EnumProtocol {
+     }
+ 
+     static {
+-        EnumProtocol[] aenumprotocol = values();
++        EnumProtocol[] aenumprotocol = VALUES; // Universe
+         int i = aenumprotocol.length;
+ 
+         for (int j = 0; j < i; ++j) {
+diff --git a/src/main/java/net/minecraft/server/EnumProtocolDirection.java b/src/main/java/net/minecraft/server/EnumProtocolDirection.java
+index c525fadd782e0024d482888ceedae3f341d3852a..a8de9b626752fdc24d8c9c9b0b6300bdfd42803e 100644
+--- a/src/main/java/net/minecraft/server/EnumProtocolDirection.java
++++ b/src/main/java/net/minecraft/server/EnumProtocolDirection.java
+@@ -1,8 +1,39 @@
+ package net.minecraft.server;
+ 
++import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
++import java.util.function.Supplier;
++
+ public enum EnumProtocolDirection {
+ 
+     SERVERBOUND, CLIENTBOUND;
+ 
++    // Universe start
++    public static final EnumProtocolDirection[] VALUES = values();
++    private final Int2ObjectOpenHashMap<Supplier<? extends Packet<?>>> handshake = new Int2ObjectOpenHashMap<>();
++    private final Int2ObjectOpenHashMap<Supplier<? extends Packet<?>>> play = new Int2ObjectOpenHashMap<>();
++    private final Int2ObjectOpenHashMap<Supplier<? extends Packet<?>>> status = new Int2ObjectOpenHashMap<>();
++    private final Int2ObjectOpenHashMap<Supplier<? extends Packet<?>>> login = new Int2ObjectOpenHashMap<>();
++
++    public void add(EnumProtocol enumProtocol, int id, Supplier<? extends Packet<?>> supplier) {
++        this.map(enumProtocol.a()).put(id, supplier);
++    }
++    public Supplier<? extends Packet<?>> find(EnumProtocol enumProtocol, int id) {
++        return this.map(enumProtocol.a()).get(id);
++    }
++    private Int2ObjectOpenHashMap<Supplier<? extends Packet<?>>> map(int id) {
++        switch (id) {
++            case -1:
++                return this.handshake;
++            case 0:
++                return this.play;
++            case 1:
++                return this.status;
++            case 2:
++                return this.login;
++        }
++        throw new UnsupportedOperationException();
++    }
++    // Universe end
++
+     private EnumProtocolDirection() {}
+ }
+diff --git a/src/main/java/org/mythicprojects/unicornspigot/packet/PacketSupplierGenerator.java b/src/main/java/org/mythicprojects/unicornspigot/packet/PacketSupplierGenerator.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6d6744541c736217afbfbf8d7d1e1ac504311023
+--- /dev/null
++++ b/src/main/java/org/mythicprojects/unicornspigot/packet/PacketSupplierGenerator.java
+@@ -0,0 +1,83 @@
++package org.mythicprojects.unicornspigot.packet;
++
++import com.destroystokyo.paper.event.executor.asm.ClassDefiner;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.function.Supplier;
++import org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.Label;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Type;
++
++import static org.objectweb.asm.Opcodes.*;
++
++public class PacketSupplierGenerator {
++
++    public static <T> Supplier<T> generate(Class<T> packetType) throws InstantiationException, IllegalAccessException {
++        String name = generateName();
++
++        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
++        MethodVisitor methodVisitor;
++        classWriter.visit(V1_8, ACC_PUBLIC | ACC_SUPER, name.replace('.', '/'), "Ljava/lang/Object;Ljava/util/function/Supplier<" + Type.getDescriptor(packetType) + ">;", "java/lang/Object", new String[]{"java/util/function/Supplier"});
++        {
++            methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
++            methodVisitor.visitCode();
++            Label label0 = new Label();
++            methodVisitor.visitLabel(label0);
++            methodVisitor.visitLineNumber(7, label0);
++            methodVisitor.visitVarInsn(ALOAD, 0);
++            methodVisitor.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
++            methodVisitor.visitInsn(RETURN);
++            Label label1 = new Label();
++            methodVisitor.visitLabel(label1);
++            methodVisitor.visitLocalVariable("this", "L" + name.replace('.', '/') + ";", null, label0, label1, 0);
++            methodVisitor.visitMaxs(1, 1);
++            methodVisitor.visitEnd();
++        }
++        {
++            methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "get", "()" + Type.getDescriptor(packetType), null, null);
++            methodVisitor.visitCode();
++            Label label0 = new Label();
++            methodVisitor.visitLabel(label0);
++            methodVisitor.visitLineNumber(10, label0);
++            methodVisitor.visitTypeInsn(NEW, Type.getInternalName(packetType));
++            methodVisitor.visitInsn(DUP);
++            methodVisitor.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(packetType), "<init>", "()V", false);
++            methodVisitor.visitInsn(ARETURN);
++            Label label1 = new Label();
++            methodVisitor.visitLabel(label1);
++            methodVisitor.visitLocalVariable("this", "L" + name.replace('.', '/') + ";", null, label0, label1, 0);
++            methodVisitor.visitMaxs(2, 1);
++            methodVisitor.visitEnd();
++        }
++        {
++            methodVisitor = classWriter.visitMethod(ACC_PUBLIC | ACC_BRIDGE | ACC_SYNTHETIC, "get", "()Ljava/lang/Object;", null, null);
++            methodVisitor.visitCode();
++            Label label0 = new Label();
++            methodVisitor.visitLabel(label0);
++            methodVisitor.visitLineNumber(7, label0);
++            methodVisitor.visitVarInsn(ALOAD, 0);
++            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, name.replace('.', '/'), "get", "()" + Type.getDescriptor(packetType), false);
++            methodVisitor.visitInsn(ARETURN);
++            Label label1 = new Label();
++            methodVisitor.visitLabel(label1);
++            methodVisitor.visitLocalVariable("this", "L" + name.replace('.', '/') + ";", null, label0, label1, 0);
++            methodVisitor.visitMaxs(1, 1);
++            methodVisitor.visitEnd();
++        }
++        classWriter.visitEnd();
++        final byte[] bytes = classWriter.toByteArray();
++
++        ClassDefiner definer = ClassDefiner.getInstance();
++        return (Supplier<T>) definer.defineClass(PacketSupplierGenerator.class.getClassLoader(), name, bytes).asSubclass(Supplier.class).newInstance();
++    }
++
++    public static AtomicInteger NEXT_ID = new AtomicInteger(1);
++
++    public static @NotNull String generateName() {
++        int id = NEXT_ID.getAndIncrement();
++        return "org.mythicprojects.unicornspigot.asm.generated.PacketConstructor" + id;
++    }
++
++}
+\ No newline at end of file
