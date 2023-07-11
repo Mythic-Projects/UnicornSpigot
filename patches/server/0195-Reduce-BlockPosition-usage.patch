@@ -28,7 +28,7 @@ index cb1ce9a828003104059b7c7d68af4326bba68157..cb795188fb2e16fe0227837903db339b
              return this.temperature;
          }
 diff --git a/src/main/java/net/minecraft/server/Block.java b/src/main/java/net/minecraft/server/Block.java
-index 3bd0506894b457d16332e22820043d1c5aeb44ee..7dcd120a91d080d64f88b486511862240c71ed79 100644
+index 3bd0506894b457d16332e22820043d1c5aeb44ee..507ed125fbeb96ab6eddc4584151bd1e106a5aee 100644
 --- a/src/main/java/net/minecraft/server/Block.java
 +++ b/src/main/java/net/minecraft/server/Block.java
 @@ -500,18 +500,32 @@ public class Block {
@@ -49,8 +49,9 @@ index 3bd0506894b457d16332e22820043d1c5aeb44ee..7dcd120a91d080d64f88b48651186224
      }
  
 -    public boolean canPlace(World world, BlockPosition blockposition) {
+-        return world.getType(blockposition).getBlock().material.isReplaceable();
 +    public final boolean canPlace(World world, BlockPosition blockposition) {
-         return world.getType(blockposition).getBlock().material.isReplaceable();
++        return this.canPlace(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
      }
  
 +    public boolean canPlace(World world, int x, int y, int z, EnumDirection enumdirection, ItemStack itemstack) {
@@ -101,16 +102,18 @@ index 3bd0506894b457d16332e22820043d1c5aeb44ee..7dcd120a91d080d64f88b48651186224
  
      public void j() {}
  
-@@ -661,7 +685,11 @@ public class Block {
+@@ -661,7 +685,13 @@ public class Block {
  
      public void a(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman) {}
  
 -    public void k(World world, BlockPosition blockposition) {}
-+    public void k(World world, int x, int y, int z) {}
-+
-+    public void k(World world, BlockPosition blockposition) {
++    // Unicorn start
++    public final void k(World world, BlockPosition blockposition) {
 +        this.k(world, blockposition.getX(), blockposition.getY(), blockposition.getZ());
 +    }
++
++    public void k(World world, int x, int y, int z) {}
++    // Unicorn end
  
      public boolean N() {
          return true;

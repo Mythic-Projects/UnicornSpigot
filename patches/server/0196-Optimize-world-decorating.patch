@@ -519,37 +519,51 @@ index 2307c87b6c08e785be438515727821cffdd63ad8..106bfef625717b81bcb43c750afe9ab1
                              }
                          }
 diff --git a/src/main/java/net/minecraft/server/WorldGenReed.java b/src/main/java/net/minecraft/server/WorldGenReed.java
-index f53ff2bb24bbe0c9988c3a88cea050d56e9c4b85..483489aa1091a075da4a44f3005978ff00e8028c 100644
+index f53ff2bb24bbe0c9988c3a88cea050d56e9c4b85..0f30c555865ee9fcc7dcc71ffa0e048adcc10147 100644
 --- a/src/main/java/net/minecraft/server/WorldGenReed.java
 +++ b/src/main/java/net/minecraft/server/WorldGenReed.java
-@@ -9,8 +9,16 @@ public class WorldGenReed extends WorldGenerator {
+@@ -7,23 +7,33 @@ public class WorldGenReed extends WorldGenerator {
+     public WorldGenReed() {}
+ 
      public boolean generate(World world, Random random, BlockPosition blockposition) {
++        // Unicorn start
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        // Unicorn end
          for (int i = 0; i < 20; ++i) {
-             BlockPosition blockposition1 = blockposition.a(random.nextInt(4) - random.nextInt(4), 0, random.nextInt(4) - random.nextInt(4));
+-            BlockPosition blockposition1 = blockposition.a(random.nextInt(4) - random.nextInt(4), 0, random.nextInt(4) - random.nextInt(4));
 -
 -            if (world.isEmpty(blockposition1)) {
+-                BlockPosition blockposition2 = blockposition1.down();
 +            // Unicorn start
-+            int x = blockposition1.getX();
-+            int y = blockposition1.getY();
-+            int z = blockposition1.getZ();
++            int x1 = x + random.nextInt(4) - random.nextInt(4);
++            int z1 = z + random.nextInt(4) - random.nextInt(4);
 +            Chunk chunk = world.getChunkIfLoaded(x >> 4, z >> 4);
 +            if (chunk == null) {
 +                continue;
 +            }
 +            if (chunk.isEmpty(x, y, z)) {
-+            // Unicorn end
-                 BlockPosition blockposition2 = blockposition1.down();
++                int y1 = y - 1;
  
-                 if (world.getType(blockposition2.west()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.east()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.north()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.south()).getBlock().getMaterial() == Material.WATER) {
-@@ -18,7 +26,7 @@ public class WorldGenReed extends WorldGenerator {
- 
+-                if (world.getType(blockposition2.west()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.east()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.north()).getBlock().getMaterial() == Material.WATER || world.getType(blockposition2.south()).getBlock().getMaterial() == Material.WATER) {
++                if (world.getType(x1 - 1, y1, z1).getBlock().getMaterial() == Material.WATER || world.getType(x1 + 1, y1, z1).getBlock().getMaterial() == Material.WATER || world.getType(x1, y1, z1 - 1).getBlock().getMaterial() == Material.WATER || world.getType(x1, y1, z + 1).getBlock().getMaterial() == Material.WATER) {
+                     int j = 2 + random.nextInt(random.nextInt(3) + 1);
+-
                      for (int k = 0; k < j; ++k) {
-                         if (Blocks.REEDS.e(world, blockposition1)) {
+-                        if (Blocks.REEDS.e(world, blockposition1)) {
 -                            world.setTypeAndData(blockposition1.up(k), Blocks.REEDS.getBlockData(), 2);
-+                            world.setTypeAndData(chunk, blockposition1.up(k), Blocks.REEDS.getBlockData(), 2); // Unicorn
++                        if (Blocks.REEDS.canPlace(world, x1, y, z1)) {
++                            world.setTypeAndData(chunk, new BlockPosition(x1, y + k, z1), Blocks.REEDS.getBlockData(), 2);
                          }
                      }
                  }
+             }
+         }
++        // Unicorn end
+ 
+         return true;
+     }
 diff --git a/src/main/java/net/minecraft/server/WorldGenSand.java b/src/main/java/net/minecraft/server/WorldGenSand.java
 index 4c4fe31daf9799cde6d48a7c961083716f820c59..34bbc57af9aa76b2ae5587a927925ddbd7de36de 100644
 --- a/src/main/java/net/minecraft/server/WorldGenSand.java
