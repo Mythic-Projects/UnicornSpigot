@@ -2,7 +2,7 @@
 
 ---
 
-Private repository of paid fork of [PaperSpigot 1.8.8](https://github.com/PaperMC/Paper/tree/ver/1.8.8) created by [Peridot](https://github.com/P3ridot). 
+Private archive repository of paid fork of [PaperSpigot 1.8.8](https://github.com/PaperMC/Paper/tree/ver/1.8.8). It's unfinished successor of [Titanium](https://github.com/Mythic-Projects/Titanium) created by [Peridot](https://github.com/P3ridot). 
 
 Provides lots of new features, enhancements, optimizations, bug and exploits fixes and lots more! 
 
